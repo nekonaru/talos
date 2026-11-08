@@ -1,0 +1,125 @@
+import 'models.dart';
+
+/// Builds yt-dlp argument lists. Pure Dart, no I/O, fully unit tested.
+class CommandBuilder {
+  const CommandBuilder._();
+
+  static List<String> probeArgs(String url, {String? proxy}) {
+    return [
+      '--dump-single-json',
+      '--flat-playlist',
+      '--skip-download',
+      '--no-warnings',
+      if (proxy != null && proxy.isNotEmpty) ...['--proxy', proxy],
+      url,
+    ];
+  }
+
+  static List<String> downloadArgs(
+    DownloadRequest request, {
+    required bool ffmpegAvailable,
+  }) {
+    final args = <String>['--newline', '--no-warnings'];
+
+    if (request.includePlaylist) {
+      args.add('--yes-playlist');
+      if (request.playlistItems != null && request.playlistItems!.isNotEmpty) {
+        args.addAll(['--playlist-items', request.playlistItems!]);
+      }
+    } else {
+      args.add('--no-playlist');
+    }
+
+    if (request.videoMode) {
+      final height = request.maxHeight;
+      if (ffmpegAvailable) {
+        if (height != null && height > 0) {
+          args.addAll(['-f', 'bv*[height<=$height]+ba/b[height<=$height]/b']);
+        }
+      } else {
+        // Without ffmpeg separate streams cannot be merged, so pick a single-file format.
+        args.addAll(['-f', height != null && height > 0 ? 'b[height<=$height]/b' : 'b/best']);
+      }
+      if (request.embedSubtitles && ffmpegAvailable) {
+        args.addAll(['--write-subs', '--embed-subs']);
+      }
+    } else {
+      if (ffmpegAvailable) {
+        args.addAll(['-x', '--audio-format', request.audioFormat]);
+        if (request.audioBitrate.isNotEmpty) {
+          args.addAll(['--audio-quality', '${request.audioBitrate}K']);
+        }
+      } else {
+        // Audio conversion needs ffmpeg; grab the best audio stream as-is.
+        args.addAll(['-f', 'ba/bestaudio/b']);
+      }
+    }
+
+    if (request.embedMetadata && ffmpegAvailable) args.addAll(['--embed-metadata', '--embed-thumbnail']);
+
+    if (request.proxy.isNotEmpty) args.addAll(['--proxy', request.proxy]);
+    if (request.rateLimit.isNotEmpty) args.addAll(['--limit-rate', request.rateLimit]);
+    if (request.concurrentFragments > 1) {
+      args.addAll(['-N', '${request.concurrentFragments}']);
+    }
+    if (request.useAria2) args.addAll(['--downloader', 'aria2c']);
+
+    args.addAll(['-P', request.outputDir]);
+    args.addAll(['-o', request.filenameTemplate]);
+    args.add(request.url);
+    return args;
+  }
+
+  /// Splits a user command template into arguments, honoring single and
+  /// double quotes. Backslash escapes the next character.
+  static List<String> tokenizeArgs(String input) {
+    final tokens = <String>[];
+    final current = StringBuffer();
+    String? quote;
+    var hasContent = false;
+
+    for (var i = 0; i < input.length; i++) {
+      final ch = input[i];
+      if (ch == '\\' && i + 1 < input.length) {
+        current.write(input[i + 1]);
+        hasContent = true;
+        i++;
+        continue;
+      }
+      if (quote != null) {
+        if (ch == quote) {
+          quote = null;
+        } else {
+          current.write(ch);
+        }
+        continue;
+      }
+      if (ch == '"' || ch == "'") {
+        quote = ch;
+        hasContent = true;
+        continue;
+      }
+      if (ch.trim().isEmpty) {
+        if (hasContent || current.isNotEmpty) {
+          tokens.add(current.toString());
+          current.clear();
+          hasContent = false;
+        }
+        continue;
+      }
+      current.write(ch);
+      hasContent = true;
+    }
+    if (hasContent || current.isNotEmpty) tokens.add(current.toString());
+    return tokens;
+  }
+
+  /// Substitutes the {url} token in a command template and tokenizes.
+  /// Substitution happens inside each token, so URLs containing spaces
+  /// never split into multiple arguments.
+  static List<String> customCommandArgs(String template, String url) {
+    return tokenizeArgs(template)
+        .map((token) => token.replaceAll('{url}', url))
+        .toList();
+  }
+}

@@ -1,0 +1,170 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:talos/core/engine/command_builder.dart';
+import 'package:talos/core/engine/models.dart';
+import 'package:talos/core/engine/progress_parser.dart';
+
+void main() {
+  group('parseYtdlpLine', () {
+    test('parses a download progress line', () {
+      final event = parseYtdlpLine(
+        '[download]   4.2% of   12.34MiB at    1.20MiB/s ETA 00:12',
+      );
+      expect(event, isNotNull);
+      expect(event!.stage, 'download');
+      expect(event.fraction, closeTo(0.042, 1e-6));
+      expect(event.totalBytes, (12.34 * 1024 * 1024).round());
+      expect(event.speedBytesPerSecond, closeTo(1.20 * 1024 * 1024, 1e3));
+      expect(event.etaSeconds, 12);
+    });
+
+    test('parses hours in ETA', () {
+      final event = parseYtdlpLine(
+        '[download]  10.0% of 100MiB at 512KiB/s ETA 01:00:00',
+      );
+      expect(event!.etaSeconds, 3600);
+    });
+
+    test('parses destination line', () {
+      final event = parseYtdlpLine('[download] Destination: /tmp/file.mp4');
+      expect(event!.stage, 'download');
+      expect(event.outputPath, '/tmp/file.mp4');
+    });
+
+    test('parses extract audio destination', () {
+      final event = parseYtdlpLine('[ExtractAudio] Destination: track.mp3');
+      expect(event!.stage, 'extractAudio');
+      expect(event.outputPath, 'track.mp3');
+    });
+
+    test('parses merger line', () {
+      final event = parseYtdlpLine('[Merger] Merging formats into "video.mkv"');
+      expect(event!.stage, 'merge');
+      expect(event.outputPath, 'video.mkv');
+    });
+
+    test('parses playlist progress', () {
+      final event = parseYtdlpLine('[download] Downloading item 3 of 10');
+      expect(event!.stage, 'playlist');
+      expect(event.playlistIndex, 3);
+      expect(event.playlistCount, 10);
+    });
+
+    test('captures errors', () {
+      final event = parseYtdlpLine('ERROR: Video unavailable');
+      expect(event!.error, 'Video unavailable');
+    });
+
+    test('ignores noise', () {
+      expect(parseYtdlpLine('[info] abc: Downloading webpage'), isNull);
+      expect(parseYtdlpLine(''), isNull);
+    });
+  });
+
+  group('parseProbeJson', () {
+    test('parses a single video', () {
+      final probe = parseProbeJson('''
+{
+  "id": "abc123",
+  "title": "Test video",
+  "webpage_url": "https://example.invalid/watch?v=abc123",
+  "uploader": "someone",
+  "duration": 125.4,
+  "thumbnail": "https://example.invalid/thumb.jpg"
+}
+''');
+      expect(probe.title, 'Test video');
+      expect(probe.isPlaylist, isFalse);
+      expect(probe.uploader, 'someone');
+      expect(probe.duration, const Duration(seconds: 125));
+      expect(probe.thumbnail, 'https://example.invalid/thumb.jpg');
+    });
+
+    test('parses a playlist with entries', () {
+      final probe = parseProbeJson('''
+{
+  "_type": "playlist",
+  "title": "My list",
+  "entries": [
+    {"id": "1", "title": "First", "url": "https://example.invalid/1", "duration": 60},
+    {"id": "2", "title": "Second", "url": "https://example.invalid/2"}
+  ]
+}
+''');
+      expect(probe.isPlaylist, isTrue);
+      expect(probe.entries, hasLength(2));
+      expect(probe.entries.first.title, 'First');
+      expect(probe.entries.first.duration, const Duration(seconds: 60));
+      expect(probe.entries[1].duration, isNull);
+    });
+
+    test('rejects garbage', () {
+      expect(() => parseProbeJson('not json'), throwsFormatException);
+      expect(() => parseProbeJson('[]'), throwsFormatException);
+    });
+  });
+
+  group('downloadArgs', () {
+    DownloadRequest request({bool video = true, int? maxHeight, String? items}) => DownloadRequest(
+          url: 'https://example.invalid/watch?v=x',
+          videoMode: video,
+          outputDir: '/downloads',
+          maxHeight: maxHeight,
+          playlistItems: items,
+        );
+
+    test('video with height cap', () {
+      final args = CommandBuilder.downloadArgs(request(maxHeight: 720), ffmpegAvailable: true);
+      expect(args, containsAllInOrder(['-f', 'bv*[height<=720]+ba/b[height<=720]/b']));
+      expect(args, contains('--write-subs'));
+      expect(args.last, 'https://example.invalid/watch?v=x');
+    });
+
+    test('audio mode', () {
+      final args = CommandBuilder.downloadArgs(request(video: false), ffmpegAvailable: true);
+      expect(args, containsAllInOrder(['-x', '--audio-format', 'mp3']));
+      expect(args, contains('--embed-thumbnail'));
+    });
+
+    test('subtitles skipped without ffmpeg', () {
+      final args = CommandBuilder.downloadArgs(request(maxHeight: 1080), ffmpegAvailable: false);
+      expect(args, isNot(contains('--write-subs')));
+      expect(args, containsAllInOrder(['-f', 'b[height<=1080]/b']));
+    });
+
+    test('audio without ffmpeg keeps original stream', () {
+      final args = CommandBuilder.downloadArgs(request(video: false), ffmpegAvailable: false);
+      expect(args, isNot(contains('-x')));
+      expect(args, isNot(contains('--embed-metadata')));
+      expect(args, containsAllInOrder(['-f', 'ba/bestaudio/b']));
+    });
+
+    test('playlist selection', () {
+      final args = CommandBuilder.downloadArgs(request(items: '1-3,7'), ffmpegAvailable: false);
+      expect(args, containsAllInOrder(['--playlist-items', '1-3,7']));
+    });
+  });
+
+  group('tokenizeArgs', () {
+    test('splits plain arguments', () {
+      expect(CommandBuilder.tokenizeArgs('-x --audio-format mp3 {url}'),
+          ['-x', '--audio-format', 'mp3', '{url}']);
+    });
+
+    test('respects quotes', () {
+      expect(CommandBuilder.tokenizeArgs('-f "bv*[height<=720]+ba/b[height<=720]" {url}'),
+          ['-f', 'bv*[height<=720]+ba/b[height<=720]', '{url}']);
+    });
+
+    test('single quotes and escapes', () {
+      expect(CommandBuilder.tokenizeArgs("--proxy 'a b' -N 4"), ['--proxy', 'a b', '-N', '4']);
+      expect(CommandBuilder.tokenizeArgs('a\\ b'), ['a b']);
+    });
+
+    test('url substitution', () {
+      final args = CommandBuilder.customCommandArgs('-x {url} --no-mtime', 'https://example.invalid/a b');
+      expect(args.first, '-x');
+      expect(args[1], 'https://example.invalid/a b');
+      expect(args.last, '--no-mtime');
+    });
+  });
+}
