@@ -160,6 +160,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
                 ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.visibility_off_outlined),
+                  title: Text(l.privateMode),
+                  subtitle: Text(l.privateModeHint),
+                  value: settings.privateMode,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(privateMode: value)),
+                ),
               ],
             ),
           ),
@@ -252,6 +259,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         .toList(),
                     onChanged: (value) => manager.settings.mutate((s) => s.copyWith(concurrentFragments: value ?? 4)),
                   ),
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.block_outlined),
+                  title: Text(l.sponsorBlock),
+                  value: settings.sponsorBlockEnabled,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(sponsorBlockEnabled: value)),
+                ),
+                if (settings.sponsorBlockEnabled)
+                  ListTile(
+                    leading: const SizedBox(width: 24),
+                    title: Text(l.sponsorBlock),
+                    subtitle: Text(settings.sponsorBlockCategories),
+                    onTap: () async {
+                      final value = await _editDialog(
+                        title: l.sponsorBlock,
+                        initial: settings.sponsorBlockCategories,
+                        hint: 'sponsor,selfpromo',
+                      );
+                      if (value != null && value.isNotEmpty) {
+                        await manager.settings.mutate((s) => s.copyWith(sponsorBlockCategories: value));
+                      }
+                    },
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.cookie_outlined),
+                  title: Text(l.cookies),
+                  subtitle: Text(settings.cookiesPath.isEmpty ? l.cookiesHint : settings.cookiesPath),
+                  onTap: () async {
+                    final value = await _editDialog(title: l.cookies, initial: settings.cookiesPath, hint: l.cookiesHint);
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(cookiesPath: value));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.subtitles_outlined),
+                  title: Text(l.subtitleLanguage),
+                  subtitle: Text(settings.subtitleLanguage.isEmpty ? l.subtitleLanguageHint : settings.subtitleLanguage),
+                  onTap: () async {
+                    final value = await _editDialog(
+                      title: l.subtitleLanguage,
+                      initial: settings.subtitleLanguage,
+                      hint: l.subtitleLanguageHint,
+                    );
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(subtitleLanguage: value));
+                  },
                 ),
                 if (desktop)
                   SwitchListTile(

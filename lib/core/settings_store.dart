@@ -25,6 +25,11 @@ class TalosSettings {
     this.embedSubtitles = true,
     this.embedMetadata = true,
     this.ffmpegPath = '',
+    this.sponsorBlockEnabled = false,
+    this.sponsorBlockCategories = 'sponsor',
+    this.cookiesPath = '',
+    this.subtitleLanguage = 'en',
+    this.privateMode = false,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -43,6 +48,11 @@ class TalosSettings {
       embedSubtitles: json['embedSubtitles'] as bool? ?? true,
       embedMetadata: json['embedMetadata'] as bool? ?? true,
       ffmpegPath: json['ffmpegPath'] as String? ?? '',
+      sponsorBlockEnabled: json['sponsorBlockEnabled'] as bool? ?? false,
+      sponsorBlockCategories: json['sponsorBlockCategories'] as String? ?? 'sponsor',
+      cookiesPath: json['cookiesPath'] as String? ?? '',
+      subtitleLanguage: json['subtitleLanguage'] as String? ?? 'en',
+      privateMode: json['privateMode'] as bool? ?? false,
     );
   }
 
@@ -60,6 +70,11 @@ class TalosSettings {
   bool embedSubtitles;
   bool embedMetadata;
   String ffmpegPath;
+  bool sponsorBlockEnabled;
+  String sponsorBlockCategories;
+  String cookiesPath;
+  String subtitleLanguage;
+  bool privateMode;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -76,6 +91,11 @@ class TalosSettings {
         'embedSubtitles': embedSubtitles,
         'embedMetadata': embedMetadata,
         'ffmpegPath': ffmpegPath,
+        'sponsorBlockEnabled': sponsorBlockEnabled,
+        'sponsorBlockCategories': sponsorBlockCategories,
+        'cookiesPath': cookiesPath,
+        'subtitleLanguage': subtitleLanguage,
+        'privateMode': privateMode,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -105,6 +125,11 @@ class TalosSettings {
     bool? embedSubtitles,
     bool? embedMetadata,
     String? ffmpegPath,
+    bool? sponsorBlockEnabled,
+    String? sponsorBlockCategories,
+    String? cookiesPath,
+    String? subtitleLanguage,
+    bool? privateMode,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -121,6 +146,11 @@ class TalosSettings {
       embedSubtitles: embedSubtitles ?? this.embedSubtitles,
       embedMetadata: embedMetadata ?? this.embedMetadata,
       ffmpegPath: ffmpegPath ?? this.ffmpegPath,
+      sponsorBlockEnabled: sponsorBlockEnabled ?? this.sponsorBlockEnabled,
+      sponsorBlockCategories: sponsorBlockCategories ?? this.sponsorBlockCategories,
+      cookiesPath: cookiesPath ?? this.cookiesPath,
+      subtitleLanguage: subtitleLanguage ?? this.subtitleLanguage,
+      privateMode: privateMode ?? this.privateMode,
     );
   }
 }

@@ -142,6 +142,34 @@ void main() {
       final args = CommandBuilder.downloadArgs(request(items: '1-3,7'), ffmpegAvailable: false);
       expect(args, containsAllInOrder(['--playlist-items', '1-3,7']));
     });
+
+    test('subtitles carry the configured language', () {
+      final args = CommandBuilder.downloadArgs(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=x',
+          videoMode: true,
+          outputDir: '/downloads',
+          subtitleLanguage: 'id',
+        ),
+        ffmpegAvailable: true,
+      );
+      expect(args, allOf(contains('--write-subs'), containsAllInOrder(['--sub-langs', 'id'])));
+    });
+
+    test('sponsorblock and cookies are passed through', () {
+      final args = CommandBuilder.downloadArgs(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=x',
+          videoMode: false,
+          outputDir: '/downloads',
+          sponsorBlockCategories: 'sponsor,selfpromo',
+          cookiesPath: '/tmp/cookies.txt',
+        ),
+        ffmpegAvailable: true,
+      );
+      expect(args, containsAllInOrder(['--sponsorblock-remove', 'sponsor,selfpromo']));
+      expect(args, containsAllInOrder(['--cookies', '/tmp/cookies.txt']));
+    });
   });
 
   group('tokenizeArgs', () {

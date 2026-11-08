@@ -55,6 +55,9 @@ class DownloadRequest {
     this.playlistItems,
     this.includePlaylist = true,
     this.ffmpegPath = '',
+    this.sponsorBlockCategories = '',
+    this.cookiesPath = '',
+    this.subtitleLanguage = '',
   });
 
   final String url;
@@ -80,6 +83,15 @@ class DownloadRequest {
 
   /// Empty means "detect ffmpeg from PATH".
   final String ffmpegPath;
+
+  /// Comma-separated SponsorBlock categories to strip, for example "sponsor,selfpromo". Empty disables.
+  final String sponsorBlockCategories;
+
+  /// Path to a Netscape-format cookies file. Empty disables.
+  final String cookiesPath;
+
+  /// Subtitle language code such as en or id. Empty means default.
+  final String subtitleLanguage;
 }
 
 enum TaskStatus { queued, running, completed, failed, cancelled }

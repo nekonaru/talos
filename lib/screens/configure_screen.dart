@@ -76,6 +76,9 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       playlistItems: items,
       includePlaylist: widget.probe.isPlaylist,
       ffmpegPath: settings.ffmpegPath,
+      sponsorBlockCategories: settings.sponsorBlockEnabled ? settings.sponsorBlockCategories : '',
+      cookiesPath: settings.cookiesPath,
+      subtitleLanguage: settings.subtitleLanguage,
     );
 
     await manager.enqueue(

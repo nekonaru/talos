@@ -114,6 +114,9 @@ class DownloadManager extends ChangeNotifier {
       playlistItems: task.request.playlistItems,
       includePlaylist: task.request.includePlaylist,
       ffmpegPath: task.request.ffmpegPath,
+      sponsorBlockCategories: task.request.sponsorBlockCategories,
+      cookiesPath: task.request.cookiesPath,
+      subtitleLanguage: task.request.subtitleLanguage,
     );
     _tasks.remove(task);
     await enqueue(rebuilt, title: task.title, kind: task.kind);
@@ -187,15 +190,17 @@ class DownloadManager extends ChangeNotifier {
     if (outcome.error == null) {
       task.outputPath = outcome.outputPath ?? task.outputPath;
       final size = await _fileSize(task.outputPath);
-      await _history.add(HistoryEntry(
-        id: task.id,
-        title: task.title,
-        url: task.url,
-        filePath: task.outputPath ?? '',
-        kind: task.kind,
-        dateMs: DateTime.now().millisecondsSinceEpoch,
-        sizeBytes: size,
-      ));
+      if (!_settings.value.privateMode) {
+        await _history.add(HistoryEntry(
+          id: task.id,
+          title: task.title,
+          url: task.url,
+          filePath: task.outputPath ?? '',
+          kind: task.kind,
+          dateMs: DateTime.now().millisecondsSinceEpoch,
+          sizeBytes: size,
+        ));
+      }
       // Completed work moves to the Finished tab via history.
       _tasks.remove(task);
     } else if (outcome.error == 'cancelled') {

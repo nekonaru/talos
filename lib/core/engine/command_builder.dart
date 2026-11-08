@@ -42,6 +42,9 @@ class CommandBuilder {
       }
       if (request.embedSubtitles && ffmpegAvailable) {
         args.addAll(['--write-subs', '--embed-subs']);
+        if (request.subtitleLanguage.isNotEmpty) {
+          args.addAll(['--sub-langs', request.subtitleLanguage]);
+        }
       }
     } else {
       if (ffmpegAvailable) {
@@ -59,6 +62,10 @@ class CommandBuilder {
 
     if (request.proxy.isNotEmpty) args.addAll(['--proxy', request.proxy]);
     if (request.rateLimit.isNotEmpty) args.addAll(['--limit-rate', request.rateLimit]);
+    if (request.cookiesPath.isNotEmpty) args.addAll(['--cookies', request.cookiesPath]);
+    if (request.sponsorBlockCategories.isNotEmpty) {
+      args.addAll(['--sponsorblock-remove', request.sponsorBlockCategories]);
+    }
     if (request.concurrentFragments > 1) {
       args.addAll(['-N', '${request.concurrentFragments}']);
     }
