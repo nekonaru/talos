@@ -44,17 +44,40 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Restore signing keystore
+        if: github.event_name == 'push'
+        run: |
+          echo "${{ secrets.UPLOAD_KEYSTORE_B64 }}" | base64 --decode > android/app/upload-keystore.jks
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=upload-keystore.jks\n' \
+            "${{ secrets.KEYSTORE_STORE_PASSWORD }}" \
+            "${{ secrets.KEYSTORE_STORE_PASSWORD }}" \
+            "${{ secrets.KEYSTORE_KEY_ALIAS }}" > android/app/key.properties
+
       - name: Build debug APK
         run: |
           flutter pub get
           flutter gen-l10n
           flutter build apk --debug
 
+      - name: Build signed release APK
+        if: github.event_name == 'push'
+        run: |
+          flutter pub get
+          flutter gen-l10n
+          flutter build apk --release
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: talos-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Upload release APK
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: talos-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
   windows:
     runs-on: windows-latest
@@ -72,6 +95,12 @@ jobs:
           flutter pub get
           flutter gen-l10n
           flutter build windows --release
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: talos-windows-x64
+          path: build/windows/x64/runner/Release/
 
   linux:
     runs-on: ubuntu-latest
@@ -95,6 +124,12 @@ jobs:
           flutter gen-l10n
           flutter build linux --release
 
+      - name: Upload Linux build
+        uses: actions/upload-artifact@v4
+        with:
+          name: talos-linux-x64
+          path: build/linux/x64/release/bundle/
+
   macos:
     runs-on: macos-latest
     steps:
@@ -111,3 +146,9 @@ jobs:
           flutter pub get
           flutter gen-l10n
           flutter build macos --release
+
+      - name: Upload macOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: talos-macos
+          path: build/macos/Build/Products/Release/
