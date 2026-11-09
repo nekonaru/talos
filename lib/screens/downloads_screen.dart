@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -268,11 +269,17 @@ class _TaskCard extends StatelessWidget {
             ),
             if (failed && task.error != null) ...[
               const SizedBox(height: 6),
-              Text(
-                task.error!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error),
+              InkWell(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: task.error!));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error copied to clipboard')));
+                },
+                child: Text(
+                  task.error!,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error, decoration: TextDecoration.underline),
+                ),
               ),
             ],
           ],

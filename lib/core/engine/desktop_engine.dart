@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -53,7 +54,17 @@ class DesktopEngine implements TalosEngine {
     if (configured.trim().isNotEmpty && File(configured.trim()).existsSync()) {
       return configured.trim();
     }
+    // Managed FFmpeg on Windows wins over PATH because it is fetched by the app.
+    final managed = await _managedFfmpegPath();
+    if (managed != null) return managed;
     return _onPath('ffmpeg');
+  }
+
+  Future<String?> _managedFfmpegPath() async {
+    if (!Platform.isWindows) return null;
+    final dir = await _binDir;
+    final candidate = File('${dir.path}${Platform.pathSeparator}ffmpeg.exe');
+    return candidate.existsSync() ? candidate.path : null;
   }
 
   Future<String?> _versionOf(String binary) async {
@@ -149,11 +160,14 @@ class DesktopEngine implements TalosEngine {
     }
   }
 
+  /// Ensures a managed yt-dlp binary is present. [force] re-downloads even when
+  /// a working engine is already present (desktop only).
   @override
   Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false}) async {
     if (!force) {
       final path = await ytdlpPath();
       if (path != null && await _versionOf(path) != null) {
+        await _ensureManagedFfmpeg(onPhase: onPhase);
         return;
       }
     }
@@ -176,6 +190,65 @@ class DesktopEngine implements TalosEngine {
     if (version == null) {
       await target.delete().catchError((_) => target);
       throw const FileSystemException('Downloaded engine failed to start');
+    }
+
+    await _ensureManagedFfmpeg(onPhase: onPhase);
+  }
+
+  /// Downloads FFmpeg for Windows with SHA-256 verification, extracts the
+  /// essential binaries into the managed bin directory, and verifies the result.
+  /// Non-Windows platforms rely on PATH or a user-configured binary.
+  Future<void> _ensureManagedFfmpeg({void Function(String phase, double fraction)? onPhase}) async {
+    if (!Platform.isWindows) return;
+    final dir = await _binDir;
+    final candidate = File('${dir.path}${Platform.pathSeparator}ffmpeg.exe');
+    if (candidate.existsSync() && await _versionOf(candidate.path) != null) return;
+
+    const url = 'https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip';
+    const expectedSha256 = '60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba';
+    onPhase?.call('ffmpeg-download', 0);
+
+    final client = HttpClient();
+    try {
+      final request = await client.getUrl(Uri.parse(url));
+      request.headers.set('user-agent', 'Talos/0.1');
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw HttpException('Download failed with status ${response.statusCode}', uri: Uri.parse(url));
+      }
+      final total = response.contentLength;
+      var received = 0;
+      final builder = BytesBuilder(copy: false);
+      await for (final chunk in response) {
+        builder.add(chunk);
+        received += chunk.length;
+        if (total > 0) onPhase?.call('ffmpeg-download', received / total);
+      }
+      final bytes = builder.takeBytes();
+      final digest = sha256.convert(bytes).toString();
+      if (digest != expectedSha256) {
+        throw StateError('FFmpeg checksum mismatch');
+      }
+      final archive = ZipDecoder().decodeBytes(bytes);
+      var extracted = 0;
+      for (final entry in archive.files) {
+        if (!entry.isFile) continue;
+        final name = entry.name.split('/').last;
+        if (name != 'ffmpeg.exe' && name != 'ffprobe.exe') continue;
+        final target = File('${dir.path}${Platform.pathSeparator}$name');
+        await target.writeAsBytes(entry.content as List<int>);
+        extracted++;
+      }
+      if (extracted == 0) {
+        throw StateError('FFmpeg archive did not contain the expected binaries');
+      }
+    } finally {
+      client.close();
+    }
+    onPhase?.call('ffmpeg-verify', 1);
+    final ffmpeg = await _versionOf(candidate.path);
+    if (ffmpeg == null) {
+      throw const FileSystemException('Managed FFmpeg failed to start');
     }
   }
 

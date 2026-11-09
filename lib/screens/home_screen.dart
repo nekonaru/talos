@@ -120,6 +120,16 @@ class _HomeScreenState extends State<HomeScreen> {
     if (url.isEmpty || _busy) return;
     setState(() => _busy = true);
     final manager = TalosScope.of(context);
+    // Ensure the engine is installed before trying to probe.
+    if (!_engineReady) {
+      try {
+        await _setupEngine();
+      } catch (_) {
+        // Error surfaces in the banner; stop here.
+        if (mounted) setState(() => _busy = false);
+        return;
+      }
+    }
     try {
       final probe = await manager.engine.probe(url, proxy: manager.settings.value.proxy);
       if (!mounted) return;
@@ -128,12 +138,31 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (error) {
       if (!mounted) return;
-      final message = '$error'.replaceFirst('StateError: ', '').replaceFirst('Exception: ', '');
+      final message = _friendlyError(error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
+
+  String _friendlyError(Object error) {
+    final text = '$error';
+    for (final pattern in _errorPatterns) {
+      final match = pattern.$1.firstMatch(text);
+      if (match != null) return pattern.$2;
+    }
+    return text.replaceFirst('StateError: ', '').replaceFirst('Exception: ', '').replaceFirst('FormatException: ', '');
+  }
+
+  static final _errorPatterns = <(RegExp, String)>[
+    (RegExp(r'HTTP Error 403|403 Forbidden', caseSensitive: false), 'Situs menolak akses (HTTP 403). Coba lewat proxy di Pengaturan, atau pakai file cookies.txt untuk situs yang butuh login.'),
+    (RegExp(r'Sign in|sign-in|not a bot', caseSensitive: false), 'Situs menolak unduhan otomatis. Tambahkan cookies.txt dari browser di Pengaturan > Cookies file, lalu coba lagi.'),
+    (RegExp(r'video is unavailable|This video is unavailable', caseSensitive: false), 'Video tidak tersedia (mungkin privat, dihapus, atau dibatasi wilayah).'),
+    (RegExp(r'Private video|private', caseSensitive: false), 'Video ini privat. Unduh lewat cookies.txt atau akun yang sesuai.'),
+    (RegExp(r'HTTP Error 404|404 Not Found', caseSensitive: false), 'Video tidak ditemukan (HTTP 404). Periksa lagi URL-nya.'),
+    (RegExp(r'ffmpeg.*not found|ffmpeg.*required', caseSensitive: false), 'FFmpeg belum tersedia. Di desktop, buka Pengaturan > Engine > Update yt-dlp untuk mengunduh FFmpeg terkelola. Di Android, metadata dan penggabungan belum tersedia.'),
+    (RegExp(r'Live event is in progress', caseSensitive: false), 'Video live belum berakhir, tunggu selesai baru diunduh.'),
+  ];
 
   Future<void> _openFile(HistoryEntry entry) async {
     final uri = Uri.file(entry.filePath);

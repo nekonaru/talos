@@ -158,6 +158,13 @@ class DownloadManager extends ChangeNotifier {
     await requestTalosNotificationPermission();
     await ensureForegroundService(text: task.title);
 
+    try {
+      final dir = Directory(task.request.outputDir);
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+    } catch (_) {
+      // Output directory may not be creatable (e.g. user picked a read-only path).
+    }
+
     final configuredFfmpeg = _settings.value.ffmpegPath.trim();
     final ffmpegAvailable = await _ffmpegAvailable(configuredFfmpeg);
 
