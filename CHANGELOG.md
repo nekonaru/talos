@@ -2,28 +2,27 @@
 
 All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Newest version on top.
 
-## [0.1.0] - 2026-11-09
+## v0.1.0
 
-### Added
+The first release of Talos, a video and audio downloader for Android, iOS, Windows, macOS and Linux.
 
-- **Video and audio downloads** from yt-dlp supported sites, as video up to 2160p or audio as MP3, M4A, Opus, FLAC or the source format.
-- **Playlist support** with per-entry selection, select all or none, and per-item progress during download.
-- **Embedded metadata and thumbnails** into downloaded files on desktop with FFmpeg, including cover art in audio files.
-- **Embedded subtitles** with a selectable language into downloaded videos.
-- **SponsorBlock** support to strip sponsor, self-promo and other segments by category.
-- **Cookies file** support for sites that require a login.
-- **Proxy, rate limit, concurrent fragments and aria2c** options for network-hungry downloads and fragile networks.
-- **Custom commands** to run yt-dlp with your own argument templates, managed inside the app.
-- **Downloads screen** with a sequential queue, cancel and retry, speed and ETA display, and a finished-downloads history with size and date.
-- **Private mode** to skip history entirely.
-- **Android engine**: yt-dlp runs in-process through Chaquopy, with a foreground service that keeps downloads alive and share-to-Talos from other apps.
-- **Desktop engine**: yt-dlp is downloaded once and managed by the app, or uses the system yt-dlp, with automatic FFmpeg detection.
-- **Warm dark design** with bronze accent, light and system modes, five accent hues, bilingual UI (English and Bahasa Indonesia).
-- **Talos brand**: original mark, stacked and horizontal lockups, app icons for Android, iOS, Windows and macOS, and a dark splash screen.
-- **Continuous integration**: analyze, test and build on every push and pull request.
+### New features
 
-[Unreleased]: https://github.com/nekonaru/talos/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/nekonaru/talos/releases/tag/v0.1.0
+- **Video and audio downloads.** Download from yt-dlp supported sites, as video up to 2160p or audio as MP3, M4A, Opus, FLAC or the source format.
+- **Playlist support.** Per-entry selection with select all or none, and per-item progress during download.
+- **Embedded metadata and thumbnails.** Embed title, artist, album art and other metadata into downloaded files on desktop with FFmpeg, including cover art in audio files.
+- **Embedded subtitles.** Embed subtitles into downloaded videos with a selectable language.
+- **SponsorBlock.** Remove sponsor, self-promo and other segments by category.
+- **Cookies file.** Download from sites that require a login with a cookies.txt file.
+- **Proxy, rate limit, concurrent fragments and aria2c.** Options for heavy downloads and fragile networks.
+- **Custom commands.** Run yt-dlp with your own argument templates, managed inside the app.
+- **Downloads screen.** Sequential queue with cancel and retry, speed and ETA, and a finished-downloads history with size and date.
+- **Private mode.** Optionally skip history entirely.
+- **Android engine.** yt-dlp runs in-process through Chaquopy, with a foreground service that keeps downloads alive and share-to-Talos from other apps.
+- **Desktop engine.** yt-dlp is downloaded once and managed by the app, or uses the system yt-dlp, with automatic FFmpeg detection.
+- **Warm dark design.** A warm dark theme with a bronze accent, light and system modes, five accent hues, bilingual UI (English and Bahasa Indonesia).
+- **Talos brand.** Original mark, stacked and horizontal lockups, app icons for Android, iOS, Windows and macOS, and a dark splash screen.
+- **Continuous integration.** Analyze, test and build on every push and pull request.
