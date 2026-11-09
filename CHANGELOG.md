@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.1.1
+
+Better out-of-the-box behavior: auto engine setup, managed FFmpeg on Windows and clearer errors.
+
+### New features
+
+- **Automatic engine setup.** Pressing Fetch with no engine installs yt-dlp (and FFmpeg on Windows), then fetches.
+- **Managed FFmpeg on Windows.** FFmpeg is downloaded automatically with SHA-256 verification, so embedding metadata, thumbnails and subtitles works without manual setup.
+- **Open from notification.** A persistent notification is shown while a download is running; it disappears when the queue is empty.
+
+### Bug fixes
+
+- **Downloads no longer fail silently.** Common engine errors (403, bot check, private video, live streams, missing FFmpeg) surface as readable messages instead of raw Python output.
+- **Android file actions.** Opening a finished file uses the share sheet on Android; desktop keeps Open and Show in folder.
+- **Failed tasks show more error text** (up to three lines) and tapping the error copies it to the clipboard for support.
+- **Managed runner path.** Embedded FFmpeg on Windows is preferred over system PATH, so the app uses the verified managed binary.
+
 ## v0.1.0
 
 The first release of Talos, a video and audio downloader for Android, iOS, Windows, macOS and Linux.

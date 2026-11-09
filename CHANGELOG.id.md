@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.1.1
+
+Perilaku bawaan yang lebih baik: setup engine otomatis, FFmpeg terkelola di Windows dan error yang lebih jelas.
+
+### Fitur baru
+
+- **Setup engine otomatis.** Menekan Ambil saat engine belum terpasang akan mengunduh yt-dlp (dan FFmpeg di Windows) lalu mengambil data.
+- **FFmpeg terkelola di Windows.** FFmpeg diunduh otomatis dengan verifikasi SHA-256, sehingga penyematan metadata, thumbnail dan subtitle bekerja tanpa setup manual.
+- **Notifikasi persisten.** Notifikasi ditampilkan selama download berlangsung dan hilang saat antrean kosong.
+
+### Perbaikan bug
+
+- **Unduhan tidak lagi gagal tanpa penjelasan.** Error engine yang umum (403, bot check, video privat, siaran langsung, FFmpeg hilang) tampil sebagai pesan yang bisa dibaca, bukan output Python mentah.
+- **Aksi file di Android.** Membuka file hasil unduhan lewat share sheet di Android; desktop tetap punya Buka dan Lihat di folder.
+- **Teks error lebih panjang** (hingga tiga baris) dan mengetuk error menyalinnya ke papan klip untuk bantuan/dukungan.
+- **Prioritas FFmpeg terkelola.** FFmpeg terkelola di Windows dipilih lebih dulu dari PATH sistem.
+
 ## v0.1.0
 
 Rilis pertama Talos, pengunduh video dan audio untuk Android, iOS, Windows, macOS dan Linux.
