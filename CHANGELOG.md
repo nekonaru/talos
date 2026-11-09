@@ -7,13 +7,17 @@ Newest version on top.
 
 ## v0.1.1
 
-Better out-of-the-box behavior: auto engine setup, managed FFmpeg on Windows and clearer errors.
+Better out-of-the-box behavior: auto engine setup, managed FFmpeg on Windows, clearer errors, and a smaller APK (45 MB, arm64-v8a).
 
 ### New features
 
 - **Automatic engine setup.** Pressing Fetch with no engine installs yt-dlp (and FFmpeg on Windows), then fetches.
 - **Managed FFmpeg on Windows.** FFmpeg is downloaded automatically with SHA-256 verification, so embedding metadata, thumbnails and subtitles works without manual setup.
 - **Open from notification.** A persistent notification is shown while a download is running; it disappears when the queue is empty.
+
+### Improvements
+
+- **Smaller APK.** The release build ships arm64-v8a only, shrinking the APK from roughly 80 MB to 45 MB.
 
 ### Bug fixes
 

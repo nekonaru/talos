@@ -163,7 +163,7 @@
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]
-> Mesin Android membundel Python 3.14 runtime, yang membutuhkan perangkat Android 64-bit (ARM64 atau x86_64) dan Android 7.0 atau lebih baru. Build macOS belum diterbitkan; build dari source (Opsi B).
+> Mesin Android membundel Python 3.14 runtime, yang membutuhkan perangkat Android 64-bit ARM64 dan Android 7.0 atau lebih baru. Build macOS belum diterbitkan; build dari source (Opsi B).
 
 > [!IMPORTANT]
 > Izin notifikasi diperlukan untuk foreground download service di Android 13 ke atas. Tanpa itu, unduhan tetap berjalan tapi sistem menyembunyikan notifikasi unduhan.

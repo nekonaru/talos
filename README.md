@@ -163,7 +163,7 @@
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]
-> The Android engine bundles a Python 3.14 runtime, which requires a 64-bit Android device (ARM64 or x86_64) and Android 7.0 or newer. A macOS build is not published yet; build it from source instead (Option B).
+> The Android engine bundles a Python 3.14 runtime, which requires a 64-bit ARM64 Android device and Android 7.0 or newer. A macOS build is not published yet; build it from source instead (Option B).
 
 > [!IMPORTANT]
 > Notification permission is required for the foreground download service on Android 13 and newer. Without it, downloads still run but the system hides the download notification.

@@ -7,13 +7,17 @@ Versi terbaru ada di atas.
 
 ## v0.1.1
 
-Perilaku bawaan yang lebih baik: setup engine otomatis, FFmpeg terkelola di Windows dan error yang lebih jelas.
+Perilaku bawaan yang lebih baik: setup engine otomatis, FFmpeg terkelola di Windows, error yang lebih jelas, dan APK lebih kecil (45 MB, arm64-v8a).
 
 ### Fitur baru
 
 - **Setup engine otomatis.** Menekan Ambil saat engine belum terpasang akan mengunduh yt-dlp (dan FFmpeg di Windows) lalu mengambil data.
 - **FFmpeg terkelola di Windows.** FFmpeg diunduh otomatis dengan verifikasi SHA-256, sehingga penyematan metadata, thumbnail dan subtitle bekerja tanpa setup manual.
 - **Notifikasi persisten.** Notifikasi ditampilkan selama download berlangsung dan hilang saat antrean kosong.
+
+### Peningkatan
+
+- **APK lebih kecil.** Build rilis hanya untuk arm64-v8a, menyusutkan APK dari sekitar 80 MB menjadi 45 MB.
 
 ### Perbaikan bug
 
