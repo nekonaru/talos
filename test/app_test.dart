@@ -125,11 +125,15 @@ class FakePathProvider extends PathProviderPlatform {
 }
 
 void main() {
+  setUp(() {
+    // Each test gets its own empty support directory.
+    PathProviderPlatform.instance = FakePathProvider();
+  });
+
   setUpAll(() {
     // Tests must never hit the network for fonts or spawn real processes.
     GoogleFonts.config.allowRuntimeFetching = false;
     DownloadManager.ffmpegProbeOverride = (_) async => true;
-    PathProviderPlatform.instance = FakePathProvider();
   });
 
   testWidgets('app boots into home and reaches the downloads tab', (tester) async {
@@ -146,6 +150,35 @@ void main() {
     await tester.tap(find.text('Downloads'));
     await tester.pumpAndSettle();
     expect(find.text('Nothing here yet'), findsOneWidget);
+  });
+
+  testWidgets('private mode skips history', (tester) async {
+    final engine = FakeEngine();
+    late final DownloadManager manager;
+    await tester.runAsync(() async {
+      manager = await DownloadManager.create(engine: engine);
+      await manager.settings.mutate((s) => s.copyWith(privateMode: true));
+    });
+
+    await tester.pumpWidget(TalosApp(manager: manager));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
+    await tester.tap(find.text('Fetch'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Download'));
+    await tester.pumpAndSettle();
+
+    expect(engine.lastSession, isNotNull);
+    await tester.runAsync(() async {
+      engine.lastSession!.complete('/tmp/example.mp4');
+      for (var i = 0; i < 50 && manager.tasks.isNotEmpty; i++) {
+        await Future.delayed(const Duration(milliseconds: 20));
+      }
+    });
+    await tester.pump();
+
+    expect(manager.history.entries, isEmpty);
   });
 
   testWidgets('fetch configures and enqueues a download', (tester) async {
