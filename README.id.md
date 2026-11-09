@@ -156,9 +156,12 @@
 ### Opsi A: Unduh APK (paling mudah)
 
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
-2. Unduh APK untuk perangkatmu (`app-arm64-v8a-release.apk` untuk kebanyakan ponsel modern)
+2. Unduh `app-release.apk` (universal, untuk perangkat Android 64-bit)
 3. Buka di ponselmu, izinkan instalasi dari sumber tidak dikenal bila ditanya
 4. Berikan izin notifikasi agar notifikasi unduhan bisa muncul
+
+> [!NOTE]
+> Mesin Android membundel Python 3.14 runtime, yang membutuhkan perangkat Android 64-bit (ARM64 atau x86_64) dan Android 7.0 atau lebih baru.
 
 > [!IMPORTANT]
 > Izin notifikasi diperlukan untuk foreground download service di Android 13 ke atas. Tanpa itu, unduhan tetap berjalan tapi sistem menyembunyikan notifikasi unduhan.

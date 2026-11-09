@@ -156,9 +156,12 @@
 ### Option A: Download the APK (easiest)
 
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
-2. Download the APK for your device (`app-arm64-v8a-release.apk` for most modern phones)
+2. Download `app-release.apk` (universal, for 64-bit Android devices)
 3. Open it on your phone, allow installs from unknown sources if asked
 4. Grant notification permission so the download notification can appear
+
+> [!NOTE]
+> The Android engine bundles a Python 3.14 runtime, which requires a 64-bit Android device (ARM64 or x86_64) and Android 7.0 or newer.
 
 > [!IMPORTANT]
 > Notification permission is required for the foreground download service on Android 13 and newer. Without it, downloads still run but the system hides the download notification.
