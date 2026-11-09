@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:talos/core/engine/command_builder.dart';
+import 'package:talos/core/engine/desktop_engine.dart';
 import 'package:talos/core/engine/models.dart';
 import 'package:talos/core/engine/progress_parser.dart';
 
@@ -169,6 +170,24 @@ void main() {
       );
       expect(args, containsAllInOrder(['--sponsorblock-remove', 'sponsor,selfpromo']));
       expect(args, containsAllInOrder(['--cookies', '/tmp/cookies.txt']));
+    });
+  });
+
+  group('expectedHashFor', () {
+    const sample = '''
+e51e69e89489f199530f13d32a4342da3ddb2cf34842f364603a066db05afbf3  yt-dlp
+f5389d3698ecde4ef06f4e6b1ce0294fe9ac1396228c8990b8d3416d6d177a7d  yt-dlp.exe
+0f922c15ccc0b83eefa1c8bc9104e434318c4bf16e408e1ee93b7745a6efe0aa  yt-dlp_macos
+''';
+
+    test('finds the right hash per asset', () {
+      expect(DesktopEngine.expectedHashFor(sample, 'yt-dlp'), 'e51e69e89489f199530f13d32a4342da3ddb2cf34842f364603a066db05afbf3');
+      expect(DesktopEngine.expectedHashFor(sample, 'yt-dlp.exe'), 'f5389d3698ecde4ef06f4e6b1ce0294fe9ac1396228c8990b8d3416d6d177a7d');
+      expect(DesktopEngine.expectedHashFor(sample, 'yt-dlp_macos'), '0f922c15ccc0b83eefa1c8bc9104e434318c4bf16e408e1ee93b7745a6efe0aa');
+    });
+
+    test('returns null for unknown assets', () {
+      expect(DesktopEngine.expectedHashFor(sample, 'nope'), isNull);
     });
   });
 

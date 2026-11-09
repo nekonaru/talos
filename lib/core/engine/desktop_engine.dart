@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -81,6 +83,72 @@ class DesktopEngine implements TalosEngine {
     );
   }
 
+  /// Fetches a small text resource, failing hard when unavailable.
+  Future<String> _fetchString(String url) async {
+    final client = HttpClient();
+    try {
+      final request = await client.getUrl(Uri.parse(url));
+      request.headers.set('user-agent', 'Talos/0.1');
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw HttpException('Download failed with status ${response.statusCode}', uri: Uri.parse(url));
+      }
+      final sink = StringBuffer();
+      await response.transform(utf8.decoder).forEach(sink.write);
+      return sink.toString();
+    } finally {
+      client.close();
+    }
+  }
+
+  /// Finds the expected sha256 for [asset] in a SHA2-256SUMS body.
+  static String? expectedHashFor(String sumsBody, String asset) {
+    for (final rawLine in sumsBody.split(RegExp(r'\r?\n'))) {
+      final parts = rawLine.trim().split(RegExp(r'\s+'));
+      if (parts.length >= 2 && parts.last == asset) {
+        return parts.first.toLowerCase();
+      }
+    }
+    return null;
+  }
+
+  /// Downloads [asset] from the latest GitHub release and verifies its SHA-256
+  /// against the release checksums file. Fails closed on any mismatch.
+  Future<void> _downloadVerified(String asset, File target, void Function(double fraction)? onPhase) async {
+    final sums = await _fetchString('https://github.com/yt-dlp/yt-dlp/releases/latest/download/SHA2-256SUMS');
+    final expected = expectedHashFor(sums, asset);
+    if (expected == null) {
+      throw StateError('Checksum for $asset not found in SHA2-256SUMS');
+    }
+
+    final client = HttpClient();
+    try {
+      final url = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/$asset';
+      final request = await client.getUrl(Uri.parse(url));
+      request.headers.set('user-agent', 'Talos/0.1');
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw HttpException('Download failed with status ${response.statusCode}', uri: Uri.parse(url));
+      }
+      final total = response.contentLength;
+      var received = 0;
+      final builder = BytesBuilder(copy: false);
+      await for (final chunk in response) {
+        builder.add(chunk);
+        received += chunk.length;
+        if (total > 0) onPhase?.call(received / total);
+      }
+      final bytes = builder.takeBytes();
+      final digest = sha256.convert(bytes).toString();
+      if (digest != expected) {
+        throw StateError('Checksum mismatch for $asset');
+      }
+      await target.writeAsBytes(bytes);
+    } finally {
+      client.close();
+    }
+  }
+
   @override
   Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false}) async {
     if (!force) {
@@ -96,30 +164,9 @@ class DesktopEngine implements TalosEngine {
       _ => 'yt-dlp',
     };
     final target = File('${dir.path}${Platform.pathSeparator}${Platform.isWindows ? 'yt-dlp.exe' : 'yt-dlp'}');
-    final url = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/$asset';
 
     onPhase?.call('download', 0);
-    final client = HttpClient();
-    try {
-      final request = await client.getUrl(Uri.parse(url));
-      request.headers.set('user-agent', 'Talos/0.1');
-      final response = await request.close();
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw HttpException('Download failed with status ${response.statusCode}', uri: Uri.parse(url));
-      }
-      final total = response.contentLength;
-      var received = 0;
-      final sink = target.openWrite();
-      await response.forEach((chunk) {
-        received += chunk.length;
-        sink.add(chunk);
-        if (total > 0) onPhase?.call('download', received / total);
-      });
-      await sink.flush();
-      await sink.close();
-    } finally {
-      client.close();
-    }
+    await _downloadVerified(asset, target, (fraction) => onPhase?.call('download', fraction));
 
     if (!Platform.isWindows) {
       await Process.run('chmod', ['+x', target.path]);
