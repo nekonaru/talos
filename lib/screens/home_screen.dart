@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_scope.dart';
@@ -171,6 +172,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _saveFile(BuildContext context, HistoryEntry entry) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    try {
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(entry.filePath)]),
+      );
+    } catch (_) {
+      scaffold.showSnackBar(const SnackBar(content: Text('Could not share file')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -270,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: theme.textTheme.bodySmall,
                         ),
                         trailing: const Icon(Icons.open_in_new, size: 18),
-                        onTap: () => _openFile(entry),
+                        onTap: () => Platform.isAndroid ? _saveFile(context, entry) : _openFile(entry),
                       ),
                     ),
                 ],

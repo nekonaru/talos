@@ -310,6 +310,7 @@ class _HistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
+    final isAndroid = Platform.isAndroid;
     return Card(
       child: ListTile(
         leading: Icon(
@@ -321,7 +322,7 @@ class _HistoryCard extends StatelessWidget {
           [formatDate(entry.dateMs), formatBytes(entry.sizeBytes)].where((s) => s.isNotEmpty).join('  ·  '),
           style: theme.textTheme.bodySmall,
         ),
-        onTap: onOpen,
+        onTap: isAndroid ? onShare ?? onOpen : onOpen,
         trailing: PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert),
           onSelected: (value) {
@@ -339,8 +340,8 @@ class _HistoryCard extends StatelessWidget {
             }
           },
           itemBuilder: (context) => [
-            PopupMenuItem(value: 'open', child: Text(l.open)),
-            PopupMenuItem(value: 'folder', child: Text(l.openFolder)),
+            if (!isAndroid) PopupMenuItem(value: 'open', child: Text(l.open)),
+            if (!isAndroid) PopupMenuItem(value: 'folder', child: Text(l.openFolder)),
             if (onShare != null) PopupMenuItem(value: 'share', child: Text(l.share)),
             PopupMenuItem(value: 'remove', child: Text(l.remove)),
             PopupMenuItem(value: 'delete', child: Text(l.deleteFile)),
