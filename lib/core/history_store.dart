@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'secure_file.dart';
+
 enum HistoryKind { video, audio }
 
 class HistoryEntry {
@@ -114,6 +116,7 @@ class HistoryStore extends ChangeNotifier {
       await _file.writeAsString(
         const JsonEncoder.withIndent('  ').convert([for (final e in _entries) e.toJson()]),
       );
+      await restrictFileToOwner(_file);
     } catch (_) {
       // Non-fatal: history just will not survive a restart.
     }

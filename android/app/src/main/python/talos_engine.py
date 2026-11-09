@@ -69,7 +69,6 @@ def version():
 
 
 def probe(url, proxy):
-    print('talos-probe-start')
     argv = ['--dump-single-json', '--flat-playlist', '--skip-download', '--no-warnings']
     if proxy:
         argv += ['--proxy', proxy]
@@ -79,16 +78,12 @@ def probe(url, proxy):
     try:
         _run(argv, lambda line: buffer.write(line + '\n'), lambda: False)
     except SystemExit as exc:
-        print('talos-probe-exit code=%s' % exc.code)
         if exc.code not in (0, None):
             raise RuntimeError('yt-dlp exited with code %s' % exc.code)
     except Exception:
-        print('talos-probe-exception')
         traceback.print_exc()
         raise
-    out = buffer.getvalue()
-    print('talos-probe-done bytes=%d' % len(out))
-    return out
+    return buffer.getvalue()
 
 
 def custom(template, url):

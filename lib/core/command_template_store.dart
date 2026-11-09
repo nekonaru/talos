@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'secure_file.dart';
+
 class CommandTemplate {
   CommandTemplate({required this.id, required this.name, required this.args});
 
@@ -86,6 +88,7 @@ class CommandTemplateStore extends ChangeNotifier {
       await _file.writeAsString(
         const JsonEncoder.withIndent('  ').convert([for (final t in _templates) t.toJson()]),
       );
+      await restrictFileToOwner(_file);
     } catch (_) {
       // Non-fatal.
     }

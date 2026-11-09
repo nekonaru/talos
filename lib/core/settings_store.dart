@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'secure_file.dart';
 import 'theme.dart';
 
 /// Test-friendly shape for settings. Everything persists to one JSON file
@@ -194,6 +195,7 @@ class SettingsStore extends ChangeNotifier {
     try {
       await _file.parent.create(recursive: true);
       await _file.writeAsString(const JsonEncoder.withIndent('  ').convert(_settings.toJson()));
+      await restrictFileToOwner(_file);
     } catch (_) {
       // Persistence failures are non-fatal; the in-memory value still applies.
     }

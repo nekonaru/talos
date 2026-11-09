@@ -54,7 +54,6 @@ class TalosEngineBridge(private val application: Application) {
                 "probe" -> {
                     val url = call.argument<String>("url")
                     val proxy = call.argument<String>("proxy") ?: ""
-                    android.util.Log.d("TalosEngine", "probe requested")
                     if (url.isNullOrEmpty()) {
                         result.error("bad_args", "A url is required", null)
                         return@setMethodCallHandler
@@ -64,7 +63,7 @@ class TalosEngineBridge(private val application: Application) {
                             ensureStarted()
                             Python.getInstance().getModule("talos_engine").callAttr("probe", url, proxy)?.toString()
                         } catch (e: Exception) {
-                            android.util.Log.e("TalosEngine", "probe failed", e)
+                            android.util.Log.e("TalosEngine", "probe failed")
                             null
                         }
                         mainHandler.post {
