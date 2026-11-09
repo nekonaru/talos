@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Talos</title>
+  <path fill="#D09A5B" fill-rule="evenodd" d="M24 128 Q128 36 232 128 Q128 220 24 128 Z M42 128 Q128 54 214 128 Q128 202 42 128 Z"/>
+  <path fill="#D09A5B" d="M112 92h32v46h18L128 176 94 138h18z"/>
+</svg>
