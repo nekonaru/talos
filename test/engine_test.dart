@@ -140,6 +140,22 @@ void main() {
       expect(args, containsAllInOrder(['-f', 'ba/bestaudio/b']));
     });
 
+    test('embedded video mode pins a client with muxed formats', () {
+      final args = CommandBuilder.downloadArgs(request(maxHeight: 720), ffmpegAvailable: false);
+      expect(args, containsAllInOrder(['--extractor-args', 'youtube:player_client=android']));
+      expect(args, containsAllInOrder(['-f', 'b[height<=720]/b']));
+    });
+
+    test('embedded audio mode keeps the default client', () {
+      final args = CommandBuilder.downloadArgs(request(video: false), ffmpegAvailable: false);
+      expect(args, isNot(contains('--extractor-args')));
+    });
+
+    test('ffmpeg video mode keeps the default client', () {
+      final args = CommandBuilder.downloadArgs(request(maxHeight: 720), ffmpegAvailable: true);
+      expect(args, isNot(contains('--extractor-args')));
+    });
+
     test('playlist selection', () {
       final args = CommandBuilder.downloadArgs(request(items: '1-3,7'), ffmpegAvailable: false);
       expect(args, containsAllInOrder(['--playlist-items', '1-3,7']));

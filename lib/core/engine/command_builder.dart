@@ -21,6 +21,13 @@ class CommandBuilder {
   }) {
     final args = <String>['--newline', '--no-warnings'];
 
+    if (!ffmpegAvailable && request.videoMode) {
+      // YouTube pages its default clients return no muxed formats at all, so
+      // a client that still serves a muxed MP4 is required, or every
+      // "video" download on Android fails.
+      args.addAll(['--extractor-args', 'youtube:player_client=android']);
+    }
+
     if (request.includePlaylist) {
       args.add('--yes-playlist');
       if (request.playlistItems != null && request.playlistItems!.isNotEmpty) {
