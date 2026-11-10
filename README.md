@@ -157,15 +157,13 @@
 
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
+   - Android: `app-release.apk` (universal, for 64-bit Android devices)
    - Windows: `Talos-v0.2.1-windows-x64.zip`
    - Linux: `Talos-v0.2.1-linux-x64.tar.gz`
-3. Android APK is not published for this release. Build it from source instead (Option B below).
+3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]
-> The Android engine bundles a Python 3.14 runtime, which requires a 64-bit ARM64 Android device and Android 7.0 or newer. The Android APK is published for v0.2.0, not v0.2.1. A macOS build is not published yet; build it from source instead (Option B).
-
-> [!NOTE]
-> The Android engine bundles a Python 3.14 runtime, which requires a 64-bit ARM64 Android device and Android 7.0 or newer. The Android APK is published for v0.2.0, not v0.2.1. A macOS build is not published yet; build it from source instead (Option B).
+> The Android engine bundles a Python 3.14 runtime, which requires a 64-bit ARM64 Android device and Android 7.0 or newer. A macOS build is not published yet; build it from source instead (Option B).
 
 > [!IMPORTANT]
 > Notification permission is required for the foreground download service on Android 13 and newer. Without it, downloads still run but the system hides the download notification.
