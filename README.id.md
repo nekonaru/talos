@@ -157,13 +157,12 @@
 
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
-   - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
    - Windows: `Talos-v0.2.1-windows-x64.zip`
    - Linux: `Talos-v0.2.1-linux-x64.tar.gz`
-3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
+3. APK Android tidak diterbitkan untuk rilis ini. Build dari source (Opsi B di bawah).
 
 > [!NOTE]
-> Mesin Android membundel Python 3.14 runtime, yang membutuhkan perangkat Android 64-bit ARM64 dan Android 7.0 atau lebih baru. Build macOS belum diterbitkan; build dari source (Opsi B).
+> Mesin Android membundel Python 3.14 runtime, yang membutuhkan perangkat Android 64-bit ARM64 dan Android 7.0 atau lebih baru. APK Android diterbitkan untuk v0.2.0, bukan v0.2.1. Build macOS belum diterbitkan; build dari source (Opsi B).
 
 > [!IMPORTANT]
 > Izin notifikasi diperlukan untuk foreground download service di Android 13 ke atas. Tanpa itu, unduhan tetap berjalan tapi sistem menyembunyikan notifikasi unduhan.
