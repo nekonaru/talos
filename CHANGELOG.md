@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.2.1
+
+Follow-up polish to the v0.2.0 feature set: a persistent notification toggle, richer subtitle handling, and channel choice for the managed engine.
+
+### New features
+
+- **Notification toggle.** Turn off the foreground notification during downloads without losing the download.
+- **Subtitle controls.** Enable automatic subtitles, keep subtitle sidecar files, and convert them to another format.
+- **Engine channel.** Choose stable or nightly yt-dlp releases for managed updates. Also available for auto update.
+- **Custom command folder.** Dedicated directory for output produced by custom command templates.
+
 ## v0.2.0
 
 This release closes the main feature gap with comparable apps: manual format selection, an in-app cookie generator, per-task engine logs, and shared-output folders.
@@ -31,6 +42,8 @@ This release closes the main feature gap with comparable apps: manual format sel
 ### Bug fixes
 
 - **Log button** on failed tasks now reveals engine output instead of a truncated one-liner.
+
+## v0.1.1
 
 Better out-of-the-box behavior: auto engine setup, managed FFmpeg on Windows, clearer errors, and a smaller APK (45 MB, arm64-v8a).
 
@@ -70,5 +83,5 @@ The first release of Talos, a video and audio downloader for Android, iOS, Windo
 - **Android engine.** yt-dlp runs in-process through Chaquopy, with a foreground service that keeps downloads alive and share-to-Talos from other apps.
 - **Desktop engine.** yt-dlp is downloaded once and managed by the app, or uses the system yt-dlp, with automatic FFmpeg detection.
 - **Warm dark design.** A warm dark theme with a bronze accent, light and system modes, five accent hues, bilingual UI (English and Bahasa Indonesia).
-- **Talos brand.** Original mark, stacked and horizontal lockups, app icons for Android, iOS, Windows and macOS, and a dark splash screen.
+- **Talos brand.** Original mark, app icons for Android, iOS, Windows and macOS, and a dark splash screen.
 - **Continuous integration.** Analyze, test and build on every push and pull request.

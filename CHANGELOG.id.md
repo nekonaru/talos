@@ -5,6 +5,17 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.2.1
+
+Polish lanjutan dari fitur v0.2.0: toggle notifikasi persisten, penanganan subtitle yang lebih lengkap, dan pilihan channel untuk engine terkelola.
+
+### Fitur baru
+
+- **Toggle notifikasi.** Matikan notifikasi foreground selama unduhan tanpa menghentikan unduhan.
+- **Kontrol subtitle.** Aktifkan subtitle otomatis, simpan file subtitle terpisah, dan konversi ke format lain.
+- **Channel engine.** Pilih rilis stabil atau nightly yt-dlp untuk update terkelola. Tersedia juga untuk auto update.
+- **Folder perintah kustom.** Direktori khusus untuk output dari template perintah kustom.
+
 ## v0.2.0
 
 Rilis ini menutup gap fitur utama dengan aplikasi serupa: pemilihan format manual, cookie generator di dalam aplikasi, log engine per tugas, dan folder output terpisah.
@@ -15,7 +26,7 @@ Rilis ini menutup gap fitur utama dengan aplikasi serupa: pemilihan format manua
 - **Cookie generator di dalam aplikasi.** Masuk ke situs di WebView tertanam lalu simpan cookies sesi untuk yt-dlp. Berjalan di Android dan iOS.
 - **Log tugas.** Setiap tugas gagal menyimpan hingga 500 baris output engine mentah, dengan tombol salin sekali ketuk untuk laporan bug.
 - **Arsip unduhan.** Lewati item yang sudah pernah diunduh lewat file arsip persisten.
-- **Crop sampul album.** Sampul bujur sangkar untuk berkas audio, yang diminta oleh Android Auto dan pemutar musik.
+- **Crop sampul album.** Sampul bujur sangkar untuk berkas audio, diminta oleh Android Auto dan pemutar musik.
 - **Urutan format.** String `-S` yt-dlp untuk memprioritaskan ekstensi dan resolusi, misal `ext,res`.
 - **Remux ke mp4, mkv atau webm.** Pilih wadah output tanpa re-encoding.
 - **Klip video.** Unduh hanya sebagian video dengan waktu mulai dan berakhir.
@@ -72,5 +83,5 @@ Rilis pertama Talos, pengunduh video dan audio untuk Android, iOS, Windows, macO
 - **Mesin Android.** yt-dlp berjalan in-process lewat Chaquopy, dengan foreground service yang menjaga unduhan tetap hidup dan share-to-Talos dari aplikasi lain.
 - **Mesin desktop.** yt-dlp diunduh sekali dan dikelola oleh aplikasi, atau memakai yt-dlp sistem, dengan deteksi FFmpeg otomatis.
 - **Desain gelap hangat.** Tema gelap hangat dengan aksen perunggu, mode terang dan mengikuti sistem, lima warna aksen, antarmuka dwibahasa (English dan Bahasa Indonesia).
-- **Merek Talos.** Mark orisinal, lockup bertumpuk dan horizontal, app icon untuk Android, iOS, Windows dan macOS, serta splash screen gelap.
+- **Merek Talos.** Mark orisinal, app icon untuk Android, iOS, Windows dan macOS, serta splash screen gelap.
 - **Continuous integration.** Analyze, test dan build di setiap push dan pull request.
