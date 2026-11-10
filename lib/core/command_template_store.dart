@@ -85,9 +85,7 @@ class CommandTemplateStore extends ChangeNotifier {
   Future<void> _persist() async {
     try {
       await _file.parent.create(recursive: true);
-      await _file.writeAsString(
-        const JsonEncoder.withIndent('  ').convert([for (final t in _templates) t.toJson()]),
-      );
+      await writeFileAtomic(_file, const JsonEncoder.withIndent('  ').convert([for (final t in _templates) t.toJson()]));
       await restrictFileToOwner(_file);
     } catch (_) {
       // Non-fatal.

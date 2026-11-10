@@ -113,9 +113,7 @@ class HistoryStore extends ChangeNotifier {
   Future<void> _persist() async {
     try {
       await _file.parent.create(recursive: true);
-      await _file.writeAsString(
-        const JsonEncoder.withIndent('  ').convert([for (final e in _entries) e.toJson()]),
-      );
+      await writeFileAtomic(_file, const JsonEncoder.withIndent('  ').convert([for (final e in _entries) e.toJson()]));
       await restrictFileToOwner(_file);
     } catch (_) {
       // Non-fatal: history just will not survive a restart.

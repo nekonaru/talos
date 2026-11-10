@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../app_scope.dart';
+import '../core/secure_file.dart';
 import '../gen/app_localizations.dart';
 
 /// Sign into a supported site in an in-app WebView, then export the session
@@ -52,12 +53,13 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
   }
 
   void _reload() {
+    final l = AppLocalizations.of(context)!;
     final uri = Uri.tryParse(_urlController.text.trim());
     if (uri != null && uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https')) {
       _controller?.loadRequest(uri);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a full https URL')),
+        SnackBar(content: Text(l.invalidUrl)),
       );
     }
   }
@@ -73,9 +75,10 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
       final cookies = await WebViewCookieManager().getCookies(domain: uri);
 
       if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
       if (cookies.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No cookies found. Sign in first, then save.')),
+          SnackBar(content: Text(l.noCookies)),
         );
         return;
       }
@@ -96,14 +99,13 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
 
       final support = await getApplicationSupportDirectory();
       final file = File('${support.path}${Platform.pathSeparator}talos_cookies.txt');
-      await file.writeAsString(buffer.toString());
+      await writeFileAtomic(file, buffer.toString());
+      await restrictFileToOwner(file);
       await manager.settings.mutate((s) => s.copyWith(cookiesPath: file.path));
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${cookies.length} cookies saved. They are used for yt-dlp from now.'),
-        ),
+        SnackBar(content: Text(l.cookiesSaved(cookies.length))),
       );
     } catch (error) {
       if (!mounted) return;
@@ -123,7 +125,7 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
         title: Text(l.cookieGenerator),
         actions: [
           IconButton(
-            tooltip: 'Reload',
+            tooltip: AppLocalizations.of(context)!.reloadPage,
             icon: const Icon(Icons.refresh),
             onPressed: _reload,
           ),
@@ -156,7 +158,7 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        tooltip: 'Go',
+                        tooltip: l.goTo,
                         icon: const Icon(Icons.arrow_forward),
                         onPressed: _reload,
                       ),

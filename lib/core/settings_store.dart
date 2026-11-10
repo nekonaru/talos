@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'secure_file.dart';
 import 'theme.dart';
 
+
 /// Test-friendly shape for settings. Everything persists to one JSON file
 /// in the application support directory.
 class TalosSettings {
@@ -314,7 +315,7 @@ class SettingsStore extends ChangeNotifier {
   Future<void> _persist() async {
     try {
       await _file.parent.create(recursive: true);
-      await _file.writeAsString(const JsonEncoder.withIndent('  ').convert(_settings.toJson()));
+      await writeFileAtomic(_file, const JsonEncoder.withIndent('  ').convert(_settings.toJson()));
       await restrictFileToOwner(_file);
     } catch (_) {
       // Persistence failures are non-fatal; the in-memory value still applies.
