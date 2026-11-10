@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Warm bronze-on-shadow palette for Talos.
 ///
@@ -105,7 +104,7 @@ class TalosTheme {
         indicatorColor: accentMain.withValues(alpha: 0.22),
         iconTheme: WidgetStatePropertyAll(IconThemeData(color: palette.inkMuted)),
         labelTextStyle: WidgetStatePropertyAll(
-          GoogleFonts.inter(fontSize: 12, color: palette.inkMuted),
+          TextStyle(fontFamily: 'Inter', fontSize: 12, color: palette.inkMuted),
         ),
       ),
       navigationRailTheme: const NavigationRailThemeData(),
@@ -154,14 +153,14 @@ class TalosTheme {
 
   static TextTheme buildTextTheme(Color ink, Color muted) {
     return TextTheme(
-      displaySmall: GoogleFonts.marcellus(fontSize: 34, color: ink, height: 1.15),
-      headlineMedium: GoogleFonts.marcellus(fontSize: 26, color: ink),
-      titleLarge: GoogleFonts.marcellus(fontSize: 20, color: ink),
-      titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: ink),
-      bodyLarge: GoogleFonts.inter(fontSize: 16, color: ink),
-      bodyMedium: GoogleFonts.inter(fontSize: 14, color: ink),
-      bodySmall: GoogleFonts.inter(fontSize: 12, color: muted),
-      labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: ink),
+      displaySmall: TextStyle(fontFamily: 'Marcellus', fontSize: 34, color: ink, height: 1.15),
+      headlineMedium: TextStyle(fontFamily: 'Marcellus', fontSize: 26, color: ink),
+      titleLarge: TextStyle(fontFamily: 'Marcellus', fontSize: 20, color: ink),
+      titleMedium: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w600, color: ink),
+      bodyLarge: TextStyle(fontFamily: 'Inter', fontSize: 16, color: ink),
+      bodyMedium: TextStyle(fontFamily: 'Inter', fontSize: 14, color: ink),
+      bodySmall: TextStyle(fontFamily: 'Inter', fontSize: 12, color: muted),
+      labelLarge: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: ink),
     );
   }
 }
