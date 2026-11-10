@@ -94,6 +94,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
   }
 
   Future<void> _showLog(BuildContext context, DownloadTask task) async {
+    final l = AppLocalizations.of(context)!;
     final log = task.log;
     await showDialog<void>(
       context: context,
@@ -101,11 +102,11 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Flexible(child: Text('Engine log', maxLines: 1, overflow: TextOverflow.ellipsis)),
+            Flexible(child: Text(l.taskLog, maxLines: 1, overflow: TextOverflow.ellipsis)),
             TextButton.icon(
               onPressed: () => Clipboard.setData(ClipboardData(text: log.join('\n'))),
               icon: const Icon(Icons.copy, size: 16),
-              label: const Text('Copy'),
+              label: Text(l.copy),
             ),
           ],
         ),
@@ -114,13 +115,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
           height: 320,
           child: SingleChildScrollView(
             child: Text(
-              log.isEmpty ? '(log is empty)' : log.take(200).join('\n'),
+              log.isEmpty ? l.logEmpty : log.take(200).join('\n'),
               style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
             ),
           ),
         ),
         actions: [
-          FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
+          FilledButton(onPressed: () => Navigator.of(context).pop(), child: Text(l.close)),
         ],
       ),
     );
@@ -274,7 +275,7 @@ class _TaskCard extends StatelessWidget {
                 if (running || queued)
                   IconButton(tooltip: l.cancel, icon: const Icon(Icons.close_rounded), onPressed: onCancel),
                 if (failed || cancelled) ...[
-                  IconButton(tooltip: 'Log', icon: const Icon(Icons.description_outlined), onPressed: onShowLog),
+                  IconButton(tooltip: l.taskLog, icon: const Icon(Icons.description_outlined), onPressed: onShowLog),
                   IconButton(tooltip: l.retry, icon: const Icon(Icons.refresh_rounded), onPressed: onRetry),
                   IconButton(tooltip: l.remove, icon: const Icon(Icons.delete_outline), onPressed: onRemove),
                 ],
@@ -309,7 +310,7 @@ class _TaskCard extends StatelessWidget {
               InkWell(
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: task.error!));
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error copied to clipboard')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.copied)));
                 },
                 child: Text(
                   task.error!,

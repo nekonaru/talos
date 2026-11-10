@@ -110,7 +110,7 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
           if (videoFormats.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('No video formats reported.', style: theme.textTheme.bodyMedium),
+              child: Text(l.noVideoFormats, style: theme.textTheme.bodyMedium),
             ),
           const SizedBox(height: 12),
           Text('AUDIO', style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 3)),
@@ -130,7 +130,7 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
           if (audioFormats.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('No audio formats reported.', style: theme.textTheme.bodyMedium),
+              child: Text(l.noAudioFormats, style: theme.textTheme.bodyMedium),
             ),
           const SizedBox(height: 20),
           SizedBox(

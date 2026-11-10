@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _urlController = TextEditingController();
+  StreamSubscription<dynamic>? _intentSubscription;
   bool _busy = false;
   bool _settingUp = false;
   double _setupFraction = 0;
@@ -51,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _urlController.text = shared;
           _urlController.selection = TextSelection.collapsed(offset: shared.length);
         }
-        const EventChannel('id.nekonaru.talos/intent/share')
+        _intentSubscription = EventChannel('id.nekonaru.talos/intent/share')
             .receiveBroadcastStream()
             .listen((event) {
           if (event is String && event.isNotEmpty && mounted) {
@@ -69,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _intentSubscription?.cancel();
     _urlController.dispose();
     super.dispose();
   }
@@ -147,22 +150,26 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _friendlyError(Object error) {
+    final l = AppLocalizations.of(context)!;
     final text = '$error';
     for (final pattern in _errorPatterns) {
       final match = pattern.$1.firstMatch(text);
-      if (match != null) return pattern.$2;
+      if (match != null) return pattern.$2(l);
     }
-    return text.replaceFirst('StateError: ', '').replaceFirst('Exception: ', '').replaceFirst('FormatException: ', '');
+    return text
+        .replaceFirst('StateError: ', '')
+        .replaceFirst('Exception: ', '')
+        .replaceFirst('FormatException: ', '');
   }
 
-  static final _errorPatterns = <(RegExp, String)>[
-    (RegExp(r'HTTP Error 403|403 Forbidden', caseSensitive: false), 'Situs menolak akses (HTTP 403). Coba lewat proxy di Pengaturan, atau pakai file cookies.txt untuk situs yang butuh login.'),
-    (RegExp(r'Sign in|sign-in|not a bot', caseSensitive: false), 'Situs menolak unduhan otomatis. Tambahkan cookies.txt dari browser di Pengaturan > Cookies file, lalu coba lagi.'),
-    (RegExp(r'video is unavailable|This video is unavailable', caseSensitive: false), 'Video tidak tersedia (mungkin privat, dihapus, atau dibatasi wilayah).'),
-    (RegExp(r'Private video|private', caseSensitive: false), 'Video ini privat. Unduh lewat cookies.txt atau akun yang sesuai.'),
-    (RegExp(r'HTTP Error 404|404 Not Found', caseSensitive: false), 'Video tidak ditemukan (HTTP 404). Periksa lagi URL-nya.'),
-    (RegExp(r'ffmpeg.*not found|ffmpeg.*required', caseSensitive: false), 'FFmpeg belum tersedia. Di desktop, buka Pengaturan > Engine > Update yt-dlp untuk mengunduh FFmpeg terkelola. Di Android, metadata dan penggabungan belum tersedia.'),
-    (RegExp(r'Live event is in progress', caseSensitive: false), 'Video live belum berakhir, tunggu selesai baru diunduh.'),
+  static final _errorPatterns = <(RegExp, String Function(AppLocalizations l))>[
+    (RegExp(r'HTTP Error 403|403 Forbidden', caseSensitive: false), (l) => l.err403),
+    (RegExp(r'Sign in|sign-in|not a bot', caseSensitive: false), (l) => l.errSignin),
+    (RegExp(r'video is unavailable|This video is unavailable', caseSensitive: false), (l) => l.errUnavailable),
+    (RegExp(r'Private video', caseSensitive: false), (l) => l.errPrivate),
+    (RegExp(r'HTTP Error 404|404 Not Found', caseSensitive: false), (l) => l.err404),
+    (RegExp(r'ffmpeg.*not found|ffmpeg.*required', caseSensitive: false), (l) => l.errFfmpeg),
+    (RegExp(r'Live event is in progress', caseSensitive: false), (l) => l.errLive),
   ];
 
   Future<void> _openFile(HistoryEntry entry) async {
@@ -179,7 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ShareParams(files: [XFile(entry.filePath)]),
       );
     } catch (_) {
-      scaffold.showSnackBar(const SnackBar(content: Text('Could not share file')));
+      if (!context.mounted) return;
+      scaffold.showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.shareFailed)));
     }
   }
 
@@ -282,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: theme.textTheme.bodySmall,
                         ),
                         trailing: const Icon(Icons.open_in_new, size: 18),
-                        onTap: () => Platform.isAndroid ? _saveFile(context, entry) : _openFile(entry),
+                        onTap: () => (Platform.isAndroid || Platform.isIOS) ? _saveFile(context, entry) : _openFile(entry),
                       ),
                     ),
                 ],
