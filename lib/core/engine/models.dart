@@ -100,6 +100,9 @@ class DownloadRequest {
     this.maxFilesize = '',
     this.userAgent = '',
     this.formatSort = '',
+    this.downloadSubtitles = true,
+    this.autoSubtitle = false,
+    this.keepSubtitles = false,
   });
 
   final String url;
@@ -168,6 +171,15 @@ class DownloadRequest {
 
   /// yt-dlp format sort string, for example `ext,res`. Empty means default order.
   final String formatSort;
+
+  /// Whether to download and embed subtitles.
+  final bool downloadSubtitles;
+
+  /// Also fetch auto-generated subtitles when no official sub exists.
+  final bool autoSubtitle;
+
+  /// Keep subtitle sidecar files on disk after embedding.
+  final bool keepSubtitles;
 }
 
 enum TaskStatus { queued, running, completed, failed, cancelled }

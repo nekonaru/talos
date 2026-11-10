@@ -29,7 +29,7 @@ Future<void> _maybeAutoUpdateEngine(DownloadManager manager) async {
       const week = Duration(days: 7);
       if (week.inMilliseconds > now - last) return;
     }
-    await manager.engine.ensureReady(force: true);
+    await manager.engine.ensureReady(force: true, channel: manager.settings.value.engineChannel);
     await marker.writeAsString(now.toString());
   } catch (_) {
     // Auto update is best effort.

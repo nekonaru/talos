@@ -39,7 +39,7 @@ class AndroidEngine implements TalosEngine {
   }
 
   @override
-  Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false}) async {
+  Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false, String channel = 'stable'}) async {
     onPhase?.call('verify', 1);
     await _method.invokeMethod<bool>('setup');
   }

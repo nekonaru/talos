@@ -56,6 +56,7 @@ class FakeEngine implements TalosEngine {
   Future<void> ensureReady({
     void Function(String phase, double fraction)? onPhase,
     bool force = false,
+    String channel = 'stable',
   }) async {}
 
   @override

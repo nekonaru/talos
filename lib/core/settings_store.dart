@@ -45,6 +45,12 @@ class TalosSettings {
     this.autoUpdateEngine = false,
     this.videoFolder,
     this.audioFolder,
+    this.engineChannel = 'stable',
+    this.downloadNotification = true,
+    this.downloadSubtitles = true,
+    this.autoSubtitle = false,
+    this.keepSubtitles = false,
+    this.customCommandDirectory,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -82,6 +88,12 @@ class TalosSettings {
       videoFolder: json['videoFolder'] as String?,
       audioFolder: json['audioFolder'] as String?,
       autoUpdateEngine: json['autoUpdateEngine'] as bool? ?? false,
+      engineChannel: json['engineChannel'] as String? ?? 'stable',
+      downloadNotification: json['downloadNotification'] as bool? ?? true,
+      downloadSubtitles: json['downloadSubtitles'] as bool? ?? true,
+      autoSubtitle: json['autoSubtitle'] as bool? ?? false,
+      keepSubtitles: json['keepSubtitles'] as bool? ?? false,
+      customCommandDirectory: json['customCommandDirectory'] as String?,
     );
   }
 
@@ -118,6 +130,12 @@ class TalosSettings {
   String? videoFolder;
   String? audioFolder;
   bool autoUpdateEngine;
+  String engineChannel;
+  bool downloadNotification;
+  bool downloadSubtitles;
+  bool autoSubtitle;
+  bool keepSubtitles;
+  String? customCommandDirectory;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -153,6 +171,12 @@ class TalosSettings {
         'videoFolder': videoFolder,
         'audioFolder': audioFolder,
         'autoUpdateEngine': autoUpdateEngine,
+        'engineChannel': engineChannel,
+        'downloadNotification': downloadNotification,
+        'downloadSubtitles': downloadSubtitles,
+        'autoSubtitle': autoSubtitle,
+        'keepSubtitles': keepSubtitles,
+        'customCommandDirectory': customCommandDirectory,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -201,6 +225,12 @@ class TalosSettings {
     String? videoFolder,
     String? audioFolder,
     bool? autoUpdateEngine,
+    String? engineChannel,
+    bool? downloadNotification,
+    bool? downloadSubtitles,
+    bool? autoSubtitle,
+    bool? keepSubtitles,
+    String? customCommandDirectory,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -236,6 +266,12 @@ class TalosSettings {
       videoFolder: videoFolder ?? this.videoFolder,
       audioFolder: audioFolder ?? this.audioFolder,
       autoUpdateEngine: autoUpdateEngine ?? this.autoUpdateEngine,
+      engineChannel: engineChannel ?? this.engineChannel,
+      downloadNotification: downloadNotification ?? this.downloadNotification,
+      downloadSubtitles: downloadSubtitles ?? this.downloadSubtitles,
+      autoSubtitle: autoSubtitle ?? this.autoSubtitle,
+      keepSubtitles: keepSubtitles ?? this.keepSubtitles,
+      customCommandDirectory: customCommandDirectory ?? this.customCommandDirectory,
     );
   }
 }

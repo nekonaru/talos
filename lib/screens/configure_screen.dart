@@ -100,6 +100,9 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       maxFilesize: settings.maxFilesize,
       userAgent: settings.userAgent,
       formatSort: settings.formatSort,
+      downloadSubtitles: settings.downloadSubtitles,
+      autoSubtitle: settings.autoSubtitle,
+      keepSubtitles: settings.keepSubtitles,
     );
 
     await manager.enqueue(

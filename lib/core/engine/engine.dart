@@ -30,7 +30,8 @@ abstract class TalosEngine {
 
   /// Downloads or repairs the managed engine if needed. [force] re-downloads
   /// even when a working engine is already present (desktop only).
-  Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false});
+  /// [channel] picks the yt-dlp release channel: `stable` or `nightly`.
+  Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false, String channel = 'stable'});
 
   Future<MediaProbe> probe(String url, {String proxy = ''});
 

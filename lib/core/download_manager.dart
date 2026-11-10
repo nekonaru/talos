@@ -130,6 +130,9 @@ class DownloadManager extends ChangeNotifier {
       maxFilesize: task.request.maxFilesize,
       userAgent: task.request.userAgent,
       formatSort: task.request.formatSort,
+      downloadSubtitles: task.request.downloadSubtitles,
+      autoSubtitle: task.request.autoSubtitle,
+      keepSubtitles: task.request.keepSubtitles,
     );
     _tasks.remove(task);
     await enqueue(rebuilt, title: task.title, kind: task.kind);
@@ -168,8 +171,10 @@ class DownloadManager extends ChangeNotifier {
     task.stage = 'starting';
     notifyListeners();
 
-    await requestTalosNotificationPermission();
-    await ensureForegroundService(text: task.title);
+    if (_settings.value.downloadNotification) {
+      await requestTalosNotificationPermission();
+      await ensureForegroundService(text: task.title);
+    }
 
     try {
       final dir = Directory(task.request.outputDir);

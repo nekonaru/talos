@@ -126,9 +126,10 @@ void main() {
       expect(args, contains('--embed-thumbnail'));
     });
 
-    test('subtitles skipped without ffmpeg', () {
+    test('subtitles without ffmpeg still write, no embed', () {
       final args = CommandBuilder.downloadArgs(request(maxHeight: 1080), ffmpegAvailable: false);
-      expect(args, isNot(contains('--write-subs')));
+      expect(args, contains('--write-subs'));
+      expect(args, isNot(contains('--embed-subs')));
       expect(args, containsAllInOrder(['-f', 'b[height<=1080]/b']));
     });
 

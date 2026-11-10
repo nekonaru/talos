@@ -42,8 +42,11 @@ class CommandBuilder {
         // Without ffmpeg separate streams cannot be merged, so pick a single-file format.
         args.addAll(['-f', height != null && height > 0 ? 'b[height<=$height]/b' : 'b/best']);
       }
-      if (request.embedSubtitles && ffmpegAvailable) {
-        args.addAll(['--write-subs', '--embed-subs']);
+      if (request.downloadSubtitles) {
+        args.addAll(['--write-subs']);
+        if (ffmpegAvailable) args.add('--embed-subs');
+        if (request.autoSubtitle) args.add('--write-auto-subs');
+        if (request.keepSubtitles) args.add('--keep-subs');
         if (request.subtitleLanguage.isNotEmpty) {
           args.addAll(['--sub-langs', request.subtitleLanguage]);
         }

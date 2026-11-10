@@ -51,6 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (mounted) setState(() => _updateFraction = fraction);
         },
         force: desktop,
+        channel: manager.settings.value.engineChannel,
       );
       await _refreshEngine();
     } catch (error) {
@@ -199,6 +200,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
                 ),
+                ListTile(
+                  leading: const Icon(Icons.folder_outlined),
+                  title: Text(l.customCommandDirectory),
+                  subtitle: Text(settings.customCommandDirectory?.isNotEmpty == true ? settings.customCommandDirectory! : l.customCommandDirectoryHint),
+                  onTap: () async {
+                    final value = await _editDialog(title: l.customCommandDirectory, initial: settings.customCommandDirectory ?? '', hint: l.customCommandDirectoryHint);
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(customCommandDirectory: value.isEmpty ? null : value));
+                  },
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.notifications_outlined),
+                  title: Text(l.downloadNotification),
+                  subtitle: Text(l.downloadNotificationHint),
+                  value: settings.downloadNotification,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(downloadNotification: value)),
+                ),
                 SwitchListTile(
                   secondary: const Icon(Icons.visibility_off_outlined),
                   title: Text(l.privateMode),
@@ -328,6 +345,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (value) => manager.settings.mutate((s) => s.copyWith(cropArtwork: value)),
                   ),
                 ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.subtitles_outlined),
+                  title: Text(l.downloadSubtitles),
+                  subtitle: Text(l.downloadSubtitlesHint),
+                  value: settings.downloadSubtitles,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(downloadSubtitles: value)),
+                ),
+                if (settings.downloadSubtitles) ...[
+                  SwitchListTile(
+                    secondary: const Icon(Icons.closed_caption_outlined),
+                    title: Text(l.autoSubtitle),
+                    subtitle: Text(l.autoSubtitleHint),
+                    value: settings.autoSubtitle,
+                    onChanged: (value) => manager.settings.mutate((s) => s.copyWith(autoSubtitle: value)),
+                  ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.save_outlined),
+                    title: Text(l.keepSubtitles),
+                    subtitle: Text(l.keepSubtitlesHint),
+                    value: settings.keepSubtitles,
+                    onChanged: (value) => manager.settings.mutate((s) => s.copyWith(keepSubtitles: value)),
+                  ),
+                ],
                 ListTile(
                   leading: const Icon(Icons.subtitles_outlined),
                   title: Text(l.subtitleLanguage),
@@ -485,6 +525,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (value != null) await manager.settings.mutate((s) => s.copyWith(subtitleLanguage: value));
                   },
                 ),
+                if (desktop)
+                  ListTile(
+                    leading: const Icon(Icons.science_outlined),
+                    title: Text(l.engineChannel),
+                    subtitle: Text(l.engineChannelHint),
+                    trailing: DropdownButton<String>(
+                      value: settings.engineChannel,
+                      underline: const SizedBox(),
+                      items: const [
+                        DropdownMenuItem(value: 'stable', child: Text('Stable')),
+                        DropdownMenuItem(value: 'nightly', child: Text('Nightly')),
+                      ],
+                      onChanged: (value) => manager.settings.mutate((s) => s.copyWith(engineChannel: value ?? 'stable')),
+                    ),
+                  ),
                 if (desktop)
                   SwitchListTile(
                     secondary: const Icon(Icons.bolt_outlined),

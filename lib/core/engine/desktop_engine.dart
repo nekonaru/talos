@@ -125,8 +125,8 @@ class DesktopEngine implements TalosEngine {
 
   /// Downloads [asset] from the latest GitHub release and verifies its SHA-256
   /// against the release checksums file. Fails closed on any mismatch.
-  Future<void> _downloadVerified(String asset, File target, void Function(double fraction)? onPhase) async {
-    final sums = await _fetchString('https://github.com/yt-dlp/yt-dlp/releases/latest/download/SHA2-256SUMS');
+  Future<void> _downloadVerified(String asset, File target, void Function(double fraction)? onPhase, {String baseUrl = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download'}) async {
+    final sums = await _fetchString('$baseUrl/SHA2-256SUMS');
     final expected = expectedHashFor(sums, asset);
     if (expected == null) {
       throw StateError('Checksum for $asset not found in SHA2-256SUMS');
@@ -134,7 +134,7 @@ class DesktopEngine implements TalosEngine {
 
     final client = HttpClient();
     try {
-      final url = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/$asset';
+      final url = '$baseUrl/$asset';
       final request = await client.getUrl(Uri.parse(url));
       request.headers.set('user-agent', 'Talos/0.1');
       final response = await request.close();
@@ -163,7 +163,7 @@ class DesktopEngine implements TalosEngine {
   /// Ensures a managed yt-dlp binary is present. [force] re-downloads even when
   /// a working engine is already present (desktop only).
   @override
-  Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false}) async {
+  Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false, String channel = 'stable'}) async {
     if (!force) {
       final path = await ytdlpPath();
       if (path != null && await _versionOf(path) != null) {
@@ -172,6 +172,7 @@ class DesktopEngine implements TalosEngine {
       }
     }
     final dir = await _binDir;
+    final nightly = channel == 'nightly';
     final asset = switch (defaultTargetPlatform) {
       TargetPlatform.windows => 'yt-dlp.exe',
       TargetPlatform.macOS => 'yt-dlp_macos',
@@ -179,8 +180,12 @@ class DesktopEngine implements TalosEngine {
     };
     final target = File('${dir.path}${Platform.pathSeparator}${Platform.isWindows ? 'yt-dlp.exe' : 'yt-dlp'}');
 
+    final downloadBase = nightly
+        ? 'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download'
+        : 'https://github.com/yt-dlp/yt-dlp/releases/latest/download';
+
     onPhase?.call('download', 0);
-    await _downloadVerified(asset, target, (fraction) => onPhase?.call('download', fraction));
+    await _downloadVerified(asset, target, (fraction) => onPhase?.call('download', fraction), baseUrl: downloadBase);
 
     if (!Platform.isWindows) {
       await Process.run('chmod', ['+x', target.path]);
