@@ -98,10 +98,14 @@ class DownloadManager extends ChangeNotifier {
   }
 
   Future<void> retry(DownloadTask task) async {
+    final configured = task.request.videoMode
+        ? _settings.value.videoFolder
+        : _settings.value.audioFolder;
+    final outputDir = configured?.trim().isNotEmpty == true ? configured!.trim() : outputDirectory;
     final rebuilt = DownloadRequest(
       url: task.request.url,
       videoMode: task.request.videoMode,
-      outputDir: outputDirectory,
+      outputDir: outputDir,
       maxHeight: task.request.maxHeight,
       audioFormat: task.request.audioFormat,
       audioBitrate: task.request.audioBitrate,
