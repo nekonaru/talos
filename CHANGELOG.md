@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.2.3
+
+Stability and engine release: a format client fix that unblocks YouTube downloads on Android, plus a batch of robustness improvements.
+
+### Bug fixes
+
+- **YouTube video downloads on Android failed with "Requested format is not available".** YouTube returns no muxed formats on the default clients, and Android has no FFmpeg to merge streams, so nothing could be selected. Embedded builds now pin a client that still serves a muxed MP4 (up to 360p) for video mode; audio mode is unchanged.
+- **Desktop engine could miss the last output lines.** stdout and stderr streams are drained before the session resolves, so output paths and progress lines are no longer dropped at exit.
+- **Retry ignored separate video or audio folders.** A retry now targets the configured folder for the media type instead of the default directory.
+- **Settings, history and command templates could be left half-written.** Writes are now atomic; a crash mid-write can no longer corrupt these files.
+- **Cookie export file was world-readable on POSIX systems.** The cookies file is now owner-only, written atomically.
+
+### Improvements
+
+- **Bundled fonts.** Marcellus and Inter ship inside the app instead of being fetched over the network on first launch. Faster, offline-friendly start.
+- **Lower memory on engine downloads.** The managed yt-dlp and FFmpeg downloads stream to disk instead of buffering tens of megabytes in memory.
+- **i18n sweep.** All user-facing text now comes from the localization files; no hardcoded strings left.
+- **iOS no longer crashes at startup.** The engine reports itself as not yet available until an iOS backend exists.
+
 ## v0.2.2
 
 Bug fixes release. No new features.

@@ -5,6 +5,25 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.2.3
+
+Rilis stabilitas dan engine: perbaikan pemilihan format yang membuka jalan unduhan YouTube di Android, plus serangkaian perbaikan ketahanan.
+
+### Perbaikan bug
+
+- **Unduhan video YouTube di Android gagal dengan "Requested format is not available".** YouTube tidak mengembalikan format muxed pada client bawaan, dan Android tidak punya FFmpeg untuk menggabungkan stream, jadi tidak ada yang bisa dipilih. Build embedded kini mematok client yang masih menyediakan MP4 muxed (hingga 360p) untuk mode video; mode audio tidak berubah.
+- **Desktop engine bisa kehilangan baris output terakhir.** Stream stdout dan stderr kini di-drain sebelum sesi selesai, sehingga output path dan baris progres tidak lagi hilang saat keluar.
+- **Retry mengabaikan folder video atau audio terpisah.** Retry kini menargetkan folder sesuai jenis media yang dikonfigurasi, bukan folder bawaan.
+- **Pengaturan, history dan template perintah bisa rusak setengah jalan.** Penulisan kini atomic; crash di tengah menulis tidak lagi merusak file-file ini.
+- **File cookie export bisa dibaca siapa pun di POSIX.** File cookies kini owner-only dan ditulis secara atomic.
+
+### Peningkatan
+
+- **Font bundled.** Marcellus dan Inter masuk ke dalam aplikasi, tidak lagi diambil dari jaringan saat peluncuran pertama. Startup lebih cepat dan bisa offline.
+- **Memori lebih rendah saat mengunduh engine.** Unduhan yt-dlp dan FFmpeg terkelola mengalir ke disk alih-alih memuat puluhan megabyte di memori.
+- **Sapuan i18n.** Semua teks yang tampil kini berasal dari file lokalisasi; tidak ada string yang tertinggal.
+- **iOS tidak lagi crash saat start.** Engine melapor belum tersedia sampai backend iOS dibuat.
+
 ## v0.2.2
 
 Rilis perbaikan bug. Tidak ada fitur baru.
