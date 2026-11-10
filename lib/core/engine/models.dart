@@ -1,6 +1,34 @@
 /// Data models exchanged between the UI and the download engine.
 library;
 
+class YtdlpFormat {
+  YtdlpFormat({
+    required this.id,
+    required this.note,
+    required this.ext,
+    this.resolution,
+    this.filesize,
+    this.vcodec,
+    this.acodec,
+    this.abr,
+    this.vbr,
+    this.height,
+    this.fps,
+  });
+
+  final String id;
+  final String note;
+  final String ext;
+  final String? resolution;
+  final int? filesize;
+  final String? vcodec;
+  final String? acodec;
+  final double? abr;
+  final double? vbr;
+  final int? height;
+  final double? fps;
+}
+
 class PlaylistEntry {
   PlaylistEntry({
     required this.index,
@@ -26,6 +54,7 @@ class MediaProbe {
     this.thumbnail,
     this.duration,
     this.entries = const [],
+    this.formats = const [],
   });
 
   final String title;
@@ -35,6 +64,7 @@ class MediaProbe {
   final String? thumbnail;
   final Duration? duration;
   final List<PlaylistEntry> entries;
+  final List<YtdlpFormat> formats;
 }
 
 class DownloadRequest {
@@ -58,6 +88,18 @@ class DownloadRequest {
     this.sponsorBlockCategories = '',
     this.cookiesPath = '',
     this.subtitleLanguage = '',
+    this.formatSelector = '',
+    this.restrictFilenames = false,
+    this.downloadArchive = '',
+    this.cropArtwork = false,
+    this.subtitleFormat = '',
+    this.clipStartSeconds,
+    this.clipEndSeconds,
+    this.forceIpv4 = false,
+    this.remuxContainer = '',
+    this.maxFilesize = '',
+    this.userAgent = '',
+    this.formatSort = '',
   });
 
   final String url;
@@ -92,6 +134,40 @@ class DownloadRequest {
 
   /// Subtitle language code such as en or id. Empty means default.
   final String subtitleLanguage;
+
+  /// A yt-dlp format selector such as `137+140` or `bestaudio`. Empty means default.
+  final String formatSelector;
+
+  /// Restrict filenames to ASCII and basic safety.
+  final bool restrictFilenames;
+
+  /// Uses a yt-dlp archive file to avoid re-downloading already-fetched items.
+  final String downloadArchive;
+
+  /// Crops square artwork for audio cover embed.
+  final bool cropArtwork;
+
+  /// Subtitle conversion target format code, for example `srt` or `ass`. Empty keeps source.
+  final String subtitleFormat;
+
+  /// Download only the section between two times, in seconds. Both null means the whole video.
+  final int? clipStartSeconds;
+  final int? clipEndSeconds;
+
+  /// Force IPv4 instead of letting the OS pick.
+  final bool forceIpv4;
+
+  /// Remux output container, for example `mp4`, `mkv` or `webm`. Empty means no remux.
+  final String remuxContainer;
+
+  /// Maximum file size, for example `50M`. Empty or `0` disables.
+  final String maxFilesize;
+
+  /// Custom HTTP User-Agent. Empty means default.
+  final String userAgent;
+
+  /// yt-dlp format sort string, for example `ext,res`. Empty means default order.
+  final String formatSort;
 }
 
 enum TaskStatus { queued, running, completed, failed, cancelled }

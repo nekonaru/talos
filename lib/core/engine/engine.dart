@@ -17,6 +17,9 @@ abstract class TalosDownloadSession {
   /// Completes when the underlying process or task exits.
   Future<SessionOutcome> get outcome;
 
+  /// Raw log lines from the engine, if available. Not all engines provide this.
+  Stream<String>? get rawLog;
+
   Future<void> cancel();
 }
 

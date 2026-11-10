@@ -31,6 +31,20 @@ class TalosSettings {
     this.cookiesPath = '',
     this.subtitleLanguage = 'en',
     this.privateMode = false,
+    this.restrictFilenames = false,
+    this.downloadArchive = false,
+    this.cropArtwork = false,
+    this.subtitleFormat = '',
+    this.clipStartSeconds,
+    this.clipEndSeconds,
+    this.forceIpv4 = false,
+    this.remuxContainer = '',
+    this.maxFilesize = '',
+    this.userAgent = '',
+    this.formatSort = '',
+    this.autoUpdateEngine = false,
+    this.videoFolder,
+    this.audioFolder,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -54,6 +68,20 @@ class TalosSettings {
       cookiesPath: json['cookiesPath'] as String? ?? '',
       subtitleLanguage: json['subtitleLanguage'] as String? ?? 'en',
       privateMode: json['privateMode'] as bool? ?? false,
+      restrictFilenames: json['restrictFilenames'] as bool? ?? false,
+      downloadArchive: json['downloadArchive'] as bool? ?? false,
+      cropArtwork: json['cropArtwork'] as bool? ?? false,
+      subtitleFormat: json['subtitleFormat'] as String? ?? '',
+      clipStartSeconds: (json['clipStartSeconds'] as num?)?.toInt(),
+      clipEndSeconds: (json['clipEndSeconds'] as num?)?.toInt(),
+      forceIpv4: json['forceIpv4'] as bool? ?? false,
+      remuxContainer: json['remuxContainer'] as String? ?? '',
+      maxFilesize: json['maxFilesize'] as String? ?? '',
+      userAgent: json['userAgent'] as String? ?? '',
+      formatSort: json['formatSort'] as String? ?? '',
+      videoFolder: json['videoFolder'] as String?,
+      audioFolder: json['audioFolder'] as String?,
+      autoUpdateEngine: json['autoUpdateEngine'] as bool? ?? false,
     );
   }
 
@@ -76,6 +104,20 @@ class TalosSettings {
   String cookiesPath;
   String subtitleLanguage;
   bool privateMode;
+  bool restrictFilenames;
+  bool downloadArchive;
+  bool cropArtwork;
+  String subtitleFormat;
+  int? clipStartSeconds;
+  int? clipEndSeconds;
+  bool forceIpv4;
+  String remuxContainer;
+  String maxFilesize;
+  String userAgent;
+  String formatSort;
+  String? videoFolder;
+  String? audioFolder;
+  bool autoUpdateEngine;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -97,6 +139,20 @@ class TalosSettings {
         'cookiesPath': cookiesPath,
         'subtitleLanguage': subtitleLanguage,
         'privateMode': privateMode,
+        'restrictFilenames': restrictFilenames,
+        'downloadArchive': downloadArchive,
+        'cropArtwork': cropArtwork,
+        'subtitleFormat': subtitleFormat,
+        'clipStartSeconds': clipStartSeconds,
+        'clipEndSeconds': clipEndSeconds,
+        'forceIpv4': forceIpv4,
+        'remuxContainer': remuxContainer,
+        'maxFilesize': maxFilesize,
+        'userAgent': userAgent,
+        'formatSort': formatSort,
+        'videoFolder': videoFolder,
+        'audioFolder': audioFolder,
+        'autoUpdateEngine': autoUpdateEngine,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -131,6 +187,20 @@ class TalosSettings {
     String? cookiesPath,
     String? subtitleLanguage,
     bool? privateMode,
+    bool? restrictFilenames,
+    bool? downloadArchive,
+    bool? cropArtwork,
+    String? subtitleFormat,
+    int? clipStartSeconds,
+    int? clipEndSeconds,
+    bool? forceIpv4,
+    String? remuxContainer,
+    String? maxFilesize,
+    String? userAgent,
+    String? formatSort,
+    String? videoFolder,
+    String? audioFolder,
+    bool? autoUpdateEngine,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -152,6 +222,20 @@ class TalosSettings {
       cookiesPath: cookiesPath ?? this.cookiesPath,
       subtitleLanguage: subtitleLanguage ?? this.subtitleLanguage,
       privateMode: privateMode ?? this.privateMode,
+      restrictFilenames: restrictFilenames ?? this.restrictFilenames,
+      downloadArchive: downloadArchive ?? this.downloadArchive,
+      cropArtwork: cropArtwork ?? this.cropArtwork,
+      subtitleFormat: subtitleFormat ?? this.subtitleFormat,
+      clipStartSeconds: clipStartSeconds ?? this.clipStartSeconds,
+      clipEndSeconds: clipEndSeconds ?? this.clipEndSeconds,
+      forceIpv4: forceIpv4 ?? this.forceIpv4,
+      remuxContainer: remuxContainer ?? this.remuxContainer,
+      maxFilesize: maxFilesize ?? this.maxFilesize,
+      userAgent: userAgent ?? this.userAgent,
+      formatSort: formatSort ?? this.formatSort,
+      videoFolder: videoFolder ?? this.videoFolder,
+      audioFolder: audioFolder ?? this.audioFolder,
+      autoUpdateEngine: autoUpdateEngine ?? this.autoUpdateEngine,
     );
   }
 }

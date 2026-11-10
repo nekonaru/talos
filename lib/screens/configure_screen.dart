@@ -1,5 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'format_selection_screen.dart';
 import '../app_scope.dart';
 import '../core/engine/models.dart';
 import '../core/format.dart';
@@ -27,6 +31,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
   late bool _embedSubtitles;
   late bool _embedMetadata;
   late Set<int> _selected;
+  String? _formatSelector;
   bool? _engineReady;
 
   @override
@@ -59,10 +64,14 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       }
     }
 
+    final outputDir = _videoMode
+        ? (settings.videoFolder?.isNotEmpty == true ? settings.videoFolder! : manager.outputDirectory)
+        : (settings.audioFolder?.isNotEmpty == true ? settings.audioFolder! : manager.outputDirectory);
+
     final request = DownloadRequest(
       url: widget.probe.webpageUrl,
       videoMode: _videoMode,
-      outputDir: manager.outputDirectory,
+      outputDir: outputDir,
       maxHeight: _videoMode ? (_maxHeight == 0 ? null : _maxHeight) : null,
       audioFormat: _audioFormat,
       audioBitrate: _audioBitrate,
@@ -79,6 +88,18 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       sponsorBlockCategories: settings.sponsorBlockEnabled ? settings.sponsorBlockCategories : '',
       cookiesPath: settings.cookiesPath,
       subtitleLanguage: settings.subtitleLanguage,
+      formatSelector: _formatSelector ?? '',
+      restrictFilenames: settings.restrictFilenames,
+      downloadArchive: settings.downloadArchive ? '${(await getApplicationSupportDirectory()).path}${Platform.pathSeparator}download_archive.txt' : '',
+      cropArtwork: settings.cropArtwork,
+      subtitleFormat: settings.subtitleFormat,
+      clipStartSeconds: settings.clipStartSeconds,
+      clipEndSeconds: settings.clipEndSeconds,
+      forceIpv4: settings.forceIpv4,
+      remuxContainer: settings.remuxContainer,
+      maxFilesize: settings.maxFilesize,
+      userAgent: settings.userAgent,
+      formatSort: settings.formatSort,
     );
 
     await manager.enqueue(
@@ -120,7 +141,23 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                   selected: {_videoMode},
                   onSelectionChanged: (selection) => setState(() => _videoMode = selection.first),
                 ),
-                const SizedBox(height: 18),
+                if (probe.formats.isNotEmpty)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.tune),
+                    title: Text(l.chooseFormats),
+                    subtitle: Text(_formatSelector == null ? l.formatAuto : _formatSelector!),
+                    onTap: () async {
+                      final selected = await Navigator.of(context).push<String?>(
+                        MaterialPageRoute(
+                          builder: (_) => FormatSelectionScreen(probe: probe, initialSelector: _formatSelector),
+                        ),
+                      );
+                      if (!mounted) return;
+                      setState(() => _formatSelector = selected);
+                    },
+                  ),
+                const SizedBox(height: 14),
                 if (_videoMode) ...[
                   _SectionLabel(l.videoHeight),
                   const SizedBox(height: 6),

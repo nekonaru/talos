@@ -171,6 +171,36 @@ void main() {
       expect(args, containsAllInOrder(['--sponsorblock-remove', 'sponsor,selfpromo']));
       expect(args, containsAllInOrder(['--cookies', '/tmp/cookies.txt']));
     });
+
+    test('new flags are emitted when set', () {
+      final args = CommandBuilder.downloadArgs(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=x',
+          videoMode: true,
+          outputDir: '/downloads',
+          formatSelector: '137+140',
+          restrictFilenames: true,
+          downloadArchive: '/tmp/archive.txt',
+          cropArtwork: true,
+          subtitleFormat: 'ass',
+          clipStartSeconds: 10,
+          clipEndSeconds: 20,
+          forceIpv4: true,
+          remuxContainer: 'mp4',
+        ),
+        ffmpegAvailable: true,
+      );
+      expect(args, allOf([
+        containsAllInOrder(['-f', '137+140']),
+        contains('--restrict-filenames'),
+        containsAllInOrder(['--download-archive', '/tmp/archive.txt']),
+        containsAllInOrder(['--ppa', "FFmpeg:-c:v mjpeg -vf crop='min(ih,iw)':'min(ih,iw)'"]),
+        containsAllInOrder(['--convert-subs', 'ass']),
+        containsAllInOrder(['--download-sections', '*10-20']),
+        contains('-4'),
+        containsAllInOrder(['--remux-video', 'mp4']),
+      ]));
+    });
   });
 
   group('expectedHashFor', () {

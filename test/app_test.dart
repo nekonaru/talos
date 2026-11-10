@@ -24,6 +24,9 @@ class FakeSession implements TalosDownloadSession {
   Future<SessionOutcome> get outcome => _outcome.future;
 
   @override
+  Stream<String>? get rawLog => const Stream<String>.empty();
+
+  @override
   Future<void> cancel() async {
     if (!_controller.isClosed) await _controller.close();
     if (!_outcome.isCompleted) {

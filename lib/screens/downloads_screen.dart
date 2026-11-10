@@ -93,6 +93,39 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     if (confirmed == true) await manager.history.clear();
   }
 
+  Future<void> _showLog(BuildContext context, DownloadTask task) async {
+    final log = task.log;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(child: Text('Engine log', maxLines: 1, overflow: TextOverflow.ellipsis)),
+            TextButton.icon(
+              onPressed: () => Clipboard.setData(ClipboardData(text: log.join('\n'))),
+              icon: const Icon(Icons.copy, size: 16),
+              label: const Text('Copy'),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 320,
+          child: SingleChildScrollView(
+            child: Text(
+              log.isEmpty ? '(log is empty)' : log.take(200).join('\n'),
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
+            ),
+          ),
+        ),
+        actions: [
+          FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -133,6 +166,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                   onCancel: () => manager.cancel(task),
                   onRetry: () => manager.retry(task),
                   onRemove: () => manager.removeTask(task),
+                  onShowLog: () => _showLog(context, task),
                 );
               },
             ),
@@ -194,12 +228,14 @@ class _TaskCard extends StatelessWidget {
     required this.onCancel,
     required this.onRetry,
     required this.onRemove,
+    required this.onShowLog,
   });
 
   final DownloadTask task;
   final VoidCallback onCancel;
   final VoidCallback onRetry;
   final VoidCallback onRemove;
+  final VoidCallback onShowLog;
 
   @override
   Widget build(BuildContext context) {
@@ -238,6 +274,7 @@ class _TaskCard extends StatelessWidget {
                 if (running || queued)
                   IconButton(tooltip: l.cancel, icon: const Icon(Icons.close_rounded), onPressed: onCancel),
                 if (failed || cancelled) ...[
+                  IconButton(tooltip: 'Log', icon: const Icon(Icons.description_outlined), onPressed: onShowLog),
                   IconButton(tooltip: l.retry, icon: const Icon(Icons.refresh_rounded), onPressed: onRetry),
                   IconButton(tooltip: l.remove, icon: const Icon(Icons.delete_outline), onPressed: onRemove),
                 ],

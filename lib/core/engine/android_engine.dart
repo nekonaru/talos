@@ -79,6 +79,7 @@ class _AndroidDownloadSession implements TalosDownloadSession {
   late final String _taskId;
 
   final _controller = StreamController<EngineProgress>.broadcast();
+  final _rawController = StreamController<String>.broadcast();
   final _outcomeCompleter = Completer<SessionOutcome>();
   StreamSubscription<Map<String, dynamic>>? _subscription;
   String? _lastOutputPath;
@@ -89,6 +90,9 @@ class _AndroidDownloadSession implements TalosDownloadSession {
 
   @override
   Future<SessionOutcome> get outcome => _outcomeCompleter.future;
+
+  @override
+  Stream<String>? get rawLog => _rawController.stream;
 
   Future<void> start() async {
     _subscription = _engine._events.listen(_handleEvent);
@@ -108,6 +112,7 @@ class _AndroidDownloadSession implements TalosDownloadSession {
       case 'line':
         final rawLine = event['line'] as String?;
         if (rawLine == null) break;
+        if (_rawController.hasListener) _rawController.add(rawLine);
         final parsed = parseYtdlpLine(rawLine);
         if (parsed == null) break;
         if (parsed.outputPath != null) _lastOutputPath = parsed.outputPath;
@@ -126,6 +131,7 @@ class _AndroidDownloadSession implements TalosDownloadSession {
   void _finish(SessionOutcome outcome) {
     _subscription?.cancel();
     if (!_controller.isClosed) _controller.close();
+    if (!_rawController.isClosed) _rawController.close();
     if (!_outcomeCompleter.isCompleted) _outcomeCompleter.complete(outcome);
   }
 

@@ -36,6 +36,7 @@ class DownloadTask {
   int? playlistCount;
   String? outputPath;
   String? error;
+  final List<String> log = [];
 }
 
 /// Sequential download queue. One task runs at a time so engine output is
@@ -117,6 +118,18 @@ class DownloadManager extends ChangeNotifier {
       sponsorBlockCategories: task.request.sponsorBlockCategories,
       cookiesPath: task.request.cookiesPath,
       subtitleLanguage: task.request.subtitleLanguage,
+      formatSelector: task.request.formatSelector,
+      restrictFilenames: task.request.restrictFilenames,
+      downloadArchive: task.request.downloadArchive,
+      cropArtwork: task.request.cropArtwork,
+      subtitleFormat: task.request.subtitleFormat,
+      clipStartSeconds: task.request.clipStartSeconds,
+      clipEndSeconds: task.request.clipEndSeconds,
+      forceIpv4: task.request.forceIpv4,
+      remuxContainer: task.request.remuxContainer,
+      maxFilesize: task.request.maxFilesize,
+      userAgent: task.request.userAgent,
+      formatSort: task.request.formatSort,
     );
     _tasks.remove(task);
     await enqueue(rebuilt, title: task.title, kind: task.kind);
@@ -173,6 +186,9 @@ class DownloadManager extends ChangeNotifier {
       ffmpegAvailable: ffmpegAvailable,
     );
     _activeSession = session;
+    final rawSubscription = session.rawLog?.listen((line) {
+      if (task.log.length < 500) task.log.add(line);
+    });
     final subscription = session.events.listen((event) {
       if (event.error != null) {
         task.error = event.error;
@@ -192,6 +208,7 @@ class DownloadManager extends ChangeNotifier {
 
     final outcome = await session.outcome;
     await subscription.cancel();
+    await rawSubscription?.cancel();
     _activeSession = null;
 
     if (outcome.error == null) {

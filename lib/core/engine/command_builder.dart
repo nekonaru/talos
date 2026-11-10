@@ -32,7 +32,9 @@ class CommandBuilder {
 
     if (request.videoMode) {
       final height = request.maxHeight;
-      if (ffmpegAvailable) {
+      if (request.formatSelector.isNotEmpty) {
+        args.addAll(['-f', request.formatSelector]);
+      } else if (ffmpegAvailable) {
         if (height != null && height > 0) {
           args.addAll(['-f', 'bv*[height<=$height]+ba/b[height<=$height]/b']);
         }
@@ -45,9 +47,14 @@ class CommandBuilder {
         if (request.subtitleLanguage.isNotEmpty) {
           args.addAll(['--sub-langs', request.subtitleLanguage]);
         }
+        if (request.subtitleFormat.isNotEmpty) {
+          args.addAll(['--convert-subs', request.subtitleFormat]);
+        }
       }
     } else {
-      if (ffmpegAvailable) {
+      if (request.formatSelector.isNotEmpty) {
+        args.addAll(['-f', request.formatSelector]);
+      } else if (ffmpegAvailable) {
         args.addAll(['-x', '--audio-format', request.audioFormat]);
         if (request.audioBitrate.isNotEmpty) {
           args.addAll(['--audio-quality', '${request.audioBitrate}K']);
@@ -58,7 +65,31 @@ class CommandBuilder {
       }
     }
 
-    if (request.embedMetadata && ffmpegAvailable) args.addAll(['--embed-metadata', '--embed-thumbnail']);
+    if (request.embedMetadata && ffmpegAvailable) {
+      args.addAll(['--embed-metadata', '--embed-thumbnail']);
+      if (request.cropArtwork) {
+        args.addAll(['--ppa', "FFmpeg:-c:v mjpeg -vf crop='min(ih,iw)':'min(ih,iw)'"]);
+      }
+    }
+
+    if (request.maxFilesize.isNotEmpty && request.maxFilesize != '0') {
+      args.addAll(['--max-filesize', request.maxFilesize]);
+    }
+    if (request.userAgent.isNotEmpty) {
+      args.addAll(['--user-agent', request.userAgent]);
+    }
+    if (request.formatSort.isNotEmpty) {
+      args.addAll(['-S', request.formatSort]);
+    }
+    if (request.restrictFilenames) args.add('--restrict-filenames');
+    if (request.downloadArchive.isNotEmpty) args.addAll(['--download-archive', request.downloadArchive]);
+    if (request.forceIpv4) args.add('-4');
+    if (request.remuxContainer.isNotEmpty) args.addAll(['--remux-video', request.remuxContainer]);
+    if (request.clipStartSeconds != null || request.clipEndSeconds != null) {
+      final start = request.clipStartSeconds ?? 0;
+      final end = request.clipEndSeconds ?? '';
+      args.addAll(['--download-sections', '*$start${end.toString().isEmpty ? '' : '-$end'}']);
+    }
 
     if (request.proxy.isNotEmpty) args.addAll(['--proxy', request.proxy]);
     if (request.rateLimit.isNotEmpty) args.addAll(['--limit-rate', request.rateLimit]);

@@ -311,8 +311,13 @@ class _DesktopDownloadSession implements TalosDownloadSession {
   @override
   Stream<EngineProgress> get events => _controller.stream;
 
+  /// Completes when the underlying process or task exits.
   @override
   Future<SessionOutcome> get outcome => _outcomeCompleter.future;
+
+  @override
+  Stream<String>? get rawLog => _rawController.stream;
+  final _rawController = StreamController<String>.broadcast();
 
   Future<void> _start() async {
     final binary = await _engine.ytdlpPath();
@@ -336,6 +341,7 @@ class _DesktopDownloadSession implements TalosDownloadSession {
         .transform(utf8.decoder)
         .transform(const LineSplitter())
         .listen((line) {
+      if (_rawController.hasListener) _rawController.add(line);
       _stderrTail.add(line);
       if (_stderrTail.length > 30) _stderrTail.removeAt(0);
     });
@@ -352,6 +358,7 @@ class _DesktopDownloadSession implements TalosDownloadSession {
   }
 
   void _handleLine(String line) {
+    if (_rawController.hasListener) _rawController.add(line);
     final parsed = parseYtdlpLine(line);
     if (parsed == null) return;
     if (parsed.outputPath != null) _lastOutputPath = parsed.outputPath;
@@ -360,6 +367,7 @@ class _DesktopDownloadSession implements TalosDownloadSession {
 
   void _finish(SessionOutcome outcome) {
     if (!_controller.isClosed) _controller.close();
+    if (!_rawController.isClosed) _rawController.close();
     if (!_outcomeCompleter.isCompleted) _outcomeCompleter.complete(outcome);
   }
 

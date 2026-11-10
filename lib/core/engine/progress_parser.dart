@@ -132,6 +132,27 @@ MediaProbe parseProbeJson(String body) {
     }
   }
 
+  final formats = <YtdlpFormat>[];
+  final rawFormats = decoded['formats'];
+  if (rawFormats is List) {
+    for (final item in rawFormats) {
+      if (item is! Map<String, dynamic>) continue;
+      formats.add(YtdlpFormat(
+        id: (item['format_id'] ?? '').toString(),
+        note: (item['format_note'] ?? item['format_id'] ?? '').toString(),
+        ext: (item['ext'] ?? '').toString(),
+        resolution: item['resolution']?.toString() ?? (item['vcodec'] == 'none' ? 'audio only' : null),
+        filesize: (item['filesize'] as num?)?.toInt() ?? (item['filesize_approx'] as num?)?.toInt(),
+        vcodec: item['vcodec']?.toString(),
+        acodec: item['acodec']?.toString(),
+        abr: (item['abr'] as num?)?.toDouble(),
+        vbr: (item['vbr'] as num?)?.toDouble(),
+        height: (item['height'] as num?)?.toInt(),
+        fps: (item['fps'] as num?)?.toDouble(),
+      ));
+    }
+  }
+
   final duration = decoded['duration'];
   final thumb = decoded['thumbnail'];
   final thumbnails = decoded['thumbnails'];
@@ -151,5 +172,6 @@ MediaProbe parseProbeJson(String body) {
     thumbnail: thumbnail,
     duration: duration is num ? Duration(seconds: duration.round()) : null,
     entries: entries,
+    formats: formats,
   );
 }

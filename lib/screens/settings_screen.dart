@@ -5,6 +5,7 @@ import '../core/theme.dart';
 import '../gen/app_localizations.dart';
 import 'about_screen.dart';
 import 'commands_screen.dart';
+import 'cookie_generator_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -81,6 +82,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(AppLocalizations.of(context)!.cancel)),
           FilledButton(onPressed: () => Navigator.of(context).pop(controller.text.trim()), child: Text(AppLocalizations.of(context)!.save)),
+        ],
+      ),
+    );
+  }
+
+  Future<(int?, int?)?> _clipRangeDialog(BuildContext context, int? startSec, int? endSec) {
+    final startController = TextEditingController(text: startSec?.toString() ?? '');
+    final endController = TextEditingController(text: endSec?.toString() ?? '');
+    return showDialog<(int?, int?)?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.clipVideo),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: startController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.clipFrom),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: endController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.clipTo),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(AppLocalizations.of(context)!.cancel)),
+          FilledButton(
+            onPressed: () {
+              final start = int.tryParse(startController.text.trim());
+              final end = int.tryParse(endController.text.trim());
+              Navigator.of(context).pop((start, end));
+            },
+            child: Text(AppLocalizations.of(context)!.save),
+          ),
         ],
       ),
     );
@@ -167,6 +206,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: settings.privateMode,
                   onChanged: (value) => manager.settings.mutate((s) => s.copyWith(privateMode: value)),
                 ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.archive_outlined),
+                  title: Text(l.downloadArchive),
+                  subtitle: Text(l.downloadArchiveHint),
+                  value: settings.downloadArchive,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(downloadArchive: value)),
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.text_fields),
+                  title: Text(l.restrictFilenames),
+                  subtitle: Text(l.restrictFilenamesHint),
+                  value: settings.restrictFilenames,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(restrictFilenames: value)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.folder_outlined),
+                  title: Text(l.videoFolder),
+                  subtitle: Text(settings.videoFolder?.isNotEmpty == true ? settings.videoFolder! : l.videoFolderHint),
+                  onTap: () async {
+                    final value = await _editDialog(title: l.videoFolder, initial: settings.videoFolder ?? '', hint: l.videoFolderHint);
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(videoFolder: value.isEmpty ? null : value));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.music_note_outlined),
+                  title: Text(l.audioFolder),
+                  subtitle: Text(settings.audioFolder?.isNotEmpty == true ? settings.audioFolder! : l.audioFolderHint),
+                  onTap: () async {
+                    final value = await _editDialog(title: l.audioFolder, initial: settings.audioFolder ?? '', hint: l.audioFolderHint);
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(audioFolder: value.isEmpty ? null : value));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.straighten),
+                  title: Text(l.maxFilesize),
+                  subtitle: Text(settings.maxFilesize.isEmpty ? l.maxFilesizeHint : settings.maxFilesize),
+                  onTap: () async {
+                    final value = await _editDialog(title: l.maxFilesize, initial: settings.maxFilesize, hint: l.maxFilesizeHint);
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(maxFilesize: value));
+                  },
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.auto_awesome),
+                  title: Text(l.autoUpdateEngine),
+                  subtitle: Text(l.autoUpdateEngineHint),
+                  value: settings.autoUpdateEngine,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(autoUpdateEngine: value)),
+                ),
               ],
             ),
           ),
@@ -209,6 +296,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 ListTile(
+                  leading: const Icon(Icons.sort),
+                  title: Text(l.formatSort),
+                  subtitle: Text(settings.formatSort.isEmpty ? l.formatSortHint : settings.formatSort),
+                  onTap: () async {
+                    final value = await _editDialog(title: l.formatSort, initial: settings.formatSort, hint: l.formatSortHint);
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(formatSort: value));
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.graphic_eq),
                   title: Text(l.defaultAudioBitrate),
                   trailing: DropdownButton<String>(
@@ -221,6 +317,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       DropdownMenuItem(value: '320', child: Text('320k')),
                     ],
                     onChanged: (value) => manager.settings.mutate((s) => s.copyWith(defaultAudioBitrate: value ?? '192')),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.crop_square_outlined),
+                  title: Text(l.cropArtwork),
+                  subtitle: Text(l.cropArtworkHint),
+                  trailing: Switch(
+                    value: settings.cropArtwork,
+                    onChanged: (value) => manager.settings.mutate((s) => s.copyWith(cropArtwork: value)),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.subtitles_outlined),
+                  title: Text(l.subtitleLanguage),
+                  subtitle: Text(settings.subtitleLanguage.isEmpty ? l.subtitleLanguageHint : settings.subtitleLanguage),
+                  onTap: () async {
+                    final value = await _editDialog(
+                      title: l.subtitleLanguage,
+                      initial: settings.subtitleLanguage,
+                      hint: l.subtitleLanguageHint,
+                    );
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(subtitleLanguage: value));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.text_fields),
+                  title: Text(l.subtitleFormat),
+                  subtitle: Text(settings.subtitleFormat.isEmpty ? l.subtitleFormatHint : settings.subtitleFormat),
+                  onTap: () async {
+                    final value = await _editDialog(
+                      title: l.subtitleFormat,
+                      initial: settings.subtitleFormat,
+                      hint: 'srt, vtt, ass',
+                    );
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(subtitleFormat: value));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.content_cut_outlined),
+                  title: Text(l.clipVideo),
+                  subtitle: Text(() {
+                    final start = settings.clipStartSeconds;
+                    final end = settings.clipEndSeconds;
+                    if (start == null && end == null) return l.clipVideoHint;
+                    return '$start sec - ${end ?? 'end'} sec';
+                  }()),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    final ctx = context;
+                    final result = await _clipRangeDialog(ctx, settings.clipStartSeconds, settings.clipEndSeconds);
+                    if (!mounted) return;
+                    if (result == null) return;
+                    await manager.settings.mutate((s) => s.copyWith(clipStartSeconds: result.$1, clipEndSeconds: result.$2));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.movie_outlined),
+                  title: Text(l.remuxContainer),
+                  subtitle: Text(settings.remuxContainer.isEmpty ? l.remuxContainerHint : settings.remuxContainer.toUpperCase()),
+                  trailing: DropdownButton<String>(
+                    value: settings.remuxContainer,
+                    underline: const SizedBox(),
+                    items: const [
+                      DropdownMenuItem(value: '', child: Text('None')),
+                      DropdownMenuItem(value: 'mp4', child: Text('MP4')),
+                      DropdownMenuItem(value: 'mkv', child: Text('MKV')),
+                      DropdownMenuItem(value: 'webm', child: Text('WebM')),
+                    ],
+                    onChanged: (value) => manager.settings.mutate((s) => s.copyWith(remuxContainer: value ?? '')),
                   ),
                 ),
               ],
@@ -249,6 +414,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.language),
+                  title: Text(l.userAgent),
+                  subtitle: Text(settings.userAgent.isEmpty ? l.userAgentHint : settings.userAgent),
+                  onTap: () async {
+                    final value = await _editDialog(title: l.userAgent, initial: settings.userAgent, hint: l.userAgentHint);
+                    if (value != null) await manager.settings.mutate((s) => s.copyWith(userAgent: value));
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.account_tree_outlined),
                   title: Text(l.fragments),
                   trailing: DropdownButton<int>(
@@ -259,6 +433,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         .toList(),
                     onChanged: (value) => manager.settings.mutate((s) => s.copyWith(concurrentFragments: value ?? 4)),
                   ),
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.settings_ethernet),
+                  title: Text(l.forceIpv4),
+                  subtitle: Text(l.forceIpv4Hint),
+                  value: settings.forceIpv4,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(forceIpv4: value)),
                 ),
                 SwitchListTile(
                   secondary: const Icon(Icons.block_outlined),
@@ -312,6 +493,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (value) => manager.settings.mutate((s) => s.copyWith(useAria2: value)),
                   ),
               ],
+            ),
+          ),
+          _SectionLabel(l.cookieGenerator),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.cookie_outlined),
+              title: Text(l.cookieGenerator),
+              subtitle: Text(l.cookieGeneratorHint),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CookieGeneratorScreen())),
             ),
           ),
           _SectionLabel(l.appearance),
