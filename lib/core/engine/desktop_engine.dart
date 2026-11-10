@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../app_info.dart';
 import 'command_builder.dart';
 import 'engine.dart';
 import 'models.dart';
@@ -99,8 +99,8 @@ class DesktopEngine implements TalosEngine {
     final client = HttpClient();
     try {
       final request = await client.getUrl(Uri.parse(url));
-      request.headers.set('user-agent', 'Talos/0.1');
-      final response = await request.close();
+      request.headers.set('user-agent', 'Talos/${TalosInfo.appVersion}');
+      final response = await request.close().timeout(const Duration(seconds: 30));
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw HttpException('Download failed with status ${response.statusCode}', uri: Uri.parse(url));
       }
@@ -110,6 +110,41 @@ class DesktopEngine implements TalosEngine {
     } finally {
       client.close();
     }
+  }
+
+  /// Streams [url] to [target] on disk without buffering the whole file in
+  /// memory. Returns the number of bytes written. Throws on HTTP errors.
+  Future<int> _downloadToFile(String url, File target, void Function(double fraction)? onProgress) async {
+    final client = HttpClient();
+    try {
+      final request = await client.getUrl(Uri.parse(url));
+      request.headers.set('user-agent', 'Talos/${TalosInfo.appVersion}');
+      final response = await request.close().timeout(const Duration(seconds: 60));
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw HttpException('Download failed with status ${response.statusCode}', uri: Uri.parse(url));
+      }
+      final total = response.contentLength;
+      final sink = target.openWrite();
+      var received = 0;
+      try {
+        await for (final chunk in response.timeout(const Duration(minutes: 5))) {
+          sink.add(chunk);
+          received += chunk.length;
+          if (total > 0) onProgress?.call(received / total);
+        }
+      } finally {
+        await sink.close();
+      }
+      return received;
+    } finally {
+      client.close();
+    }
+  }
+
+  /// SHA-256 of a file, computed in chunks without buffering it in memory.
+  Future<String> _fileDigest(File file) async {
+    final digest = await sha256.bind(file.openRead()).single;
+    return digest.toString();
   }
 
   /// Finds the expected sha256 for [asset] in a SHA2-256SUMS body.
@@ -123,8 +158,9 @@ class DesktopEngine implements TalosEngine {
     return null;
   }
 
-  /// Downloads [asset] from the latest GitHub release and verifies its SHA-256
-  /// against the release checksums file. Fails closed on any mismatch.
+  /// Downloads [asset] from [baseUrl] and verifies its SHA-256 against the
+  /// release checksums file. Fails closed on any mismatch and never leaves a
+  /// partially downloaded binary at [target].
   Future<void> _downloadVerified(String asset, File target, void Function(double fraction)? onPhase, {String baseUrl = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download'}) async {
     final sums = await _fetchString('$baseUrl/SHA2-256SUMS');
     final expected = expectedHashFor(sums, asset);
@@ -132,31 +168,20 @@ class DesktopEngine implements TalosEngine {
       throw StateError('Checksum for $asset not found in SHA2-256SUMS');
     }
 
-    final client = HttpClient();
+    final tmp = File('${target.path}.download');
     try {
-      final url = '$baseUrl/$asset';
-      final request = await client.getUrl(Uri.parse(url));
-      request.headers.set('user-agent', 'Talos/0.1');
-      final response = await request.close();
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw HttpException('Download failed with status ${response.statusCode}', uri: Uri.parse(url));
-      }
-      final total = response.contentLength;
-      var received = 0;
-      final builder = BytesBuilder(copy: false);
-      await for (final chunk in response) {
-        builder.add(chunk);
-        received += chunk.length;
-        if (total > 0) onPhase?.call(received / total);
-      }
-      final bytes = builder.takeBytes();
-      final digest = sha256.convert(bytes).toString();
+      await _downloadToFile('$baseUrl/$asset', tmp, onPhase);
+      final digest = await _fileDigest(tmp);
       if (digest != expected) {
         throw StateError('Checksum mismatch for $asset');
       }
-      await target.writeAsBytes(bytes);
+      await tmp.rename(target.path);
     } finally {
-      client.close();
+      try {
+        if (await tmp.exists()) await tmp.delete();
+      } catch (_) {
+        // A locked temp file left behind is harmless.
+      }
     }
   }
 
@@ -213,42 +238,34 @@ class DesktopEngine implements TalosEngine {
     const expectedSha256 = '60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba';
     onPhase?.call('ffmpeg-download', 0);
 
-    final client = HttpClient();
+    final tmp = File('${dir.path}${Platform.pathSeparator}ffmpeg-essentials.zip.download');
+    Uint8List bytes;
     try {
-      final request = await client.getUrl(Uri.parse(url));
-      request.headers.set('user-agent', 'Talos/0.1');
-      final response = await request.close();
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw HttpException('Download failed with status ${response.statusCode}', uri: Uri.parse(url));
-      }
-      final total = response.contentLength;
-      var received = 0;
-      final builder = BytesBuilder(copy: false);
-      await for (final chunk in response) {
-        builder.add(chunk);
-        received += chunk.length;
-        if (total > 0) onPhase?.call('ffmpeg-download', received / total);
-      }
-      final bytes = builder.takeBytes();
-      final digest = sha256.convert(bytes).toString();
+      await _downloadToFile(url, tmp, (fraction) => onPhase?.call('ffmpeg-download', fraction));
+      final digest = await _fileDigest(tmp);
       if (digest != expectedSha256) {
-        throw StateError('FFmpeg checksum mismatch');
+        throw StateError('Managed FFmpeg failed checksum verification. Install FFmpeg manually and set its path in Settings, or try again later.');
       }
-      final archive = ZipDecoder().decodeBytes(bytes);
-      var extracted = 0;
-      for (final entry in archive.files) {
-        if (!entry.isFile) continue;
-        final name = entry.name.split('/').last;
-        if (name != 'ffmpeg.exe' && name != 'ffprobe.exe') continue;
-        final target = File('${dir.path}${Platform.pathSeparator}$name');
-        await target.writeAsBytes(entry.content as List<int>);
-        extracted++;
-      }
-      if (extracted == 0) {
-        throw StateError('FFmpeg archive did not contain the expected binaries');
-      }
+      bytes = await tmp.readAsBytes();
     } finally {
-      client.close();
+      try {
+        if (await tmp.exists()) await tmp.delete();
+      } catch (_) {
+        // A locked temp file left behind is harmless.
+      }
+    }
+    final archive = ZipDecoder().decodeBytes(bytes);
+    var extracted = 0;
+    for (final entry in archive.files) {
+      if (!entry.isFile) continue;
+      final name = entry.name.split('/').last;
+      if (name != 'ffmpeg.exe' && name != 'ffprobe.exe') continue;
+      final target = File('${dir.path}${Platform.pathSeparator}$name');
+      await target.writeAsBytes(entry.content as List<int>);
+      extracted++;
+    }
+    if (extracted == 0) {
+      throw StateError('FFmpeg archive did not contain the expected binaries');
     }
     onPhase?.call('ffmpeg-verify', 1);
     final ffmpeg = await _versionOf(candidate.path);
@@ -338,20 +355,25 @@ class _DesktopDownloadSession implements TalosDownloadSession {
       return;
     }
 
-    _process!.stdout
+    final outDone = _process!.stdout
         .transform(utf8.decoder)
         .transform(const LineSplitter())
-        .listen(_handleLine);
-    _process!.stderr
+        .listen(_handleLine)
+        .asFuture();
+    final errDone = _process!.stderr
         .transform(utf8.decoder)
         .transform(const LineSplitter())
         .listen((line) {
       if (_rawController.hasListener) _rawController.add(line);
       _stderrTail.add(line);
       if (_stderrTail.length > 30) _stderrTail.removeAt(0);
-    });
+    })
+        .asFuture();
 
     final code = await _process!.exitCode;
+    // Streams may still hold buffered lines when the process exits; drain
+    // them before resolving the outcome so nothing is lost.
+    await Future.wait([outDone, errDone]);
     if (_cancelled) {
       _finish(SessionOutcome(error: 'cancelled', outputPath: _lastOutputPath));
     } else if (code == 0) {
