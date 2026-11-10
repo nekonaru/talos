@@ -5,7 +5,32 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
-## v0.1.1
+## v0.2.0
+
+This release closes the main feature gap with comparable apps: manual format selection, an in-app cookie generator, per-task engine logs, and shared-output folders.
+
+### New features
+
+- **Manual format selection.** Pick specific video and audio formats per download with full codec, bitrate, resolution and size details.
+- **In-app cookie generator.** Sign in to a site in an embedded WebView and save the session cookies for yt-dlp. Works on Android and iOS.
+- **Task log.** Every failed task keeps the last 500 lines of raw engine output, with a one-tap copy button for bug reports.
+- **Download archive.** Skip already-downloaded items using a persistent archive file.
+- **Crop square artwork.** Square cover art for audio files, a common request from Android Auto and music players.
+- **Format sorting.** yt-dlp `-S` string to prefer extensions and resolutions, for example `ext,res`.
+- **Remux to mp4, mkv or webm.** Choose the output container without re-encoding.
+- **Clip video.** Download only a section with start and end times.
+- **Max filesize.** Skip items larger than a configurable cap, for example `50M`.
+- **Separate video and audio folders.** Dedicated download directories for each media type.
+- **Auto engine update.** Weekly background check for a newer managed engine, opt-in in Settings.
+- **Custom User-Agent.** Override the HTTP User-Agent header for sites that need it.
+
+### Improvements
+
+- **SponsorBlock and cookies tone refit.** Existing options now live in the right sections, with helper text.
+
+### Bug fixes
+
+- **Log button** on failed tasks now reveals engine output instead of a truncated one-liner.
 
 Better out-of-the-box behavior: auto engine setup, managed FFmpeg on Windows, clearer errors, and a smaller APK (45 MB, arm64-v8a).
 

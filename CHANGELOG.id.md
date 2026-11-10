@@ -5,6 +5,33 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.2.0
+
+Rilis ini menutup gap fitur utama dengan aplikasi serupa: pemilihan format manual, cookie generator di dalam aplikasi, log engine per tugas, dan folder output terpisah.
+
+### Fitur baru
+
+- **Pemilihan format manual.** Pilih format video dan audio per unduhan dengan detail codec, bitrate, resolusi dan ukuran lengkap.
+- **Cookie generator di dalam aplikasi.** Masuk ke situs di WebView tertanam lalu simpan cookies sesi untuk yt-dlp. Berjalan di Android dan iOS.
+- **Log tugas.** Setiap tugas gagal menyimpan hingga 500 baris output engine mentah, dengan tombol salin sekali ketuk untuk laporan bug.
+- **Arsip unduhan.** Lewati item yang sudah pernah diunduh lewat file arsip persisten.
+- **Crop sampul album.** Sampul bujur sangkar untuk berkas audio, yang diminta oleh Android Auto dan pemutar musik.
+- **Urutan format.** String `-S` yt-dlp untuk memprioritaskan ekstensi dan resolusi, misal `ext,res`.
+- **Remux ke mp4, mkv atau webm.** Pilih wadah output tanpa re-encoding.
+- **Klip video.** Unduh hanya sebagian video dengan waktu mulai dan berakhir.
+- **Ukuran file maksimal.** Lewati item yang melebihi batas, misal `50M`.
+- **Folder video dan audio terpisah.** Direktori unduhan khusus untuk tiap jenis media.
+- **Update engine otomatis.** Cek engine mingguan di latar belakang, aktifkan di Pengaturan.
+- **User-Agent kustom.** Ganti header User-Agent HTTP untuk situs yang membutuhkannya.
+
+### Peningkatan
+
+- **Penataan ulang SponsorBlock dan cookies.** Opsi tersebut sekarang ditempatkan di bagian yang sesuai, dengan teks penjelas.
+
+### Perbaikan bug
+
+- **Tombol log** pada tugas gagal sekarang membuka output engine, bukan potongan satu baris.
+
 ## v0.1.1
 
 Perilaku bawaan yang lebih baik: setup engine otomatis, FFmpeg terkelola di Windows, error yang lebih jelas, dan APK lebih kecil (45 MB, arm64-v8a).
