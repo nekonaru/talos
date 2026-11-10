@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.2.2
+
+Bug fixes release. No new features.
+
+### Bug fixes
+
+- **Android downloads failed on every attempt.** The embedded engine no longer passes a Java object into Python; output lines are buffered and polled by the host, and engine errors carry the real yt-dlp message.
+- **Settings UI updated with a delay.** Toggling or editing a setting now rebuilds the screen and the dependent UI instantly.
+- **Wrong version reported.** The app reported 0.1.0 on every release; it now reports the actual version, and a test keeps pubspec.yaml and the About screen in sync.
+- **iOS startup crash.** The app no longer crashes at launch on iOS; the engine reports itself as not yet available until an iOS backend exists.
+
 ## v0.2.1
 
 Follow-up polish to the v0.2.0 feature set: a persistent notification toggle, richer subtitle handling, and channel choice for the managed engine.

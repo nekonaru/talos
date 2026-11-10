@@ -5,6 +5,17 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.2.2
+
+Rilis perbaikan bug. Tidak ada fitur baru.
+
+### Perbaikan bug
+
+- **Pengunduhan Android gagal di setiap percobaan.** Engine tertanam tidak lagi meneruskan objek Java ke Python; baris output di-buffer dan di-polling oleh host, dan error engine kini membawa pesan yt-dlp yang sebenarnya.
+- **UI Pengaturan memperbarui dengan delay.** Mengubah pengaturan kini langsung menggambar ulang layar dan UI terkait.
+- **Versi yang salah dilaporkan.** Aplikasi melaporkan 0.1.0 di setiap rilis; kini melaporkan versi sebenarnya, dan sebuah test menjaga sinkronisasi pubspec.yaml dan layar Tentang.
+- **Crash saat membuka di iOS.** Aplikasi tidak lagi crash saat dijalankan di iOS; engine melapor belum tersedia sampai backend iOS dibuat.
+
 ## v0.2.1
 
 Polish lanjutan dari fitur v0.2.0: toggle notifikasi persisten, penanganan subtitle yang lebih lengkap, dan pilihan channel untuk engine terkelola.
