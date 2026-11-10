@@ -1,19 +1,66 @@
 """Talos download engine entry points for the embedded Python runtime.
 
 This module runs inside the Android app. It executes yt-dlp in-process and
-forwards raw CLI lines to a Java bridge object provided by the host. The
-Dart side parses those lines with the same parser used on desktop.
+buffers raw CLI lines per task. The host polls `drain(task_id)` to fetch
+pending events and decides on cancellation through `cancel(task_id)`, so
+no Java object is ever used from Python. The Dart side parses the lines
+with the same parser used on desktop.
 """
 
 import io
 import sys
 import json
 import shlex
+import threading
 import traceback
 
 
 class DownloadCancelled(Exception):
     pass
+
+
+_tasks = {}
+_cancel_requested = set()
+_tasks_lock = threading.Lock()
+
+
+def init(task_id):
+    """Create the event buffer for a task, honoring a pending cancel."""
+    with _tasks_lock:
+        cancel = task_id in _cancel_requested
+        _cancel_requested.discard(task_id)
+        _tasks[task_id] = {'pending': [], 'cancel': cancel}
+    return 'ok'
+
+
+def drain(task_id):
+    """Return the buffered events as a JSON array and clear the buffer."""
+    with _tasks_lock:
+        state = _tasks.get(task_id)
+        if state is None:
+            return '[]'
+        items = state['pending']
+        state['pending'] = []
+    return json.dumps(items)
+
+
+def cancel(task_id):
+    """Request cancellation. Safe to call before init or after run."""
+    with _tasks_lock:
+        state = _tasks.get(task_id)
+        if state is not None:
+            state['cancel'] = True
+        else:
+            _cancel_requested.add(task_id)
+    return 'ok'
+
+
+def cleanup(task_id):
+    """Drop the task buffer to keep the map bounded."""
+    with _tasks_lock:
+        _tasks.pop(task_id, None)
+        _cancel_requested.discard(task_id)
+    return 'ok'
 
 
 class _LineWriter(io.TextIOBase):
@@ -101,33 +148,45 @@ def custom(template, url):
     return buffer.getvalue()
 
 
-def run(task_id, argv_json, bridge):
-    """Execute yt-dlp CLI with the given arguments.
+def run(task_id, argv_json):
+    """Execute yt-dlp CLI, buffering output for the host to poll.
 
-    bridge is a Java object with methods: onLine(String), onDone(),
-    onCancelled(), onError(String) and isCancelled() (boolean).
+    The host must call `init(task_id)` before this and `drain(task_id)`
+    after it returns (as well as periodically) to receive `(['line', s],)`
+    events. Returns a JSON status object:
+      {"status": "done"} | {"status": "cancelled"} |
+      {"status": "error", "message": "..."}
     """
+    state = _tasks.get(task_id)
+    if state is None:
+        with _tasks_lock:
+            state = {'pending': [], 'cancel': False}
+            _tasks[task_id] = state
+
+    def is_cancelled():
+        return state['cancel']
 
     def on_line(line):
-        if bridge.isCancelled():
+        if state['cancel']:
             raise DownloadCancelled()
-        bridge.onLine(line)
+        with _tasks_lock:
+            state['pending'].append(['line', line])
 
     try:
         argv = json.loads(argv_json)
+        if not isinstance(argv, list):
+            raise ValueError('argv must be a list')
     except Exception:
-        bridge.onError('Invalid engine arguments')
-        return
+        return json.dumps({'status': 'error', 'message': 'Invalid engine arguments'})
 
     try:
-        _run(argv, on_line, bridge.isCancelled)
-        bridge.onDone()
+        _run(argv, on_line, is_cancelled)
+        return json.dumps({'status': 'done'})
     except DownloadCancelled:
-        bridge.onCancelled()
+        return json.dumps({'status': 'cancelled'})
     except SystemExit as exc:
         if exc.code in (0, None):
-            bridge.onDone()
-        else:
-            bridge.onError('yt-dlp exited with code %s' % exc.code)
+            return json.dumps({'status': 'done'})
+        return json.dumps({'status': 'error', 'message': 'yt-dlp exited with code %s' % exc.code})
     except Exception:
-        bridge.onError(traceback.format_exc(limit=3))
+        return json.dumps({'status': 'error', 'message': traceback.format_exc(limit=3)})

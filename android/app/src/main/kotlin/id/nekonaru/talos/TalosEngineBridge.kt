@@ -9,19 +9,22 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import org.json.JSONArray
+import org.json.JSONObject
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Bridge between Flutter and the embedded Python runtime.
  *
- * All Python calls run on background threads. Progress lines are forwarded
- * verbatim from yt-dlp and parsed on the Dart side with the same parser
- * used for desktop subprocesses.
+ * All Python calls run on background threads. The Python side buffers raw
+ * yt-dlp lines per task; a pump thread polls `drain` and forwards the lines
+ * to Flutter over the event channel. No Java object is ever passed into
+ * Python, so JNI/proxy attribute lookups cannot fail. The Dart side parses
+ * the lines with the same parser used for desktop subprocesses.
  */
 class TalosEngineBridge(private val application: Application) {
     private var eventSink: EventChannel.EventSink? = null
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val bridges = mutableMapOf<String, EngineBridge>()
-    private val lock = Object()
 
     fun attach(flutterEngine: FlutterEngine) {
         val messenger = flutterEngine.dartExecutor.binaryMessenger
@@ -82,21 +85,45 @@ class TalosEngineBridge(private val application: Application) {
                         result.error("bad_args", "A taskId is required", null)
                         return@setMethodCallHandler
                     }
-                    val bridge = EngineBridge(taskId) { id, event -> sendEvent(id, event) }
-                    synchronized(lock) { bridges[taskId] = bridge }
+                    val argvJson = JSONArray(args).toString()
+                    val finished = AtomicBoolean(false)
+                    val outcome = AtomicReference<Map<String, Any?>>(null)
                     Thread {
                         try {
                             ensureStarted()
-                            val argvJson = JSONArray(args).toString()
-                            Python.getInstance().getModule("talos_engine").callAttr("run", taskId, argvJson, bridge)
+                            Python.getInstance().getModule("talos_engine").callAttr("init", taskId)
+                            val raw = Python.getInstance().getModule("talos_engine")
+                                .callAttr("run", taskId, argvJson)?.toString()
+                            outcome.set(parseStatus(raw))
                         } catch (e: Exception) {
-                            sendEvent(taskId, mapOf(
-                                "taskId" to taskId,
-                                "event" to "error",
-                                "message" to (e.message ?: "Engine crashed"),
-                            ))
+                            outcome.set(
+                                mapOf(
+                                    "event" to "error",
+                                    "message" to (e.message ?: "Engine crashed"),
+                                ),
+                            )
                         } finally {
-                            synchronized(lock) { bridges.remove(taskId) }
+                            finished.set(true)
+                        }
+                    }.start()
+                    Thread {
+                        while (true) {
+                            drainAndEmit(taskId)
+                            if (finished.get()) {
+                                drainAndEmit(taskId)
+                                val final = outcome.get() ?: mapOf(
+                                    "event" to "error",
+                                    "message" to "Engine crashed",
+                                )
+                                sendEvent(taskId, final + ("taskId" to taskId))
+                                try {
+                                    Python.getInstance().getModule("talos_engine").callAttr("cleanup", taskId)
+                                } catch (_: Exception) {
+                                    // The Python interpreter may be gone; nothing to clean up.
+                                }
+                                break
+                            }
+                            Thread.sleep(60)
                         }
                     }.start()
                     result.success(true)
@@ -104,7 +131,14 @@ class TalosEngineBridge(private val application: Application) {
                 "cancel" -> {
                     val taskId = call.argument<String>("taskId")
                     if (!taskId.isNullOrEmpty()) {
-                        synchronized(lock) { bridges[taskId]?.cancelled = true }
+                        Thread {
+                            try {
+                                ensureStarted()
+                                Python.getInstance().getModule("talos_engine").callAttr("cancel", taskId)
+                            } catch (_: Exception) {
+                                // Nothing to cancel; the task either never started or is already done.
+                            }
+                        }.start()
                     }
                     result.success(true)
                 }
@@ -126,8 +160,50 @@ class TalosEngineBridge(private val application: Application) {
         }
     }
 
+    private fun drainAndEmit(taskId: String) {
+        val json = try {
+            Python.getInstance().getModule("talos_engine").callAttr("drain", taskId)?.toString() ?: "[]"
+        } catch (_: Exception) {
+            return
+        }
+        try {
+            val items = JSONArray(json)
+            for (i in 0 until items.length()) {
+                val item = items.optJSONArray(i) ?: continue
+                when (item.optString(0)) {
+                    "line" -> sendEvent(
+                        taskId,
+                        mapOf("taskId" to taskId, "event" to "line", "line" to item.optString(1)),
+                    )
+                }
+            }
+        } catch (_: Exception) {
+            // Malformed buffer payload; drop it, yt-dlp keeps running.
+        }
+    }
+
+    private fun parseStatus(raw: String?): Map<String, Any?> {
+        if (raw.isNullOrEmpty()) {
+            return mapOf("event" to "error", "message" to "Engine returned no result")
+        }
+        return try {
+            val obj = JSONObject(raw)
+            when (obj.optString("status")) {
+                "done" -> mapOf("event" to "done")
+                "cancelled" -> mapOf("event" to "cancelled")
+                else -> mapOf(
+                    "event" to "error",
+                    "message" to obj.optString("message", "Download failed"),
+                )
+            }
+        } catch (_: Exception) {
+            mapOf("event" to "error", "message" to "Engine returned an invalid result")
+        }
+    }
+
     private fun sendEvent(taskId: String, event: Map<String, Any?>) {
-        mainHandler.post { eventSink?.success(event) }
+        val full = if (event.containsKey("taskId")) event else event + ("taskId" to taskId)
+        mainHandler.post { eventSink?.success(full) }
     }
 
     private fun ensureStarted() {
@@ -152,27 +228,4 @@ class TalosEngineBridge(private val application: Application) {
             mapOf("ready" to false, "version" to null, "managed" to true)
         }
     }
-}
-
-class EngineBridge(val taskId: String, private val sink: (String, Map<String, Any?>) -> Unit) {
-    @Volatile
-    var cancelled: Boolean = false
-
-    fun onLine(line: String) {
-        sink(taskId, mapOf("taskId" to taskId, "event" to "line", "line" to line))
-    }
-
-    fun onDone() {
-        sink(taskId, mapOf("taskId" to taskId, "event" to "done"))
-    }
-
-    fun onCancelled() {
-        sink(taskId, mapOf("taskId" to taskId, "event" to "cancelled"))
-    }
-
-    fun onError(message: String) {
-        sink(taskId, mapOf("taskId" to taskId, "event" to "error", "message" to message))
-    }
-
-    fun isCancelled(): Boolean = cancelled
 }
