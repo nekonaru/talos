@@ -3,12 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:talos/app.dart';
 import 'package:talos/core/download_manager.dart';
 import 'package:talos/core/engine/engine.dart';
 import 'package:talos/core/engine/models.dart';
+import 'package:talos/core/history_store.dart';
 
 class FakeSession implements TalosDownloadSession {
   FakeSession();
@@ -135,8 +135,6 @@ void main() {
   });
 
   setUpAll(() {
-    // Tests must never hit the network for fonts or spawn real processes.
-    GoogleFonts.config.allowRuntimeFetching = false;
     DownloadManager.ffmpegProbeOverride = (_) async => true;
   });
 
@@ -214,5 +212,24 @@ void main() {
 
     expect(manager.history.entries, hasLength(1));
     expect(manager.history.entries.first.title, 'Example video');
+  });
+
+  testWidgets('retry targets the configured per-type folder', (tester) async {
+    final engine = FakeEngine();
+    late final DownloadManager manager;
+    await tester.runAsync(() async {
+      manager = await DownloadManager.create(engine: engine);
+      await manager.settings.mutate((s) => s.copyWith(videoFolder: 'vfolder', audioFolder: 'afolder'));
+      await manager.enqueue(
+        DownloadRequest(url: 'https://example.invalid/a', videoMode: false, outputDir: 'ignored'),
+        title: 'Example audio',
+        kind: HistoryKind.audio,
+      );
+      final task = manager.tasks.single;
+      await manager.retry(task);
+    });
+
+    final retried = manager.tasks.first;
+    expect(retried.request.outputDir, 'afolder');
   });
 }
