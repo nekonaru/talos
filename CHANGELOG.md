@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.3.0
+
+Engine upgrade: YouTube downloads on Android now reach much higher quality tiers via in-app merging, plus cold-start, stability and licensing improvements.
+
+### New features
+
+- **Bundled FFmpeg on Android.** Talos now merges the separate video-only and audio-only streams yt-dlp puts out, instead of being stuck with muxed formats under ~360p. Streams up to 720p60+ are served over DASH with direct URLs and muxed in-app.
+- **Best codec auto-pick.** With the merge path in place, Android picks the same best direct DASH streams desktop does, so the cap is gone for good.
+
+### Improvements
+
+- **Cold start is less bursty.** Python warm-up now happens on a background thread at engine attach, not inside a forced status check. Status polling no longer triggers Python startup on the calling isolate.
+- **android runtime package flows.** The debug build supports arm64-v8a and x86_64 for emulator verification; release builds cover arm64-v8a only.
+
+### Licensing
+
+- **FFmpegKit (LGPL-3.0, dynamic)** is needed to merge streams; Talos does not statically link FFmpeg or ship GPL encoders.
+
 ## v0.2.3
 
 Stability and engine release: a format client fix that unblocks YouTube downloads on Android, plus a batch of robustness improvements.

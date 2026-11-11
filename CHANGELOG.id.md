@@ -5,6 +5,24 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.3.0
+
+Peningkatan engine: unduhan YouTube di Android kini bisa menghasilkan kualitas jauh lebih tinggi lewat penggabungan di dalam aplikasi, plus perbaikan cold-start, stabilitas, dan lisensi.
+
+### Fitur baru
+
+- **FFmpeg tertanam di Android.** Talos kini menggabungkan stream video dan audio yang yt-dlp unduh terpisah, jadi build embedded tidak lagi terjebak pada format muxed ~360p. Stream hingga 720p60+ tersedia lewat DASH dengan URL langsung dan digabung di dalam app.
+- **Auto-pick codec terbaik.** Dengan penggabungan tersedia, Android memilih stream DASH terbaik yang sama seperti desktop, sehingga batas kualitas benar-benar hilang.
+
+### Peningkatan
+
+- **Cold start lebih ringan.** Warm-up Python kini berjalan di background thread saat engine di-attach, bukan dipicu oleh status check paksa. Status tidak lagi langsung men-start Python.
+- **Paket debug mendukung dua ABI.** Debug build mencakup arm64-v8a dan x86_64 untuk verifikasi emulator terperinci; release hanya arm64-v8a.
+
+### Lisensi
+
+- **FFmpegKit (LGPL-3.0, dynamic linkage)** diperlukan untuk menggabungkan stream. Talos tidak melakukan static link ke FFmpeg dan tidak menyertakan encoder GPL.
+
 ## v0.2.3
 
 Rilis stabilitas dan engine: perbaikan pemilihan format yang membuka jalan unduhan YouTube di Android, plus serangkaian perbaikan ketahanan.

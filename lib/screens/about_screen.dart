@@ -20,7 +20,7 @@ class AboutScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final chips = <(String, String)>[
       ('yt-dlp', 'Unlicense'),
-      ('FFmpeg', 'LGPL-2.1 / GPL'),
+      ('FFmpegKit (Android)', 'LGPL-3.0'),
       ('aria2', 'GPL-2.0'),
       ('Flutter', 'BSD-3-Clause'),
       ('Chaquopy (Android)', 'MIT'),
