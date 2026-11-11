@@ -55,9 +55,10 @@ class AndroidEngine implements TalosEngine {
 
   @override
   TalosDownloadSession download(DownloadRequest request, {required bool ffmpegAvailable}) {
-    // The embedded Android runtime has no ffmpeg yet, so single-file formats are used.
+    // The embedded Android runtime merges separate streams with the bundled
+    // FFmpegKit instead of a spawnable ffmpeg binary.
     final args = CommandBuilder.downloadArgs(request, ffmpegAvailable: false);
-    final session = _AndroidDownloadSession(this, args);
+    final session = _AndroidDownloadSession(this, args, merge: !ffmpegAvailable && request.videoMode);
     session.start();
     return session;
   }
@@ -70,12 +71,13 @@ class AndroidEngine implements TalosEngine {
 }
 
 class _AndroidDownloadSession implements TalosDownloadSession {
-  _AndroidDownloadSession(this._engine, this._args) {
+  _AndroidDownloadSession(this._engine, this._args, {this._merge = false}) {
     _taskId = DateTime.now().microsecondsSinceEpoch.toRadixString(16);
   }
 
   final AndroidEngine _engine;
   final List<String> _args;
+  final bool _merge;
   late final String _taskId;
 
   final _controller = StreamController<EngineProgress>.broadcast();
@@ -100,6 +102,7 @@ class _AndroidDownloadSession implements TalosDownloadSession {
       await AndroidEngine._method.invokeMethod<void>('start', {
         'taskId': _taskId,
         'args': _args,
+        'merge': _merge,
       });
     } on PlatformException catch (e) {
       _finish(SessionOutcome(error: e.message ?? 'Engine failed to start'));

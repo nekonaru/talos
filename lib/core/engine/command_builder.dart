@@ -21,13 +21,6 @@ class CommandBuilder {
   }) {
     final args = <String>['--newline', '--no-warnings'];
 
-    if (!ffmpegAvailable && request.videoMode) {
-      // YouTube pages its default clients return no muxed formats at all, so
-      // a client that still serves a muxed MP4 is required, or every
-      // "video" download on Android fails.
-      args.addAll(['--extractor-args', 'youtube:player_client=android']);
-    }
-
     if (request.includePlaylist) {
       args.add('--yes-playlist');
       if (request.playlistItems != null && request.playlistItems!.isNotEmpty) {
@@ -44,10 +37,17 @@ class CommandBuilder {
       } else if (ffmpegAvailable) {
         if (height != null && height > 0) {
           args.addAll(['-f', 'bv*[height<=$height]+ba/b[height<=$height]/b']);
+        } else {
+          args.addAll(['-f', 'bv*+ba/b']);
         }
       } else {
-        // Without ffmpeg separate streams cannot be merged, so pick a single-file format.
-        args.addAll(['-f', height != null && height > 0 ? 'b[height<=$height]/b' : 'b/best']);
+        // Embedded Android has no ffmpeg binary on PATH; streams are merged
+        // by the bundled FFmpegKit after download instead.
+        if (height != null && height > 0) {
+          args.addAll(['-f', 'bv*[height<=$height]+ba/b[height<=$height]/b']);
+        } else {
+          args.addAll(['-f', 'bv*+ba/b']);
+        }
       }
       if (request.downloadSubtitles) {
         args.addAll(['--write-subs']);

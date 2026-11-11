@@ -130,7 +130,7 @@ void main() {
       final args = CommandBuilder.downloadArgs(request(maxHeight: 1080), ffmpegAvailable: false);
       expect(args, contains('--write-subs'));
       expect(args, isNot(contains('--embed-subs')));
-      expect(args, containsAllInOrder(['-f', 'b[height<=1080]/b']));
+      expect(args, containsAllInOrder(['-f', 'bv*[height<=1080]+ba/b[height<=1080]/b']));
     });
 
     test('audio without ffmpeg keeps original stream', () {
@@ -140,10 +140,10 @@ void main() {
       expect(args, containsAllInOrder(['-f', 'ba/bestaudio/b']));
     });
 
-    test('embedded video mode pins a client with muxed formats', () {
+    test('embedded video mode picks DASH streams for in-app merge', () {
       final args = CommandBuilder.downloadArgs(request(maxHeight: 720), ffmpegAvailable: false);
-      expect(args, containsAllInOrder(['--extractor-args', 'youtube:player_client=android']));
-      expect(args, containsAllInOrder(['-f', 'b[height<=720]/b']));
+      expect(args, isNot(contains('--extractor-args')));
+      expect(args, containsAllInOrder(['-f', 'bv*[height<=720]+ba/b[height<=720]/b']));
     });
 
     test('embedded audio mode keeps the default client', () {

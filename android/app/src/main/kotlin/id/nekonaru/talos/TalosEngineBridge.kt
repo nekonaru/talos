@@ -44,8 +44,10 @@ class TalosEngineBridge(private val application: Application) {
         method.setMethodCallHandler { call, result ->
             when (call.method) {
                 "status" -> {
-                    ensureStartedCatching()
-                    result.success(statusMap())
+                    Thread {
+                        val status = statusMap()
+                        mainHandler.post { result.success(status) }
+                    }.start()
                 }
                 "setup" -> {
                     Thread {
@@ -81,6 +83,7 @@ class TalosEngineBridge(private val application: Application) {
                 "start" -> {
                     val taskId = call.argument<String>("taskId")
                     val args = call.argument<List<String>>("args") ?: emptyList()
+                    val merge = call.argument<Boolean>("merge") ?: false
                     if (taskId.isNullOrEmpty()) {
                         result.error("bad_args", "A taskId is required", null)
                         return@setMethodCallHandler
@@ -93,7 +96,7 @@ class TalosEngineBridge(private val application: Application) {
                             ensureStarted()
                             Python.getInstance().getModule("talos_engine").callAttr("init", taskId)
                             val raw = Python.getInstance().getModule("talos_engine")
-                                .callAttr("run", taskId, argvJson)?.toString()
+                                .callAttr("run", taskId, argvJson, merge)?.toString()
                             outcome.set(parseStatus(raw))
                         } catch (e: Exception) {
                             outcome.set(
@@ -206,7 +209,7 @@ class TalosEngineBridge(private val application: Application) {
         mainHandler.post { eventSink?.success(full) }
     }
 
-    private fun ensureStarted() {
+    internal fun ensureStarted() {
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(application))
         }

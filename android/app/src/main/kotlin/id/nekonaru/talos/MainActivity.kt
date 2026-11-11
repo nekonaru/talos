@@ -14,6 +14,14 @@ class MainActivity : FlutterActivity() {
         bridge = engine
         engine.attach(flutterEngine)
         intentBridge.attach(flutterEngine, intent)
+        // Warm the Python runtime on a background thread so the first probe
+        // does not pay the cold start cost and the first frame is not blocked.
+        Thread {
+            try {
+                engine.ensureStarted()
+            } catch (_: Exception) {
+            }
+        }.start()
     }
 
     override fun onNewIntent(intent: Intent) {

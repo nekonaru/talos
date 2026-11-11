@@ -7,6 +7,12 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+dependencies {
+    // The artifact only ships arm64-v8a and x86_64; x86_64 is excluded by the
+    // abiFilters below in release builds. LGPL-3.0, dynamically linked.
+    implementation("dev.ffmpegkit-maintained:ffmpeg-kit-min:8.1.9")
+}
+
 android {
     namespace = "id.nekonaru.talos"
     compileSdk = flutter.compileSdkVersion
