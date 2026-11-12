@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../app_scope.dart';
+import '../core/app_info.dart';
 import '../core/theme.dart';
 import '../gen/app_localizations.dart';
 import 'about_screen.dart';
@@ -60,6 +62,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } finally {
       if (mounted) setState(() => _updating = false);
+    }
+  }
+
+  Future<void> _openLink(BuildContext context, String url) async {
+    final l = AppLocalizations.of(context)!;
+    try {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
     }
   }
 
@@ -615,6 +627,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Text(l.aboutTalos),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutScreen())),
+            ),
+          ),
+          _SectionLabel(l.author),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text('Nicolas Dwi Dharma'),
+              subtitle: const Text('@nekonaru on GitHub'),
+              trailing: const Icon(Icons.open_in_new, size: 18),
+              onTap: () => _openLink(context, TalosInfo.authorUrl),
+            ),
+          ),
+          _SectionLabel(l.support),
+          Card(
+            child: Column(
+              children: [
+                for (final sponsor in TalosInfo.sponsors)
+                  ListTile(
+                    leading: const Icon(Icons.favorite_border_rounded),
+                    title: Text(sponsor.$1),
+                    trailing: const Icon(Icons.open_in_new, size: 18),
+                    onTap: () => _openLink(context, sponsor.$2),
+                  ),
+              ],
             ),
           ),
         ],

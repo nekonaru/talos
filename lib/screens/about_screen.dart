@@ -8,9 +8,12 @@ class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   Future<void> _open(BuildContext context, String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final l = AppLocalizations.of(context)!;
+    try {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
     }
   }
 
@@ -67,6 +70,31 @@ class AboutScreen extends StatelessWidget {
             icon: const Icon(Icons.article_outlined),
             label: Text(l.licenses),
           ),
+          const SizedBox(height: 28),
+          Text(l.author.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2.4)),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: Text(TalosInfo.authorName),
+              subtitle: Text('@${TalosInfo.authorHandle} on GitHub'),
+              trailing: const Icon(Icons.open_in_new, size: 18),
+              onTap: () => _open(context, TalosInfo.authorUrl),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(l.support.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2.4)),
+          const SizedBox(height: 8),
+          for (final (name, url) in TalosInfo.sponsors)
+            Card(
+              margin: const EdgeInsets.only(bottom: 6),
+              child: ListTile(
+                leading: const Icon(Icons.favorite_border_rounded),
+                title: Text(name),
+                trailing: const Icon(Icons.open_in_new, size: 18),
+                onTap: () => _open(context, url),
+              ),
+            ),
           const SizedBox(height: 28),
           Text(l.specialThanks.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2.4)),
           const SizedBox(height: 8),

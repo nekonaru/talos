@@ -20,17 +20,29 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
   String? _videoId;
   String? _audioId;
 
-  List<YtdlpFormat> get _videoFormats =>
-      widget.probe.formats.where((f) => f.vcodec != 'none' && f.ext.isNotEmpty).toList()
-        ..sort((a, b) => (b.height ?? 0).compareTo(a.height ?? 0));
+  List<YtdlpFormat> get _videoFormats {
+    final list = widget.probe.formats
+        .where((f) => f.vcodec != 'none' && f.vcodec != 'images' && f.ext.isNotEmpty)
+        .toList();
+    list.sort((a, b) {
+      if (a.recommended != b.recommended) return a.recommended ? -1 : 1;
+      return (b.height ?? 0).compareTo(a.height ?? 0);
+    });
+    return list;
+  }
 
-  List<YtdlpFormat> get _audioFormats =>
-      widget.probe.formats.where((f) => f.acodec != 'none' || f.vcodec == 'none').toList()
-        ..sort((a, b) {
-          final av = a.abr ?? a.vbr ?? 0;
-          final bv = b.abr ?? b.vbr ?? 0;
-          return bv.compareTo(av);
-        });
+  List<YtdlpFormat> get _audioFormats {
+    final list = widget.probe.formats
+        .where((f) => f.acodec != 'none' || f.vcodec == 'none')
+        .toList();
+    list.sort((a, b) {
+      if (a.recommended != b.recommended) return a.recommended ? -1 : 1;
+      final av = a.abr ?? a.vbr ?? 0;
+      final bv = b.abr ?? b.vbr ?? 0;
+      return bv.compareTo(av);
+    });
+    return list;
+  }
 
   bool get _bestMode => _videoId == null && _audioId == null;
 
@@ -99,7 +111,7 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
             ListTile(
               onTap: () => setState(() => _videoId = format.id),
               leading: Icon(_videoId == format.id ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: theme.colorScheme.primary, size: 20),
-              title: Text('${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
+              title: Text(format.recommended ? '★  RECOMMENDED · ${format.resolution ?? format.note}  (${format.ext.toUpperCase()})' : '${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
               subtitle: Text([
                 format.filesize != null ? formatBytes(format.filesize!) : '? B',
                 if (format.vcodec != null) format.vcodec!,
@@ -119,7 +131,7 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
             ListTile(
               onTap: () => setState(() => _audioId = format.id),
               leading: Icon(_audioId == format.id ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: theme.colorScheme.primary, size: 20),
-              title: Text('${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
+              title: Text(format.recommended ? '★  RECOMMENDED · ${format.resolution ?? format.note}  (${format.ext.toUpperCase()})' : '${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
               subtitle: Text([
                 format.filesize != null ? formatBytes(format.filesize!) : '? B',
                 if (format.acodec != null) format.acodec!,

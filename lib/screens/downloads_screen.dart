@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:open_file/open_file.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -35,17 +36,43 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
   }
 
   Future<void> _openFile(String path) async {
-    final uri = Uri.file(path);
+    final l = AppLocalizations.of(context)!;
+    try {
+      final result = await OpenFile.open(path);
+      if (result.type != ResultType.done) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.unknownError)),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
+      }
+    }
+  }
+
+  Future<void> _openFolder(String path) async {
+    final l = AppLocalizations.of(context)!;
+    final parent = File(path).parent.absolute.path;
+    if (Platform.isAndroid || Platform.isIOS) {
+      await Clipboard.setData(ClipboardData(text: parent));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.copied)));
+      }
+      return;
+    }
+    final uri = Uri.directory(parent);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     }
   }
 
-  Future<void> _openFolder(String path) async {
-    final parent = File(path).parent.absolute.path;
-    final uri = Uri.directory(parent);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+  Future<void> _copyPath(String path) async {
+    final l = AppLocalizations.of(context)!;
+    await Clipboard.setData(ClipboardData(text: path));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.copied)));
     }
   }
 
@@ -182,6 +209,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 final entry = history[index];
                 return _HistoryCard(
                   entry: entry,
+                  onCopyPath: () => _copyPath(entry.filePath),
                   onOpen: () => _openFile(entry.filePath),
                   onFolder: () => _openFolder(entry.filePath),
                   onShare: Platform.isAndroid || Platform.isIOS ? () => _share(entry.filePath) : null,
@@ -332,6 +360,7 @@ class _HistoryCard extends StatelessWidget {
     required this.entry,
     required this.onOpen,
     required this.onFolder,
+    required this.onCopyPath,
     required this.onShare,
     required this.onDelete,
     required this.onRemove,
@@ -340,6 +369,7 @@ class _HistoryCard extends StatelessWidget {
   final HistoryEntry entry;
   final VoidCallback onOpen;
   final VoidCallback onFolder;
+  final VoidCallback onCopyPath;
   final VoidCallback? onShare;
   final VoidCallback onDelete;
   final VoidCallback onRemove;
@@ -348,42 +378,67 @@ class _HistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
-    final isAndroid = Platform.isAndroid;
+    final isDesktop = !Platform.isAndroid && !Platform.isIOS;
+    final path = entry.filePath;
     return Card(
-      child: ListTile(
-        leading: Icon(
-          entry.kind == HistoryKind.audio ? Icons.music_note : Icons.movie_outlined,
-          color: theme.colorScheme.primary,
-        ),
-        title: Text(entry.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-        subtitle: Text(
-          [formatDate(entry.dateMs), formatBytes(entry.sizeBytes)].where((s) => s.isNotEmpty).join('  ·  '),
-          style: theme.textTheme.bodySmall,
-        ),
-        onTap: isAndroid ? onShare ?? onOpen : onOpen,
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
-          onSelected: (value) {
-            switch (value) {
-              case 'open':
-                onOpen();
-              case 'folder':
-                onFolder();
-              case 'share':
-                onShare?.call();
-              case 'delete':
-                onDelete();
-              case 'remove':
-                onRemove();
-            }
-          },
-          itemBuilder: (context) => [
-            if (!isAndroid) PopupMenuItem(value: 'open', child: Text(l.open)),
-            if (!isAndroid) PopupMenuItem(value: 'folder', child: Text(l.openFolder)),
-            if (onShare != null) PopupMenuItem(value: 'share', child: Text(l.share)),
-            PopupMenuItem(value: 'remove', child: Text(l.remove)),
-            PopupMenuItem(value: 'delete', child: Text(l.deleteFile)),
-          ],
+      child: InkWell(
+        onTap: onOpen,
+        borderRadius: BorderRadius.circular(16),
+        child: ListTile(
+          leading: Icon(
+            entry.kind == HistoryKind.audio ? Icons.music_note : Icons.movie_outlined,
+            color: theme.colorScheme.primary,
+          ),
+          title: Text(entry.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 2),
+              Text(
+                [formatDate(entry.dateMs), formatBytes(entry.sizeBytes)].where((s) => s.isNotEmpty).join('  ·  '),
+                style: theme.textTheme.bodySmall,
+              ),
+              if (path.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  List<String>.from(path.split(Platform.pathSeparator)).reversed.take(3).toList().reversed.join(Platform.pathSeparator),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontSize: 10, color: theme.hintColor),
+                ),
+              ],
+            ],
+          ),
+          trailing: PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case 'open':
+                  onOpen();
+                case 'folder':
+                  onFolder();
+                case 'copyPath':
+                  onCopyPath();
+                case 'share':
+                  onShare?.call();
+                case 'delete':
+                  onDelete();
+                case 'remove':
+                  onRemove();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'open', child: Text(l.open)),
+              if (isDesktop)
+                PopupMenuItem(value: 'folder', child: Text(l.openFolder))
+              else
+                PopupMenuItem(value: 'copyPath', child: Text(l.copyPath)),
+              if (onShare != null) PopupMenuItem(value: 'share', child: Text(l.share)),
+              const PopupMenuDivider(),
+              PopupMenuItem(value: 'remove', child: Text(l.remove)),
+              PopupMenuItem(value: 'delete', child: Text(l.deleteFile)),
+            ],
+          ),
         ),
       ),
     );

@@ -105,6 +105,49 @@ EngineProgress? parseYtdlpLine(String line) {
   return null;
 }
 
+/// Tags the single best video and the single best audio format as recommended.
+/// Video rank keys: height, ext=mp4, vcodec starting with `avc`, aac.
+/// Audio rank keys: abr/br, ext=m4a/aac. One tag per class.
+void _tagRecommended(List<YtdlpFormat> formats) {
+  int bestVideoScore = -1;
+  int bestVideo = -1;
+  int bestAudioScore = -1;
+  int bestAudio = -1;
+
+  int videoScore(YtdlpFormat f) {
+    if (f.vcodec == null || f.vcodec == 'none' || f.vcodec == 'images') return -1;
+    var score = (f.height ?? 0) * 1000;
+    if (f.ext == 'mp4') score += 200;
+    if (f.vcodec!.startsWith('avc') || f.vcodec == 'h264') score += 150;
+    if (f.acodec == 'none') score += 50; // prefer video only over audio-only muxed
+    return score;
+  }
+
+  int audioScore(YtdlpFormat f) {
+    final isAudioOnly = (f.acodec != null && f.acodec != 'none') || f.vcodec == 'none';
+    if (!isAudioOnly) return -1;
+    var score = ((f.abr ?? 0).round()) * 10;
+    if (f.ext == 'm4a' || f.ext == 'aac') score += 200;
+    return score;
+  }
+
+  for (var i = 0; i < formats.length; i++) {
+    final f = formats[i];
+    final v = videoScore(f);
+    if (v > bestVideoScore) {
+      bestVideoScore = v;
+      bestVideo = i;
+    }
+    final a = audioScore(f);
+    if (a > bestAudioScore) {
+      bestAudioScore = a;
+      bestAudio = i;
+    }
+  }
+  if (bestVideo >= 0) formats[bestVideo] = formats[bestVideo].copyWith(recommended: true);
+  if (bestAudio >= 0) formats[bestAudio] = formats[bestAudio].copyWith(recommended: true);
+}
+
 /// Parses yt-dlp's `--dump-single-json` output into a [MediaProbe].
 /// Throws [FormatException] when the payload is not usable.
 MediaProbe parseProbeJson(String body) {
@@ -151,6 +194,7 @@ MediaProbe parseProbeJson(String body) {
         fps: (item['fps'] as num?)?.toDouble(),
       ));
     }
+    _tagRecommended(formats);
   }
 
   final duration = decoded['duration'];

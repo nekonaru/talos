@@ -9,4 +9,13 @@ class TalosInfo {
   static const String sourceUrl = 'https://github.com/nekonaru/talos';
   static const String issuesUrl = 'https://github.com/nekonaru/talos/issues';
   static const String license = 'MIT';
+  static const String authorName = 'Nicolas Dwi Dharma';
+  static const String authorHandle = 'nekonaru';
+  static const String authorUrl = 'https://github.com/nekonaru';
+  static const List<(String, String)> sponsors = [
+    ('GitHub Sponsors', 'https://github.com/sponsors/nekonaru'),
+    ('Saweria', 'https://saweria.co/nekonaruu'),
+    ('SociaBuzz', 'https://sociabuzz.com/nekonaru/donate'),
+    ('BagiBagi', 'https://bagibagi.co/Nekonaru'),
+  ];
 }

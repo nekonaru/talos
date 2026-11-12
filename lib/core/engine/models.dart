@@ -14,6 +14,7 @@ class YtdlpFormat {
     this.vbr,
     this.height,
     this.fps,
+    this.recommended = false,
   });
 
   final String id;
@@ -27,6 +28,26 @@ class YtdlpFormat {
   final double? vbr;
   final int? height;
   final double? fps;
+
+  /// True for the format selected as the platform's recommended option.
+  /// Picked at parse time: highest resolution video, prefer H.264/MP4;
+  /// highest-bitrate and prefer AAC/M4A audio.
+  final bool recommended;
+
+  YtdlpFormat copyWith({bool? recommended}) => YtdlpFormat(
+        id: id,
+        note: note,
+        ext: ext,
+        resolution: resolution,
+        filesize: filesize,
+        vcodec: vcodec,
+        acodec: acodec,
+        abr: abr,
+        vbr: vbr,
+        height: height,
+        fps: fps,
+        recommended: recommended ?? this.recommended,
+      );
 }
 
 class PlaylistEntry {

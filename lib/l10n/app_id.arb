@@ -166,5 +166,8 @@
   "copy": "Salin",
   "noVideoFormats": "Tidak ada format video yang dilaporkan.",
   "noAudioFormats": "Tidak ada format audio yang dilaporkan.",
+  "author": "Penulis",
+  "support": "Dukung Talos",
+  "copyPath": "Salin path",
   "specialThanks": "Dibangun di atas perangkat lunak sumber terbuka"
 }

@@ -52,6 +52,20 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
     if (mounted) setState(() => _engineReady = status.ready);
   }
 
+  String _autoLabel() {
+    final l = AppLocalizations.of(context)!;
+    final rec = widget.probe.formats.where((f) => f.recommended).toList();
+    if (rec.isEmpty) return l.formatAuto;
+    final video = rec.firstWhere(
+      (f) => f.vcodec != 'none' && f.vcodec != 'images',
+      orElse: () => rec.first,
+    );
+    final label = video.resolution ?? video.note;
+    final codec = (video.vcodec ?? '').split('.').first.toUpperCase();
+    final ext = video.ext.toUpperCase();
+    return '${l.formatAuto} ($label $ext $codec)';
+  }
+
   Future<void> _startDownload() async {
     final l = AppLocalizations.of(context)!;
     final manager = TalosScope.of(context);
@@ -149,7 +163,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.tune),
                     title: Text(l.chooseFormats),
-                    subtitle: Text(_formatSelector == null ? l.formatAuto : _formatSelector!),
+                    subtitle: Text(_formatSelector == null ? _autoLabel() : _formatSelector!),
                     onTap: () async {
                       final selected = await Navigator.of(context).push<String?>(
                         MaterialPageRoute(

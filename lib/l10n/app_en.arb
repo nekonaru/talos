@@ -169,5 +169,8 @@
   "copy": "Copy",
   "noVideoFormats": "No video formats reported.",
   "noAudioFormats": "No audio formats reported.",
+  "author": "Author",
+  "support": "Support Talos",
+  "copyPath": "Copy path",
   "specialThanks": "Built on open source software"
 }
