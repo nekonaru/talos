@@ -169,9 +169,10 @@
   "author": "Penulis",
   "support": "Dukung Talos",
   "copyPath": "Salin path",
-  "safStoragePick": "Pilih folder",
-  "safStorageClear": "Pakai storage internal app",
+  "safStorageTitle": "Folder penyimpanan",
+  "safStoragePick": "Ubah",
+  "safStorageClear": "Gunakan internal",
   "safStorageHint": "Pilih folder via picker sistem (contohnya Downloads/Talos). Setiap unduhan akan disalin ke folder itu. Clear untuk kembali ke storage internal app.",
-  "safStorageUnset": "Belum diatur. File disimpan di sandbox app.",
+  "safStorageUnset": "Internal (per aplikasi)",
   "specialThanks": "Dibangun di atas perangkat lunak sumber terbuka"
 }

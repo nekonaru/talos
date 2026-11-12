@@ -55,6 +55,17 @@ class DownloadManager extends ChangeNotifier {
     final outputDir = settings.value.downloadFolder?.trim().isNotEmpty == true
         ? settings.value.downloadFolder!.trim()
         : await defaultDownloadDirectory();
+    // Reconcile the persisted SAF tree URI against the native side: if the
+    // bridge no longer finds it (folder deleted, grant revoked), clear it so
+    // downloads fall back to app-private storage instead of silently failing.
+    if (Platform.isAndroid) {
+      final bridgeUri = await TalosStorageBridge.treeUri();
+      if ((bridgeUri ?? '').isEmpty && settings.value.downloadFolderSAF.isNotEmpty) {
+        await settings.mutate(
+          (s) => s.copyWith(downloadFolderSAF: ''),
+        );
+      }
+    }
     final manager = DownloadManager._(engine ?? createEngine(), await HistoryStore.load(), settings, outputDir);
     return manager;
   }

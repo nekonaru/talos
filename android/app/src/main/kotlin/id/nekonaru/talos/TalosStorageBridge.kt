@@ -1,33 +1,35 @@
 package id.nekonaru.talos
 
 import android.app.Activity
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import android.provider.MediaStore
+import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
 
 /**
- * Bridge to Android's Storage Access Framework so the user can pick, list
- * and write into a folder of their choice (for example the public Downloads
- * folder) without MANAGE_EXTERNAL_STORAGE or per-path permissions.
+ * Bridge to Android's Storage Access Framework so users can pick any
+ * writable folder (for example the public Downloads folder) and Talos
+ * writes downloads into a "Talos" child directory inside the picked tree,
+ * so the user can pick the public Downloads folder and get
+ * Downloads/Talos/<file>. If the picked folder is itself already named
+ * Talos, downloads are written directly into it.
  *
- * Layout of what Flutter sees:
- * - "pickTree"        launches ACTION_OPEN_DOCUMENT_TREE, persists a URI grant,
- *                     returns the URI string (null when cancelled).
- * - "clearTree"       drops the persisted grant from our record; the URI is
- *                     still trusted by the system but we forget it.
- * - "copyToTree"      copies a local file into the persisted tree; returns
- *                     the new display name on success.
- * - "deleteInTree"    looks up a child by display name and deletes it.
+ * Method channels:
+ * - "pickTree"    opens the system folder picker; persists READ+WRITE URI
+ *                 grant; returns the URI string (null when cancelled).
+ * - "clearTree"   forgets the persisted tree; downloads fall back to
+ *                 app-private storage.
+ * - "getTreeUri"  returns the currently persisted URI string ("" when unset).
+ * - "copyToTree"  copies a local file into the picked tree; returns the new
+ *                 content URI ("" on failure).
+ * - "deleteInTree" deletes a file by display name from the picked tree.
+ * - "deleteUri"   deletes a document by its full URI (O(1)).
  */
 class TalosStorageBridge(private val context: Context) {
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -58,24 +60,35 @@ class TalosStorageBridge(private val context: Context) {
     }
 
     fun attach(flutterEngine: FlutterEngine, activity: Activity) {
-        val cached = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        treeUriString = cached.getString(KEY_TREE, null)
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        treeUriString = prefs.getString(KEY_TREE, null)
+        if (treeUriString != null) {
+            val tree = DocumentFile.fromTreeUri(context, Uri.parse(treeUriString))
+            if (tree == null || !tree.isDirectory || !tree.exists()) {
+                treeUriString = null
+                prefs.edit().remove(KEY_TREE).apply()
+            }
+        }
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         MethodChannel(messenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "pickTree" -> {
                     pendingResult = result
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+                        addFlags(
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+                                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+                        )
                     }
                     activity.startActivityForResult(intent, PICK_TREE)
                 }
                 "clearTree" -> {
                     treeUriString = null
-                    cached.edit().remove(KEY_TREE).apply()
+                    prefs.edit().remove(KEY_TREE).apply()
                     result.success(null)
                 }
-                "getTreeUri" -> result.success(treeUriString)
+                "getTreeUri" -> result.success(treeUriString ?: "")
                 "copyToTree" -> {
                     val localPath = call.argument<String>("localPath") ?: ""
                     val displayName = call.argument<String>("displayName") ?: ""
@@ -99,14 +112,14 @@ class TalosStorageBridge(private val context: Context) {
         try {
             context.contentResolver.takePersistableUriPermission(
                 treeUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
             )
         } catch (_: SecurityException) {
-            // Permission was already persisted when the picker returned the URI
-            // with FLAG_GRANT_PERSISTABLE_URI_PERMISSION.
+            // The picker already granted persistable access for the returned URI.
         }
         treeUriString = treeUri.toString()
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
             .putString(KEY_TREE, treeUriString)
             .apply()
         mainHandler.post {
@@ -115,25 +128,36 @@ class TalosStorageBridge(private val context: Context) {
         }
     }
 
+    private fun talosDir(tree: DocumentFile): DocumentFile? {
+        if (tree.name.equals("Talos", ignoreCase = true)) return tree
+        return try {
+            tree.findFile("Talos") ?: tree.createDirectory("Talos")
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private fun copyToTree(localPath: String, displayName: String): String? {
         val tree = treeUriString?.let { Uri.parse(it) }?.let { DocumentFile.fromTreeUri(context, it) } ?: return null
-        if (!tree.canWrite()) return null
-        val mime = mimeFor(displayName)
-        val target = tree.findFile(displayName) ?: tree.createFile(mime, displayName.substringBeforeLast('.', displayName)) ?: return null
+        val target = talosDir(tree) ?: return null
+        if (!target.canWrite()) return null
+        val created = target.findFile(displayName)
+            ?: target.createFile(mimeFor(displayName), displayName.substringBeforeLast('.', displayName))
+            ?: return null
         File(localPath).inputStream().use { input ->
-            context.contentResolver.openOutputStream(target.uri)?.use { output ->
+            context.contentResolver.openOutputStream(created.uri)?.use { output ->
                 input.copyTo(output)
             } ?: return null
         }
-        return target.uri.toString()
+        return created.uri.toString()
     }
 
     private fun deleteInTree(displayName: String): Boolean {
         val tree = treeUriString?.let { Uri.parse(it) }?.let { DocumentFile.fromTreeUri(context, it) } ?: return false
-        if (!tree.canWrite()) return false
-        val target = tree.findFile(displayName) ?: return false
+        val target = talosDir(tree) ?: return false
+        val file = target.findFile(displayName) ?: return false
         return try {
-            target.delete()
+            file.delete()
         } catch (_: Exception) {
             false
         }
@@ -141,8 +165,7 @@ class TalosStorageBridge(private val context: Context) {
 
     private fun deleteUri(uri: Uri): Boolean {
         return try {
-            // Direct document deletion is O(1) and does not require finding the file by name.
-            android.provider.DocumentsContract.deleteDocument(context.contentResolver, uri) ?: false
+            DocumentsContract.deleteDocument(context.contentResolver, uri) ?: false
         } catch (_: Exception) {
             false
         }

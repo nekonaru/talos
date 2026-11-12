@@ -289,8 +289,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (Platform.isAndroid)
                   ListTile(
                     leading: const Icon(Icons.folder_open_outlined),
-                    title: Text(l.safStoragePick),
-                    subtitle: Text(settings.downloadFolderSAF.isEmpty ? l.safStorageUnset : settings.downloadFolderSAF),
+                    title: Text(l.safStorageTitle),
+                    subtitle: Text(
+                      settings.downloadFolderSAF.isEmpty
+                          ? l.safStorageUnset
+                          : Uri.decodeComponent(settings.downloadFolderSAF.split('/').last),
+                    ),
                     isThreeLine: settings.downloadFolderSAF.isNotEmpty,
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
