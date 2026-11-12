@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.4.0
+
+Rilis quality-of-life: kamu bebas memilih folder penyimpanan, tab Finished menampilkan dan membuka path file sungguhan, dan format diberi indikator rekomendasi dari sumber.
+
+### Fitur baru
+
+- **Picker folder storage di Android (SAF).** Pengaturan > Download > Pick folder membuka picker sistem. Pilih folder mana pun yang bisa di-write (misalnya Download > Talos), dan setiap unduhan barumu akan masuk ke <folder><pemisah>Talos. Clear untuk kembali ke storage internal app.
+- **Format rekomendasi.** Di picker format, video rekomendasi platform (resolusi tertinggi, prioritas MP4/H.264) dan audio rekomendasi (bitrate tertinggi, prioritas M4A/AAC) ditandai dengan awalan bintang. Resolusi video tertinggi tampil paling atas.
+- **Halaman Sponsor.** Halaman Tentang sekarang mencantumkan author GitHub dan link Sponsor: GitHub Sponsors, Saweria, SociaBuzz dan BagiBagi.
+- **Tab Finished menampilkan path file.** Setiap entry menampilkan path, membuka file dengan aplikasi default, menyalin path folder di Android, dan tetap menampilkan aksi open/share/remove/delete.
+- **Hapus file langsung.** Menu long-press dapat menghapus history node dan file hasil download dalam satu tap. Sebelumnya "bersihin selesai" hanya membersihkan list; sekarang tersedia tombol "Hapus file" yang langsung terlihat per entry.
+
+### Peningkatan
+
+- **History langsung refresh.** Membersihkan tab selesai, menghapus daftar, dan menghapus file langsung memperbarui tab Finished; sebelumnya bisa tertinggal sampai event lain memicu rebuild.
+- **Picker folder via SAF.** Grant SAF divalidasi saat app start; grant basi di-discard daripada menyebabkan unduhan diam-diam gagal ke storage internal.
+
 ## v0.3.0
 
 Peningkatan engine: unduhan YouTube di Android kini bisa menghasilkan kualitas jauh lebih tinggi lewat penggabungan di dalam aplikasi, plus perbaikan cold-start, stabilitas, dan lisensi.

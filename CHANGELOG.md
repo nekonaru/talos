@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.4.0
+
+Quality-of-life release: you control where files land, the Finished tab shows the actual path and opens downloads in the default app, and formats are recommended based on the source.
+
+### New features
+
+- **Storage folder picker on Android (SAF).** Settings > Downloads > Pick folder opens the system folder picker. Pick any writable folder (for example Download > Talos) and every future download lands in <picked folder><path separator>Talos. Clear to fall back to app private storage.
+- **Recommended format badge.** In the format picker, the platform's recommended video (highest-resolution, MP4/H.264 preferred) and recommended audio (highest bitrate, M4A/AAC preferred) are marked with a star prefix. Highest-res video formats are listed first.
+- **Sponsor page.** The About page lists author GitHub and the Sponsor links: GitHub Sponsors, Saweria, SociaBuzz and BagiBagi.
+- **Finished tab surfaces the file path.** Each entry shows the path, opens the file with the default app on tap, lets you copy the folder path on Android, and keeps the open/share/remove/delete actions.
+- **Delete file directly.** A long-press menu deletes both the history entry and the downloaded file in one tap. Previously "clear finished" only cleared the list; now there is a visible "Delete file" button per entry.
+
+### Improvements
+
+- **History rebuilds immediately.** Clearing finished, removing entries and deleting files now refresh the Finished tab instantly; previously a delay was possible until another event triggered a rebuild.
+- **Pick folders use SAF.** SAF persisted grant is validated at app start; stale grants are discarded instead of failing downloads silently into private storage.
+
 ## v0.3.0
 
 Engine upgrade: YouTube downloads on Android now reach much higher quality tiers via in-app merging, plus cold-start, stability and licensing improvements.
