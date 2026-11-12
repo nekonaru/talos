@@ -4,13 +4,13 @@ import 'core/download_manager.dart';
 
 /// Inherited access to the shared download manager.
 ///
-/// Rebuilds dependents when either the manager or the settings store
-/// changes, so screens that read `settings.value` during build always
-/// reflect the latest values.
+/// Rebuilds dependents when the manager, the settings store, or the
+/// history store changes, so screens that read `settings.value` or
+/// `history.entries` during build always reflect the latest values.
 class TalosScope extends InheritedNotifier<Listenable> {
   TalosScope({super.key, required DownloadManager manager, required super.child})
       : _manager = manager,
-        super(notifier: Listenable.merge([manager, manager.settings]));
+        super(notifier: Listenable.merge([manager, manager.settings, manager.history]));
 
   final DownloadManager _manager;
 
