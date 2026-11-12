@@ -172,5 +172,9 @@
   "author": "Author",
   "support": "Support Talos",
   "copyPath": "Copy path",
+  "safStoragePick": "Pick folder",
+  "safStorageClear": "Use app private storage",
+  "safStorageHint": "Pick a folder via the system picker (for example Downloads/Talos). Every download will be copied there. Clear to go back to app private storage.",
+  "safStorageUnset": "Not set. Files are saved inside the app sandbox.",
   "specialThanks": "Built on open source software"
 }

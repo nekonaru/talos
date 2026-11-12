@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_scope.dart';
 import '../core/app_info.dart';
+import '../core/storage_bridge.dart';
 import '../core/theme.dart';
 import '../gen/app_localizations.dart';
 import 'about_screen.dart';
@@ -283,6 +286,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: settings.autoUpdateEngine,
                   onChanged: (value) => manager.settings.mutate((s) => s.copyWith(autoUpdateEngine: value)),
                 ),
+                if (Platform.isAndroid)
+                  ListTile(
+                    leading: const Icon(Icons.folder_open_outlined),
+                    title: Text(l.safStoragePick),
+                    subtitle: Text(settings.downloadFolderSAF.isEmpty ? l.safStorageUnset : settings.downloadFolderSAF),
+                    isThreeLine: settings.downloadFolderSAF.isNotEmpty,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (settings.downloadFolderSAF.isNotEmpty)
+                          TextButton(
+                            onPressed: () async {
+                              await TalosStorageBridge.clearTree();
+                              await manager.settings.mutate((s) => s.copyWith(downloadFolderSAF: ''));
+                            },
+                            child: Text(l.safStorageClear),
+                          ),
+                        TextButton(
+                          onPressed: () async {
+                            final uri = await TalosStorageBridge.pickDownloadsTree();
+                            if (uri != null && uri.isNotEmpty) {
+                              await manager.settings.mutate((s) => s.copyWith(downloadFolderSAF: uri));
+                            }
+                          },
+                          child: Text(l.safStoragePick),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

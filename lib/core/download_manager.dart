@@ -9,6 +9,7 @@ import 'settings_store.dart';
 import 'engine/engine.dart';
 import 'engine/engine_factory.dart';
 import 'engine/models.dart';
+import 'storage_bridge.dart';
 
 class DownloadTask {
   DownloadTask({
@@ -222,6 +223,25 @@ class DownloadManager extends ChangeNotifier {
 
     if (outcome.error == null) {
       task.outputPath = outcome.outputPath ?? task.outputPath;
+
+      // When the user picked a SAF folder in Settings, move the file there so
+      // it lives under, for example, <Downloads>/Talos. We delete the local
+      // copy after the copy returns a content URI to avoid wasting storage.
+      final saf = _settings.value.downloadFolderSAF.trim();
+      if (Platform.isAndroid && saf.isNotEmpty && (task.outputPath?.isNotEmpty ?? false)) {
+        final localPath = task.outputPath!;
+        final displayName = localPath.split(Platform.pathSeparator).last;
+        final uri = await TalosStorageBridge.copyToTree(localPath, displayName);
+        if (uri != null) {
+          try {
+            await File(localPath).delete();
+          } catch (_) {
+            // Best effort; the file stays behind in the app sandbox.
+          }
+          task.outputPath = uri;
+        }
+      }
+
       final size = await _fileSize(task.outputPath);
       if (!_settings.value.privateMode) {
         await _history.add(HistoryEntry(

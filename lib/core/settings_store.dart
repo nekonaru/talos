@@ -16,6 +16,7 @@ class TalosSettings {
     this.themeMode = 'system',
     this.accent = 'bronze',
     this.downloadFolder,
+    this.downloadFolderSAF = '',
     this.filenameTemplate = '%(title)s.%(ext)s',
     this.defaultMaxHeight = 720,
     this.defaultAudioFormat = 'mp3',
@@ -59,6 +60,7 @@ class TalosSettings {
       themeMode: json['themeMode'] as String? ?? 'system',
       accent: json['accent'] as String? ?? 'bronze',
       downloadFolder: json['downloadFolder'] as String?,
+      downloadFolderSAF: json['downloadFolderSAF'] as String? ?? '',
       filenameTemplate: json['filenameTemplate'] as String? ?? '%(title)s.%(ext)s',
       defaultMaxHeight: (json['defaultMaxHeight'] as num?)?.toInt() ?? 720,
       defaultAudioFormat: json['defaultAudioFormat'] as String? ?? 'mp3',
@@ -101,6 +103,7 @@ class TalosSettings {
   String themeMode;
   String accent;
   String? downloadFolder;
+  String downloadFolderSAF;
   String filenameTemplate;
   int defaultMaxHeight;
   String defaultAudioFormat;
@@ -142,6 +145,7 @@ class TalosSettings {
         'themeMode': themeMode,
         'accent': accent,
         'downloadFolder': downloadFolder,
+        'downloadFolderSAF': downloadFolderSAF,
         'filenameTemplate': filenameTemplate,
         'defaultMaxHeight': defaultMaxHeight,
         'defaultAudioFormat': defaultAudioFormat,
@@ -195,6 +199,7 @@ class TalosSettings {
     String? themeMode,
     String? accent,
     String? downloadFolder,
+    String? downloadFolderSAF,
     bool clearDownloadFolder = false,
     String? filenameTemplate,
     int? defaultMaxHeight,
@@ -237,6 +242,7 @@ class TalosSettings {
       themeMode: themeMode ?? this.themeMode,
       accent: accent ?? this.accent,
       downloadFolder: clearDownloadFolder ? null : (downloadFolder ?? this.downloadFolder),
+      downloadFolderSAF: downloadFolderSAF ?? this.downloadFolderSAF,
       filenameTemplate: filenameTemplate ?? this.filenameTemplate,
       defaultMaxHeight: defaultMaxHeight ?? this.defaultMaxHeight,
       defaultAudioFormat: defaultAudioFormat ?? this.defaultAudioFormat,

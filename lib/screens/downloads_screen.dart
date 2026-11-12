@@ -11,6 +11,7 @@ import '../core/download_manager.dart';
 import '../core/engine/models.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
+import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
 
 class DownloadsScreen extends StatefulWidget {
@@ -95,11 +96,16 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
       ),
     );
     if (confirmed != true) return;
-    try {
-      final file = File(entry.filePath);
-      if (await file.exists()) await file.delete();
-    } catch (_) {
-      // Missing file is fine: we still clean up the history row.
+    final path = entry.filePath;
+    if (path.startsWith('content://')) {
+      await TalosStorageBridge.deleteUri(path);
+    } else {
+      try {
+        final file = File(path);
+        if (await file.exists()) await file.delete();
+      } catch (_) {
+        // Missing file is fine: we still clean up the history row.
+      }
     }
     await manager.history.remove(entry.id);
   }
@@ -401,7 +407,9 @@ class _HistoryCard extends StatelessWidget {
               if (path.isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Text(
-                  List<String>.from(path.split(Platform.pathSeparator)).reversed.take(3).toList().reversed.join(Platform.pathSeparator),
+                  path.startsWith('content://')
+                      ? '(SAF folder) ${Uri.tryParse(path)?.host ?? path.split('/').last}'
+                      : List<String>.from(path.split(Platform.pathSeparator)).reversed.take(3).toList().reversed.join(Platform.pathSeparator),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontSize: 10, color: theme.hintColor),
