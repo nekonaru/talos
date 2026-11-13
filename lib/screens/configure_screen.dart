@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../widgets/section_label.dart';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -33,6 +34,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
   late Set<int> _selected;
   String? _formatSelector;
   bool? _engineReady;
+  late final TextEditingController _fileNameController;
 
   @override
   void initState() {
@@ -44,7 +46,14 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
     _embedSubtitles = settings.embedSubtitles;
     _embedMetadata = settings.embedMetadata;
     _selected = {for (final entry in widget.probe.entries) entry.index};
+    _fileNameController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkEngine());
+  }
+
+  @override
+  void dispose() {
+    _fileNameController.dispose();
+    super.dispose();
   }
 
   Future<void> _checkEngine() async {
@@ -82,6 +91,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
         ? (settings.videoFolder?.isNotEmpty == true ? settings.videoFolder! : manager.outputDirectory)
         : (settings.audioFolder?.isNotEmpty == true ? settings.audioFolder! : manager.outputDirectory);
 
+    final requestedName = _fileNameController.text.trim();
     final request = DownloadRequest(
       url: widget.probe.webpageUrl,
       videoMode: _videoMode,
@@ -92,6 +102,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       embedSubtitles: _videoMode && _embedSubtitles,
       embedMetadata: _embedMetadata,
       filenameTemplate: settings.filenameTemplate,
+      outputFilename: requestedName.isEmpty ? null : requestedName,
       proxy: settings.proxy,
       rateLimit: settings.rateLimit,
       useAria2: settings.useAria2,
@@ -149,7 +160,16 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
               children: [
                 _MediaCard(probe: probe),
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _fileNameController,
+                  decoration: InputDecoration(
+                    hintText: l.outputFileNameHint,
+                    labelText: l.outputFileName,
+                    prefixIcon: const Icon(Icons.edit_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 SegmentedButton<bool>(
                   segments: [
                     ButtonSegment(value: true, icon: const Icon(Icons.movie_outlined), label: Text(l.modeVideo)),
@@ -174,10 +194,9 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                       setState(() => _formatSelector = selected);
                     },
                   ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 if (_videoMode) ...[
-                  _SectionLabel(l.videoHeight),
-                  const SizedBox(height: 6),
+                  SectionLabel(l.videoHeight),
                   DropdownButtonFormField<int>(
                     initialValue: _maxHeight,
                     decoration: const InputDecoration(),
@@ -190,7 +209,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                     ],
                     onChanged: (value) => setState(() => _maxHeight = value ?? 0),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   SwitchListTile(
                     value: _embedSubtitles,
                     onChanged: (value) => setState(() => _embedSubtitles = value),
@@ -198,8 +217,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                     contentPadding: EdgeInsets.zero,
                   ),
                 ] else ...[
-                  _SectionLabel(l.audioFormat),
-                  const SizedBox(height: 6),
+                  SectionLabel(l.audioFormat),
                   DropdownButtonFormField<String>(
                     initialValue: _audioFormat,
                     decoration: const InputDecoration(),
@@ -209,9 +227,8 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                     ],
                     onChanged: (value) => setState(() => _audioFormat = value ?? 'mp3'),
                   ),
-                  const SizedBox(height: 14),
-                  _SectionLabel(l.audioBitrate),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 12),
+                  SectionLabel(l.audioBitrate),
                   DropdownButtonFormField<String>(
                     initialValue: _audioBitrate,
                     decoration: const InputDecoration(),
@@ -329,7 +346,7 @@ class _MediaCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 6,
                     runSpacing: 4,
@@ -353,17 +370,3 @@ class _MediaCard extends StatelessWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Text(
-      text.toUpperCase(),
-      style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2.4),
-    );
-  }
-}

@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../widgets/section_label.dart';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -156,7 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          _SectionLabel(l.engine),
+          SectionLabel(l.engine),
           Card(
             child: Column(
               children: [
@@ -190,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          _SectionLabel(l.downloadsSection),
+          SectionLabel(l.downloadsSection),
           Card(
             child: Column(
               children: [
@@ -323,7 +324,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          _SectionLabel(l.formatSection),
+          SectionLabel(l.formatSection),
           Card(
             child: Column(
               children: [
@@ -480,7 +481,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          _SectionLabel(l.network),
+          SectionLabel(l.network),
           Card(
             child: Column(
               children: [
@@ -599,7 +600,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          _SectionLabel(l.cookieGenerator),
+          SectionLabel(l.cookieGenerator),
           Card(
             child: ListTile(
               leading: const Icon(Icons.cookie_outlined),
@@ -609,7 +610,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CookieGeneratorScreen())),
             ),
           ),
-          _SectionLabel(l.appearance),
+          SectionLabel(l.appearance),
           Card(
             child: Column(
               children: [
@@ -647,7 +648,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          _SectionLabel(l.commands),
+          SectionLabel(l.commands),
           Card(
             child: ListTile(
               leading: const Icon(Icons.terminal_outlined),
@@ -657,7 +658,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CommandsScreen())),
             ),
           ),
-          _SectionLabel(l.about),
+          SectionLabel(l.about),
           Card(
             child: Column(
               children: [
@@ -679,7 +680,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          _SectionLabel(l.author),
+          SectionLabel(l.author),
           Card(
             child: ListTile(
               leading: const Icon(Icons.person_outline),
@@ -689,7 +690,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => _openLink(context, TalosInfo.authorUrl),
             ),
           ),
-          _SectionLabel(l.support),
+          SectionLabel(l.support),
           Card(
             child: Column(
               children: [
@@ -718,15 +719,17 @@ class _AccentDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 34,
         height: 34,
         decoration: BoxDecoration(
-          color: accent.dark,
+          color: isDark ? accent.dark : accent.deep,
           shape: BoxShape.circle,
-          border: Border.all(color: selected ? Theme.of(context).colorScheme.primary : Colors.transparent, width: 3),
+          border: Border.all(color: selected ? theme.colorScheme.primary : Colors.transparent, width: 3),
         ),
         child: selected ? const Icon(Icons.check, size: 16, color: Colors.black87) : null,
       ),
@@ -819,20 +822,3 @@ class _UpdateTileState extends State<_UpdateTile> {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 18, 4, 8),
-      child: Text(
-        text.toUpperCase(),
-        style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2.4),
-      ),
-    );
-  }
-}

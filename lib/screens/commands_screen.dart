@@ -166,7 +166,7 @@ class _CommandsScreenState extends State<CommandsScreen> {
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                   itemCount: store.templates.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final template = store.templates[index];
                     return Card(

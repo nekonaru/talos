@@ -68,6 +68,7 @@ class FakeEngine implements TalosEngine {
         duration: const Duration(minutes: 3, seconds: 20),
       );
 
+  DownloadRequest? lastRequest;
   FakeSession? lastSession;
 
   @override
@@ -75,6 +76,7 @@ class FakeEngine implements TalosEngine {
     DownloadRequest request, {
     required bool ffmpegAvailable,
   }) {
+    lastRequest = request;
     lastSession = FakeSession();
     return lastSession!;
   }
@@ -166,6 +168,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
+    await tester.pump();
     await tester.tap(find.text('Fetch'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Download'));
@@ -194,6 +197,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
+    await tester.pump();
     await tester.tap(find.text('Fetch'));
     await tester.pumpAndSettle();
 
@@ -212,6 +216,32 @@ void main() {
 
     expect(manager.history.entries, hasLength(1));
     expect(manager.history.entries.first.title, 'Example video');
+  });
+
+  testWidgets('custom output filename dedupes against the existing file', (tester) async {
+    final engine = FakeEngine();
+    final outDir = Directory.systemTemp.createTempSync('talos_out');
+    File('${outDir.path}${Platform.pathSeparator}clip.mp4').writeAsStringSync('already here');
+    late final DownloadManager manager;
+    await tester.runAsync(() async {
+      manager = await DownloadManager.create(engine: engine);
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/a',
+          videoMode: true,
+          outputDir: outDir.path,
+          outputFilename: 'clip.mp4',
+        ),
+        title: 'Clip',
+        kind: HistoryKind.video,
+      );
+      for (var i = 0; i < 100 && engine.lastRequest == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 20));
+      }
+    });
+
+    expect(engine.lastRequest, isNotNull);
+    expect(engine.lastRequest!.outputFilename, 'clip (1).mp4');
   });
 
   testWidgets('retry targets the configured per-type folder', (tester) async {

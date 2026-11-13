@@ -161,6 +161,23 @@ def custom(template, url):
 _MP4_EXTENSIONS = ('.mp4', '.m4a', '.mov', '.3gp', '.3g2')
 
 
+def _dedupe(path):
+    """If [path] exists, return a sibling path with " (N)" suffix that does not.
+
+    Used so merged output never overwrites a pre-existing file when the
+    output filename would collide.
+    """
+    if not os.path.exists(path):
+        return path
+    dir_name = os.path.dirname(path)
+    base, ext = os.path.splitext(os.path.basename(path))
+    for i in range(1, 10000):
+        candidate = os.path.join(dir_name, '%s (%d)%s' % (base, i, ext))
+        if not os.path.exists(candidate):
+            return candidate
+    return path
+
+
 def _safe_merge(parts, on_line):
     """Merge separate video and audio files with the bundled FFmpeg.
 
@@ -184,7 +201,7 @@ def _safe_merge(parts, on_line):
     exts = [parsed[0].group(2).lower(), parsed[1].group(2).lower()]
     mp4_out = all(e in ('mp4', 'm4a', 'mov', '3gp', '3g2') for e in exts)
     out_ext = 'mp4' if mp4_out else 'mkv'
-    out_path = '%s.%s' % (base, out_ext)
+    out_path = _dedupe('%s.%s' % (base, out_ext))
 
     on_line('[Merger] Merging formats into "%s"' % out_path)
     try:

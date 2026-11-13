@@ -149,6 +149,7 @@ class DownloadManager extends ChangeNotifier {
       downloadSubtitles: task.request.downloadSubtitles,
       autoSubtitle: task.request.autoSubtitle,
       keepSubtitles: task.request.keepSubtitles,
+      outputFilename: task.request.outputFilename,
     );
     _tasks.remove(task);
     await enqueue(rebuilt, title: task.title, kind: task.kind);
@@ -192,8 +193,25 @@ class DownloadManager extends ChangeNotifier {
       await ensureForegroundService(text: task.title);
     }
 
+    // Resolve a unique output filename if the user asked for one but a
+    // file with that name is already present in the output directory.
+    final effectiveRequest = (() {
+      final requested = task.request.outputFilename?.trim();
+      if (requested == null || requested.isEmpty) return task.request;
+      try {
+        final dir = Directory(task.request.outputDir);
+        final unique = _uniqueFilename(dir, requested);
+        if (unique == requested) return task.request;
+        return task.request.copyWith(outputFilename: unique);
+      } catch (_) {
+        // existsSync can fail on unusual paths (for example SAF content
+        // URIs); fall back to the requested name unchanged.
+        return task.request;
+      }
+    })();
+
     try {
-      final dir = Directory(task.request.outputDir);
+      final dir = Directory(effectiveRequest.outputDir);
       if (!dir.existsSync()) dir.createSync(recursive: true);
     } catch (_) {
       // Output directory may not be creatable (e.g. user picked a read-only path).
@@ -203,7 +221,7 @@ class DownloadManager extends ChangeNotifier {
     final ffmpegAvailable = await _ffmpegAvailable(configuredFfmpeg);
 
     final session = _engine.download(
-      task.request,
+      effectiveRequest,
       ffmpegAvailable: ffmpegAvailable,
     );
     _activeSession = session;
@@ -291,6 +309,19 @@ class DownloadManager extends ChangeNotifier {
 
   @visibleForTesting
   static Future<bool> Function(String configured)? ffmpegProbeOverride;
+
+  static String _uniqueFilename(Directory dir, String name) {
+    final sep = dir.path.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;
+    if (!File('${dir.path}$sep$name').existsSync()) return name;
+    final dot = name.lastIndexOf('.');
+    final base = dot >= 0 ? name.substring(0, dot) : name;
+    final ext = dot >= 0 ? name.substring(dot) : '';
+    for (var i = 1; i < 10000; i++) {
+      final candidate = '$base ($i)$ext';
+      if (!File('${dir.path}$sep$candidate').existsSync()) return candidate;
+    }
+    return name;
+  }
 
   Future<bool> _ffmpegAvailable(String configured) async {
     final override = ffmpegProbeOverride;

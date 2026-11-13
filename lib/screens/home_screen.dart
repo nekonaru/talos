@@ -12,6 +12,7 @@ import '../core/format.dart';
 import '../core/history_store.dart';
 import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
+import '../widgets/section_label.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -207,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 620),
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
+              padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
               children: [
                 Text(
                   TalosInfo.appName.toUpperCase(),
@@ -218,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   TalosInfo.tagline.toUpperCase(),
                   style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 3.2),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
                 Container(height: 2, width: 56, color: theme.colorScheme.primary),
                 const SizedBox(height: 32),
                 if (!_engineReady) _EngineBanner(
@@ -255,11 +256,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 SizedBox(
                   height: 52,
                   child: FilledButton.icon(
-                    onPressed: _busy ? null : _fetch,
+                    onPressed: (_busy || _urlController.text.trim().isEmpty) ? null : _fetch,
                     icon: _busy
                         ? const SizedBox(
                             width: 20,
@@ -272,11 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 32),
                 if (recent.isNotEmpty) ...[
-                  Text(
-                    l.finished.toUpperCase(),
-                    style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 3),
-                  ),
-                  const SizedBox(height: 8),
+                  SectionLabel(l.finished),
                   for (final entry in recent)
                     Card(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -301,7 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'yt-dlp $_engineVersion',
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ],
               ],

@@ -15,7 +15,10 @@ import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
 
 class DownloadsScreen extends StatefulWidget {
-  const DownloadsScreen({super.key});
+  const DownloadsScreen({super.key, this.onGoHome});
+
+  /// Switches back to the Home tab. Only wired up on the narrow layout.
+  final VoidCallback? onGoHome;
 
   @override
   State<DownloadsScreen> createState() => _DownloadsScreenState();
@@ -190,12 +193,12 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
         controller: _tabController,
         children: [
           if (tasks.isEmpty)
-            _EmptyState(hint: l.nothingHereHint)
+            _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
           else
             ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               itemCount: tasks.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final task = tasks[index];
                 return _TaskCard(
@@ -208,12 +211,12 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
               },
             ),
           if (history.isEmpty)
-            _EmptyState(hint: l.nothingHereHint)
+            _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
           else
             ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               itemCount: history.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final entry = history[index];
                 return _HistoryCard(
@@ -234,9 +237,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.hint});
+  const _EmptyState({required this.hint, this.onGoHome});
 
   final String hint;
+  final VoidCallback? onGoHome;
 
   @override
   Widget build(BuildContext context) {
@@ -251,8 +255,16 @@ class _EmptyState extends StatelessWidget {
             Icon(Icons.inbox_outlined, size: 64, color: theme.colorScheme.primary),
             const SizedBox(height: 16),
             Text(l.nothingHere, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(hint, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+            if (onGoHome != null) ...[
+              const SizedBox(height: 24),
+              FilledButton.tonalIcon(
+                onPressed: onGoHome,
+                icon: const Icon(Icons.travel_explore_outlined),
+                label: Text(l.goHome),
+              ),
+            ],
           ],
         ),
       ),
@@ -318,7 +330,7 @@ class _TaskCard extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
@@ -343,7 +355,7 @@ class _TaskCard extends StatelessWidget {
               ],
             ),
             if (failed && task.error != null) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               InkWell(
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: task.error!));
@@ -415,7 +427,7 @@ class _HistoryCard extends StatelessWidget {
                       : List<String>.from(path.split(Platform.pathSeparator)).reversed.take(3).toList().reversed.join(Platform.pathSeparator),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontSize: 10, color: theme.hintColor),
+                  style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontSize: 10, color: theme.colorScheme.onSurfaceVariant),
                 ),
               ],
             ],

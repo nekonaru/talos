@@ -113,7 +113,8 @@ class CommandBuilder {
     if (request.useAria2) args.addAll(['--downloader', 'aria2c']);
 
     args.addAll(['-P', request.outputDir]);
-    args.addAll(['-o', request.filenameTemplate]);
+    final custom = request.outputFilename?.trim();
+    args.addAll(['-o', custom != null && custom.isNotEmpty ? custom : request.filenameTemplate]);
     args.add(request.url);
     return args;
   }
