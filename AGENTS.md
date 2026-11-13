@@ -18,6 +18,7 @@ a managed or system binary on desktop.
 - LICENSE: MIT
 - UI_LANGUAGES: English, Bahasa Indonesia
 - VERIFICATION: local-and-ci
+- PIPELINE: pr
 
 # Working on this repository
 
