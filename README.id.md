@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/talos-mark.png" alt="Talos logo" width="120" />
+  <img src="assets/talos-mark.svg" alt="Talos logo" width="120" />
   <h1>Talos: Pengunduh Video dan Audio</h1>
   <p><b>Unduh video dan audio dari internet, dengan playlist, subtitle,<br/>
   metadata tertanam, dan sebuah nama yang layak dijaga.</b></p>

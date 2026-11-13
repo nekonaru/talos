@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/talos-mark.png" alt="Talos logo" width="120" />
+  <img src="assets/talos-mark.svg" alt="Talos logo" width="120" />
   <h1>Talos: Video and Audio Downloader</h1>
   <p><b>Download videos and audio from the web, with playlists, subtitles,<br/>
   embedded metadata and a name worth guarding.</b></p>
