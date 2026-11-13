@@ -124,6 +124,7 @@ class DownloadRequest {
     this.downloadSubtitles = true,
     this.autoSubtitle = false,
     this.keepSubtitles = false,
+    this.outputFilename,
   });
 
   final String url;
@@ -201,6 +202,49 @@ class DownloadRequest {
 
   /// Keep subtitle sidecar files on disk after embedding.
   final bool keepSubtitles;
+
+  /// When non-null and non-empty, overrides [filenameTemplate] so the user
+  /// can rename the output file before download. This value must already
+  /// carry its extension (for example "My Video.mp4").
+  final String? outputFilename;
+
+  DownloadRequest copyWith({String? outputFilename}) => DownloadRequest(
+        url: url,
+        videoMode: videoMode,
+        outputDir: outputDir,
+        maxHeight: maxHeight,
+        audioFormat: audioFormat,
+        audioBitrate: audioBitrate,
+        embedSubtitles: embedSubtitles,
+        embedMetadata: embedMetadata,
+        filenameTemplate: filenameTemplate,
+        proxy: proxy,
+        rateLimit: rateLimit,
+        useAria2: useAria2,
+        concurrentFragments: concurrentFragments,
+        playlistItems: playlistItems,
+        includePlaylist: includePlaylist,
+        ffmpegPath: ffmpegPath,
+        sponsorBlockCategories: sponsorBlockCategories,
+        cookiesPath: cookiesPath,
+        subtitleLanguage: subtitleLanguage,
+        formatSelector: formatSelector,
+        restrictFilenames: restrictFilenames,
+        downloadArchive: downloadArchive,
+        cropArtwork: cropArtwork,
+        subtitleFormat: subtitleFormat,
+        clipStartSeconds: clipStartSeconds,
+        clipEndSeconds: clipEndSeconds,
+        forceIpv4: forceIpv4,
+        remuxContainer: remuxContainer,
+        maxFilesize: maxFilesize,
+        userAgent: userAgent,
+        formatSort: formatSort,
+        downloadSubtitles: downloadSubtitles,
+        autoSubtitle: autoSubtitle,
+        keepSubtitles: keepSubtitles,
+        outputFilename: outputFilename ?? this.outputFilename,
+      );
 }
 
 enum TaskStatus { queued, running, completed, failed, cancelled }
