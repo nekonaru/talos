@@ -156,6 +156,33 @@ void main() {
       expect(args, isNot(contains('--extractor-args')));
     });
 
+    test('custom output filename overrides the template', () {
+      final args = CommandBuilder.downloadArgs(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=x',
+          videoMode: true,
+          outputDir: '/downloads',
+          outputFilename: 'My Video.mp4',
+        ),
+        ffmpegAvailable: true,
+      );
+      expect(args, containsAllInOrder(['-o', 'My Video.mp4']));
+      expect(args, isNot(contains('%(title)s.%(ext)s')));
+    });
+
+    test('blank custom output filename falls back to the template', () {
+      final args = CommandBuilder.downloadArgs(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=x',
+          videoMode: true,
+          outputDir: '/downloads',
+          outputFilename: '   ',
+        ),
+        ffmpegAvailable: true,
+      );
+      expect(args[args.indexOf('-o') + 1], '%(title)s.%(ext)s');
+    });
+
     test('playlist selection', () {
       final args = CommandBuilder.downloadArgs(request(items: '1-3,7'), ffmpegAvailable: false);
       expect(args, containsAllInOrder(['--playlist-items', '1-3,7']));
