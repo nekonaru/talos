@@ -5,6 +5,30 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.5.0
+
+Feature plus audit release: you can now check for the latest version right inside the app, and several audit findings were fixed.
+
+### New features
+
+- **Check for updates.** About page now includes a "Check for updates" entry that queries GitHub Releases. If a newer version is available, it links straight to the download. If you are up to date, it tells you so.
+
+### Bug fixes
+
+- **Picker cancels never resolved the pending outcome.** If the system folder picker was cancelled, the app would wait forever for a result that never arrived, blocking the Settings UI. Now it returns immediately and the picker button can be used again.
+- **Downloads silently fell back to private storage when the SAF folder was set but the grant was gone.** The task is now marked Failed with a clear message asking the user to re-pick or clear the storage folder in Settings instead.
+- **File and folder open intents silently failed on Android 10+.** App no longer gates intents with `canLaunchUrl` (which almost always returns false on Android 10+); it tries to launch and shows a snackbar with an error message if it fails.
+
+### Improvements
+
+- **Translation audit.** A test now guarantees app_en.arb and app_id.arb have matching user-facing keys.
+- **Translation audit.** A test now guarantees app_en.arb and app_id.arb have matching user-facing keys.
+- **Look back.** ARB translation metadata is also validated to ensure placeholders are correctly registered.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.5.0-windows-x64.zip`. Linux: `Talos-v0.5.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.4.0
 
 Quality-of-life release: you control where files land, the Finished tab shows the actual path and opens downloads in the default app, and formats are recommended based on the source.

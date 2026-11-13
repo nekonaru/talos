@@ -5,6 +5,29 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.5.0
+
+Rilis fitur audit plus: sekarang kamu bisa cek apakah ada versi terbaru dari dalam app, plus beberapa perbaikan audit.
+
+### Fitur baru
+
+- **Cek versi terbaru.** Halaman About sekarang punya tombol "Check for updates" yang mengambil data rilis dari GitHub. Kalau ada versi baru, langsung link ke halaman download. Kalau kamu sudah di versi terbaru, akan muncul pesan bahwa kamu sudah up-to-date.
+
+### Perbaikan bug
+
+- **Batalkan picker storage tidak pernah me-release pending result.** Jika system folder picker dibatalkan, app akan menunggu selamanya untuk result yang tidak pernah datang. Sekarang langsung return, dan tombol picker bisa dipakai lagi.
+- **Download jatuh ke private storage tanpa peringatan saat SAF gagal.** Task sekarang di-tag Failed dengan pesan yang jelas agar user pilih lokasi ulang atau clear SAF folder.
+- **File dan folder open intent silent tidak bekerja di Android 10+.** Aplikasi tidak lagi meng-gate intent dengan `canLaunchUrl` (yang selalu mengembalikan false di Android 10+); sekarang langsung launch dan tampilkan snackbar error kalau gagal.
+
+### Peningkatan
+
+- **Audit translation.** Sekarang ada test yang memastikan app_en.arb dan app_id.arb memiliki set key yang sama.
+- **Metadata placeholder.** Metadata placeholder ARB juga divalidasi supaya placeholder masuk dalam ARB terdaftar dengan benar.
+
+### Download / Instalasi
+
+Download file untuk platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.5.0-windows-x64.zip`. Linux: `Talos-v0.5.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.4.0
 
 Rilis quality-of-life: kamu bebas memilih folder penyimpanan, tab Finished menampilkan dan membuka path file sungguhan, dan format diberi indikator rekomendasi dari sumber.

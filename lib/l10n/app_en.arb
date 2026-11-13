@@ -138,6 +138,13 @@
   "about": "About",
   "aboutTalos": "About Talos",
   "version": "Version",
+  "checkForUpdates": "Check for updates",
+  "checking": "Checking for updates...",
+  "updateAvailable": "Update available",
+  "upToDate": "You're on the latest version",
+  "updateCheckFailed": "Could not check for updates",
+  "updateReleaseNotes": "Show what's new",
+  "downloadUpdate": "Download",
   "sourceCode": "Source code",
   "licenses": "Open source licenses",
   "reportIssue": "Report an issue",
@@ -177,5 +184,6 @@
   "safStorageClear": "Use private",
   "safStorageHint": "Pick a folder via the system picker (for example Downloads/Talos). Every download will be copied there. Clear to go back to app private storage.",
   "safStorageUnset": "Internal storage (per app)",
+  "safNotWritable": "The selected storage folder is not writable. Re-pick the folder in Settings > Downloads, or clear it to use app private storage.",
   "specialThanks": "Built on open source software"
 }

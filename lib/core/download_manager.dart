@@ -235,9 +235,9 @@ class DownloadManager extends ChangeNotifier {
     if (outcome.error == null) {
       task.outputPath = outcome.outputPath ?? task.outputPath;
 
-      // When the user picked a SAF folder in Settings, move the file there so
-      // it lives under, for example, <Downloads>/Talos. We delete the local
-      // copy after the copy returns a content URI to avoid wasting storage.
+      // When the user picked a SAF folder in Settings, copy the resulting
+      // file there. If the copy fails, treat the task as failed so the user
+      // sees it instead of finding a hidden file in private storage.
       final saf = _settings.value.downloadFolderSAF.trim();
       if (Platform.isAndroid && saf.isNotEmpty && (task.outputPath?.isNotEmpty ?? false)) {
         final localPath = task.outputPath!;
@@ -250,6 +250,12 @@ class DownloadManager extends ChangeNotifier {
             // Best effort; the file stays behind in the app sandbox.
           }
           task.outputPath = uri;
+        } else {
+          task.status = TaskStatus.failed;
+          task.error = 'Talos folder is not writable in the selected storage. Re-pick the folder in Settings > Downloads, or clear it to use app private storage.';
+          notifyListeners();
+          await _maybeStopForeground();
+          return;
         }
       }
 

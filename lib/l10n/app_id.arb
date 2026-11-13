@@ -136,6 +136,13 @@
   "about": "Tentang",
   "aboutTalos": "Tentang Talos",
   "version": "Versi",
+  "checkForUpdates": "Cek versi terbaru",
+  "checking": "Cek versi terbaru...",
+  "updateAvailable": "Versi terbaru tersedia",
+  "upToDate": "Kamu sudah pakai versi terbaru",
+  "updateCheckFailed": "Gagal cek versi terbaru",
+  "updateReleaseNotes": "Lihat perubahan",
+  "downloadUpdate": "Download",
   "sourceCode": "Kode sumber",
   "licenses": "Lisensi sumber terbuka",
   "reportIssue": "Laporkan masalah",
@@ -174,5 +181,6 @@
   "safStorageClear": "Gunakan internal",
   "safStorageHint": "Pilih folder via picker sistem (contohnya Downloads/Talos). Setiap unduhan akan disalin ke folder itu. Clear untuk kembali ke storage internal app.",
   "safStorageUnset": "Internal (per aplikasi)",
+  "safNotWritable": "Folder storage yang dipilih tidak bisa ditulis. Pilih lagi folder di Pengaturan > Download, atau clear untuk pakai storage internal app.",
   "specialThanks": "Dibangun di atas perangkat lunak sumber terbuka"
 }

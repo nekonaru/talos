@@ -173,9 +173,12 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   Future<void> _openFile(HistoryEntry entry) async {
-    final uri = Uri.file(entry.filePath);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+    final l = AppLocalizations.of(context)!;
+    try {
+      await launchUrl(Uri.file(entry.filePath), mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
     }
   }
 

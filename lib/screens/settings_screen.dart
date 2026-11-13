@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app_scope.dart';
 import '../core/app_info.dart';
 import '../core/storage_bridge.dart';
+import '../core/update_checker.dart';
 import '../core/theme.dart';
 import '../gen/app_localizations.dart';
 import 'about_screen.dart';
@@ -658,11 +659,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _SectionLabel(l.about),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: Text(l.aboutTalos),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutScreen())),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: Text(l.aboutTalos),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutScreen())),
+                ),
+                const Divider(height: 1),
+                _UpdateTile(
+                  checkingForText: l.checking,
+                  availableText: l.updateAvailable,
+                  upToDateText: l.upToDate,
+                  failedText: l.updateCheckFailed,
+                  updateAvailableNotesLabel: l.updateReleaseNotes,
+                  downloadText: l.downloadUpdate,
+                ),
+              ],
             ),
           ),
           _SectionLabel(l.author),
@@ -716,6 +730,91 @@ class _AccentDot extends StatelessWidget {
         ),
         child: selected ? const Icon(Icons.check, size: 16, color: Colors.black87) : null,
       ),
+    );
+  }
+}
+
+class _UpdateTile extends StatefulWidget {
+  const _UpdateTile({
+    required this.checkingForText,
+    required this.availableText,
+    required this.upToDateText,
+    required this.failedText,
+    required this.updateAvailableNotesLabel,
+    required this.downloadText,
+  });
+
+  final String checkingForText;
+  final String availableText;
+  final String upToDateText;
+  final String failedText;
+  final String updateAvailableNotesLabel;
+  final String downloadText;
+
+  @override
+  State<_UpdateTile> createState() => _UpdateTileState();
+}
+
+class _UpdateTileState extends State<_UpdateTile> {
+  final UpdateChecker _checker = const UpdateChecker();
+  bool _checking = false;
+  UpdateCheckResult? _result;
+
+  Future<void> _runCheck() async {
+    setState(() {
+      _checking = true;
+      _result = null;
+    });
+    final result = await _checker.check();
+    if (!mounted) return;
+    setState(() {
+      _checking = false;
+      _result = result;
+    });
+  }
+
+  Future<void> _open(String url) async {
+    try {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.updateCheckFailed)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final info = _result?.info;
+    return ListTile(
+      leading: Icon(_result?.updateAvailable == true ? Icons.system_update_alt : Icons.search),
+      title: Text(() {
+        if (_checking) return widget.checkingForText;
+        if (_result?.updateAvailable == true) return '${widget.availableText}: ${info?.tagName ?? ''}';
+        if (_result?.upToDate == true) return widget.upToDateText;
+        if (_result != null) return widget.failedText;
+        return AppLocalizations.of(context)!.checkForUpdates;
+      }()),
+      subtitle: _result?.updateAvailable == true
+          ? Text(widget.updateAvailableNotesLabel)
+          : null,
+      isThreeLine: _result?.updateAvailable == true,
+      trailing: _checking
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : _result?.updateAvailable == true
+              ? TextButton.icon(
+                  onPressed: () => _open(info?.htmlUrl ?? 'https://github.com/nekonaru/talos/releases'),
+                  icon: const Icon(Icons.download_rounded),
+                  label: Text(widget.downloadText),
+                )
+              : const Icon(Icons.chevron_right),
+      enabled: !_checking,
+      onTap: _checking ? null : _runCheck,
     );
   }
 }

@@ -64,8 +64,11 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
       return;
     }
     final uri = Uri.directory(parent);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Background it silently: the OSes the user runs this on already have
+      // intent handlers for file:// URLs.
     }
   }
 

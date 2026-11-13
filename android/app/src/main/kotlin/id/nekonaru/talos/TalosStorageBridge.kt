@@ -37,10 +37,10 @@ class TalosStorageBridge(private val context: Context) {
     private var treeUriString: String? = null
 
     companion object {
-        private const val CHANNEL = "id.nekonaru.talos/storage"
+        const val CHANNEL = "id.nekonaru.talos/storage"
+        const val PICK_TREE = 9001
         private const val PREFS = "talos_storage_prefs"
         private const val KEY_TREE = "treeUri"
-        private const val PICK_TREE = 9001
 
         private fun mimeFor(fileName: String): String {
             val lower = fileName.lowercase()
@@ -108,7 +108,12 @@ class TalosStorageBridge(private val context: Context) {
     }
 
     /** Persist the URI grant and store it for future use. */
-    fun onPickedTree(treeUri: Uri) {
+    fun onPickedTree(treeUri: Uri?) {
+        mainHandler.post {
+            pendingResult?.success(treeUri?.toString())
+            pendingResult = null
+        }
+        if (treeUri == null) return
         try {
             context.contentResolver.takePersistableUriPermission(
                 treeUri,
@@ -122,10 +127,6 @@ class TalosStorageBridge(private val context: Context) {
             .edit()
             .putString(KEY_TREE, treeUriString)
             .apply()
-        mainHandler.post {
-            pendingResult?.success(treeUriString)
-            pendingResult = null
-        }
     }
 
     private fun talosDir(tree: DocumentFile): DocumentFile? {

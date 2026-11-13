@@ -35,8 +35,14 @@ class MainActivity : FlutterActivity() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK && requestCode == 9001 && data?.data != null) {
-            storageBridge.onPickedTree(data.data!!)
+        if (requestCode != TalosStorageBridge.PICK_TREE) return
+        val uri = data?.data
+        if (resultCode == Activity.RESULT_OK && uri != null) {
+            storageBridge.onPickedTree(uri)
+        } else {
+            // The user cancelled or the system refused the pick. Flutter is
+            // waiting on pickDownloadsTree(); release it with null.
+            storageBridge.onPickedTree(null)
         }
     }
 }
