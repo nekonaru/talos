@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../core/engine/models.dart';
 import '../core/format.dart';
 import '../gen/app_localizations.dart';
+import '../widgets/section_label.dart';
 
 class FormatSelectionScreen extends StatefulWidget {
   const FormatSelectionScreen({super.key, required this.probe, this.initialSelector});
@@ -83,7 +84,7 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           Text(widget.probe.title, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(l.formatSelectionHint, style: theme.textTheme.bodyMedium),
           const SizedBox(height: 16),
           SegmentedButton<bool>(
@@ -104,9 +105,8 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
               });
             },
           ),
-          const SizedBox(height: 20),
-          Text('VIDEO', style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 3)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
+          const SectionLabel('VIDEO'),
           for (final format in videoFormats)
             ListTile(
               onTap: () => setState(() => _videoId = format.id),
@@ -124,9 +124,7 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(l.noVideoFormats, style: theme.textTheme.bodyMedium),
             ),
-          const SizedBox(height: 12),
-          Text('AUDIO', style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 3)),
-          const SizedBox(height: 8),
+          const SectionLabel('AUDIO'),
           for (final format in audioFormats)
             ListTile(
               onTap: () => setState(() => _audioId = format.id),
@@ -144,7 +142,7 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(l.noAudioFormats, style: theme.textTheme.bodyMedium),
             ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 52,

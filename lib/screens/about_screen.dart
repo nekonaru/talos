@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../core/app_info.dart';
 import '../gen/app_localizations.dart';
+import '../widgets/section_label.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -33,7 +34,7 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l.about)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         children: [
           Text(
             TalosInfo.appName.toUpperCase(),
@@ -41,13 +42,13 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(TalosInfo.tagline.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 3.2)),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           Container(height: 2, width: 56, color: theme.colorScheme.primary),
           const SizedBox(height: 24),
           Text('${l.version} ${TalosInfo.appVersion} (${TalosInfo.buildNumber})', style: theme.textTheme.bodyLarge),
           const SizedBox(height: 4),
           Text('${l.licenses}: ${TalosInfo.license}', style: theme.textTheme.bodyMedium),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           FilledButton.tonalIcon(
             onPressed: () => _open(context, TalosInfo.sourceUrl),
             icon: const Icon(Icons.code_rounded),
@@ -70,9 +71,7 @@ class AboutScreen extends StatelessWidget {
             icon: const Icon(Icons.article_outlined),
             label: Text(l.licenses),
           ),
-          const SizedBox(height: 28),
-          Text(l.author.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2.4)),
-          const SizedBox(height: 8),
+          SectionLabel(l.author),
           Card(
             child: ListTile(
               leading: const Icon(Icons.person_outline),
@@ -82,12 +81,10 @@ class AboutScreen extends StatelessWidget {
               onTap: () => _open(context, TalosInfo.authorUrl),
             ),
           ),
-          const SizedBox(height: 18),
-          Text(l.support.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2.4)),
-          const SizedBox(height: 8),
+          SectionLabel(l.support),
           for (final (name, url) in TalosInfo.sponsors)
             Card(
-              margin: const EdgeInsets.only(bottom: 6),
+              margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
                 leading: const Icon(Icons.favorite_border_rounded),
                 title: Text(name),
@@ -95,9 +92,7 @@ class AboutScreen extends StatelessWidget {
                 onTap: () => _open(context, url),
               ),
             ),
-          const SizedBox(height: 28),
-          Text(l.specialThanks.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2.4)),
-          const SizedBox(height: 8),
+          SectionLabel(l.specialThanks),
           for (final (name, license) in chips)
             ListTile(
               contentPadding: EdgeInsets.zero,

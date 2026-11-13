@@ -15,12 +15,15 @@ class TalosShell extends StatefulWidget {
 class _TalosShellState extends State<TalosShell> {
   int _index = 0;
 
-  static const _pages = [HomeScreen(), DownloadsScreen(), SettingsScreen()];
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final wide = MediaQuery.sizeOf(context).width >= 900;
+    final pages = [
+      const HomeScreen(),
+      DownloadsScreen(onGoHome: () => setState(() => _index = 0)),
+      const SettingsScreen(),
+    ];
 
     final destinations = [
       NavigationDestination(icon: const Icon(Icons.travel_explore_outlined), selectedIcon: const Icon(Icons.travel_explore), label: l.home),
@@ -43,14 +46,14 @@ class _TalosShellState extends State<TalosShell> {
               ],
             ),
             const VerticalDivider(width: 1),
-            Expanded(child: IndexedStack(index: _index, children: _pages)),
+            Expanded(child: IndexedStack(index: _index, children: pages)),
           ],
         ),
       );
     }
 
     return Scaffold(
-      body: IndexedStack(index: _index, children: _pages),
+      body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),

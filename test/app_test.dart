@@ -166,6 +166,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
+    await tester.pump();
     await tester.tap(find.text('Fetch'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Download'));
@@ -194,6 +195,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
+    await tester.pump();
     await tester.tap(find.text('Fetch'));
     await tester.pumpAndSettle();
 
