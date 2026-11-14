@@ -5,6 +5,32 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.7.0
+
+Rilis reliabilitas: unduhan sekarang langsung tersimpan di folder publik Downloads/Talos secara default, dan video yang sama bisa diunduh berkali-kali tanpa batas.
+
+### Fitur baru
+
+- **Download publik secara default.** Unduhan baru tersimpan ke Downloads/Talos di ponsel kamu, terlihat oleh file manager dan semua aplikasi media. Di Android 10 ke atas, Talos menulis lewat MediaStore, jadi tidak butuh izin penyimpanan. Di Android lebih lama, Talos meminta sekali izin penyimpanan warisan saat aplikasi pertama dibuka.
+- **Download video yang sama selamanya.** Talos tidak lagi melewati unduhan hanya karena file sudah ada. Setiap unduhan ulang berjalan lagi dan disimpan dengan suffix baru tepat setelah judul, misalnya `Big Buck Bunny(1).mkv` dan `Big Buck Bunny(2).mkv`. Penomoran berlaku di mana pun: nama lokal, di dalam folder SAF, dan di folder publik Downloads. Tidak ada yang pernah ditimpa.
+- **Permintaan izin penyimpanan dan notifikasi saat instalasi pertama.** Aplikasi yang baru dipasang langsung meminta yang dibutuhkan: akses notifikasi di Android 13 ke atas, dan akses penyimpanan warisan di Android 9 ke bawah.
+
+### Perbaikan bug
+
+- **Unduhan berulang bisa selesai dengan hasil kosong tanpa peringatan.** Jika file tujuan sudah ada, yt-dlp melewati unduhan dan aplikasi tetap melaporkan sukses. Talos sekarang memilih nama unik sebelum setiap unduhan dimulai, jadi unduhan berulang selalu menghasilkan file lengkap.
+- **Entri selesai tidak bisa dibuka atau dibagikan.** File dari versi sebelumnya bisa berakhir di path pribadi atau tidak terjangkau. Sekarang file disimpan di folder publik, dan membuka atau membagikan entri selesai memakai handler Android asli untuk content URI alih-alih gagal diam-diam.
+- **Folder SAF bisa menimpa file dengan nama yang sama.** Talos sekarang membuat `nama(N).ext` unik alih-alih memakai ulang entri yang ada.
+- **Ukuran file di Riwayat tidak tercatat dengan benar.** Ukuran sekarang diukur sebelum file dipindahkan ke folder tujuannya.
+
+### Peningkatan
+
+- **Pengaturan > Downloads lebih eksplisit.** Tile lokasi sekarang bertuliskan "Unduhan (default)" dengan penjelasan lengkap, dan tombol Ubah memilih folder kustom. Kembalikan ke default kapan saja.
+- **Terverifikasi end-to-end.** Alur instalasi baru, unduhan ulang tanpa batas, dan penyalinan ke folder publik dicakup test unit dan diverifikasi di emulator, termasuk membuka file selesai di pemutar bawaan.
+
+### Download / Instalasi
+
+Download file untuk platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.7.0-windows-x64.zip`. Linux: `Talos-v0.7.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.6.0
 
 Rilis reliabilitas dan polesan: mengganti nama unduhan tidak lagi berisiko menghasilkan file rusak, dan seluruh UI dirapikan agar konsisten.

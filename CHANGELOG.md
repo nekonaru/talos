@@ -5,6 +5,32 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.7.0
+
+Reliability release: downloads now land in your public Downloads/Talos folder by default, and the same video can be downloaded as many times as you like.
+
+### New features
+
+- **Public Downloads by default.** New downloads save to Downloads/Talos on your phone, visible to your file manager and to every media app. On Android 10 and newer, Talos writes there through MediaStore, so no storage permission is needed. On older Android, Talos asks once for legacy storage access on first launch.
+- **Download the same video forever.** Talos no longer skips a download because the file already exists. Every repeat runs again and saves with a fresh suffix right after the title, for example `Big Buck Bunny(1).mkv` and `Big Buck Bunny(2).mkv`. The numbering is applied everywhere: the local name, inside a SAF folder, and inside the public Downloads folder. Nothing is ever overwritten.
+- **Storage and notification prompt on first launch.** A fresh install asks right away for what it needs: notification access on Android 13 and newer, and legacy storage access on Android 9 and older.
+
+### Bug fixes
+
+- **Repeat downloads could silently finish with nothing new.** If the destination file already existed, yt-dlp skipped the download and the app still reported success. Talos now resolves a unique name before every download, so repeat downloads always produce a complete file.
+- **Finished entries could not be opened or shared.** Files saved by earlier versions could end up with a private or unreachable path. Files now live in the public folder, and opening and sharing a finished entry uses the native Android handlers for content URIs instead of failing silently.
+- **A SAF folder pick could overwrite a same-named file.** Talos now creates a unique `name(N).ext` instead of reusing the existing entry.
+- **History entries recorded an unusable size.** Sizes are now measured before the file moves to its final folder.
+
+### Improvements
+
+- **Settings > Downloads is explicit.** The location tile now reads "Downloads (default)" with a full description, and a Change button picks a custom folder. Reset returns to the default at any time.
+- **Verified end to end.** The fresh-install flow, unlimited repeat downloads and public-folder copies are covered by unit tests and verified on an emulator, including opening the finished file in the system player.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.7.0-windows-x64.zip`. Linux: `Talos-v0.7.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.6.0
 
 Reliability and polish release: renaming a download no longer risks an unusable file, and the whole UI got a consistency pass.
