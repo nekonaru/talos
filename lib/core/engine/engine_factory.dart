@@ -66,10 +66,25 @@ class _UnsupportedSession implements TalosDownloadSession {
   Future<void> cancel() async {}
 }
 
-/// Picks a writable default output directory. Android apps can only write
-/// inside their own sandbox by default; desktop prefers the system downloads folder.
-Future<String> defaultDownloadDirectory() async {
+/// Picks a writable default output directory.
+///
+/// Android 24-28 can write the public Downloads folder directly (with the
+/// WRITE_EXTERNAL_STORAGE permission asked on first launch), so downloads
+/// appear there straight away. Android 29+ cannot write that path from an
+/// app, so the engine works in the private sandbox and the manager copies
+/// the finished file into Downloads/Talos through MediaStore afterwards.
+/// Desktop prefers the system downloads folder.
+Future<String> defaultDownloadDirectory({int androidSdkInt = -1}) async {
   if (defaultTargetPlatform == TargetPlatform.android) {
+    if (androidSdkInt > 0 && androidSdkInt <= 28) {
+      final direct = Directory('/storage/emulated/0/Download/Talos');
+      try {
+        if (!direct.existsSync()) direct.createSync(recursive: true);
+        return direct.path;
+      } catch (_) {
+        // Permission not granted or storage missing; fall back to private.
+      }
+    }
     final documents = await getApplicationDocumentsDirectory();
     return '${documents.path}${Platform.pathSeparator}Talos';
   }

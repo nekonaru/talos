@@ -179,11 +179,12 @@
   "author": "Penulis",
   "support": "Dukung Talos",
   "copyPath": "Salin path",
-  "safStorageTitle": "Folder penyimpanan",
   "safStoragePick": "Ubah",
-  "safStorageClear": "Gunakan internal",
-  "safStorageHint": "Pilih folder via picker sistem (contohnya Downloads/Talos). Setiap unduhan akan disalin ke folder itu. Clear untuk kembali ke storage internal app.",
-  "safStorageUnset": "Internal (per aplikasi)",
+  "downloadsDefault": "Unduhan (default)",
+  "downloadsDefaultHint": "Menyimpan ke folder publik Download/Talos di ponsel kamu. Ubah untuk memakai folder lain.",
+  "downloadsCustomFolder": "Folder kustom: Talos",
+  "downloadsCustomFolderHint": "Menyimpan ke folder yang kamu pilih (subfolder Talos dibuat di dalamnya). Kembalikan ke default untuk kembali ke Unduhan (default).",
+  "downloadsResetDefault": "Kembalikan ke default",
   "safNotWritable": "Folder storage yang dipilih tidak bisa ditulis. Pilih lagi folder di Pengaturan > Download, atau clear untuk pakai storage internal app.",
   "specialThanks": "Dibangun di atas perangkat lunak sumber terbuka"
 }

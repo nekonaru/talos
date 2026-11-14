@@ -182,11 +182,12 @@
   "author": "Author",
   "support": "Support Talos",
   "copyPath": "Copy path",
-  "safStorageTitle": "Storage folder",
   "safStoragePick": "Change",
-  "safStorageClear": "Use private",
-  "safStorageHint": "Pick a folder via the system picker (for example Downloads/Talos). Every download will be copied there. Clear to go back to app private storage.",
-  "safStorageUnset": "Internal storage (per app)",
+  "downloadsDefault": "Downloads (default)",
+  "downloadsDefaultHint": "Saves to the public Downloads/Talos folder on your phone. Change to use a different folder.",
+  "downloadsCustomFolder": "Custom folder: Talos",
+  "downloadsCustomFolderHint": "Saves to the folder you picked (a Talos subfolder is created inside it). Reset to go back to Downloads (default).",
+  "downloadsResetDefault": "Reset to default",
   "safNotWritable": "The selected storage folder is not writable. Re-pick the folder in Settings > Downloads, or clear it to use app private storage.",
   "specialThanks": "Built on open source software"
 }

@@ -10,6 +10,7 @@ import '../app_scope.dart';
 import '../core/app_info.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
+import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
 import '../widgets/section_label.dart';
@@ -175,6 +176,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _openFile(HistoryEntry entry) async {
     final l = AppLocalizations.of(context)!;
+    // MediaStore and SAF content URIs open natively; private paths fall back
+    // to the system share sheet because other apps cannot read the sandbox.
+    if (Platform.isAndroid && entry.filePath.startsWith('content://')) {
+      final ok = await TalosStorageBridge.openUri(entry.filePath);
+      if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
+      }
+      return;
+    }
+    if (Platform.isAndroid || Platform.isIOS) {
+      await _saveFile(context, entry);
+      return;
+    }
     try {
       await launchUrl(Uri.file(entry.filePath), mode: LaunchMode.externalApplication);
     } catch (_) {
@@ -185,6 +199,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _saveFile(BuildContext context, HistoryEntry entry) async {
     final scaffold = ScaffoldMessenger.of(context);
+    if (Platform.isAndroid && entry.filePath.startsWith('content://')) {
+      final ok = await TalosStorageBridge.shareUri(entry.filePath);
+      if (!ok) {
+        if (!context.mounted) return;
+        scaffold.showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.shareFailed)));
+      }
+      return;
+    }
     try {
       await SharePlus.instance.share(
         ShareParams(files: [XFile(entry.filePath)]),
@@ -290,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: theme.textTheme.bodySmall,
                         ),
                         trailing: const Icon(Icons.open_in_new, size: 18),
-                        onTap: () => (Platform.isAndroid || Platform.isIOS) ? _saveFile(context, entry) : _openFile(entry),
+                        onTap: () => _openFile(entry),
                       ),
                     ),
                 ],

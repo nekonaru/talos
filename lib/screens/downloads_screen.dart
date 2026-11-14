@@ -41,6 +41,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
 
   Future<void> _openFile(String path) async {
     final l = AppLocalizations.of(context)!;
+    if (Platform.isAndroid && path.startsWith('content://')) {
+      final ok = await TalosStorageBridge.openUri(path);
+      if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
+      }
+      return;
+    }
     try {
       final result = await OpenFile.open(path);
       if (result.type != ResultType.done) {
@@ -84,6 +91,14 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
   }
 
   Future<void> _share(String path) async {
+    final l = AppLocalizations.of(context)!;
+    if (Platform.isAndroid && path.startsWith('content://')) {
+      final ok = await TalosStorageBridge.shareUri(path);
+      if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.shareFailed)));
+      }
+      return;
+    }
     await SharePlus.instance.share(ShareParams(files: [XFile(path)]));
   }
 
