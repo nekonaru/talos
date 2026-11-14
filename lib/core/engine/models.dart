@@ -204,8 +204,11 @@ class DownloadRequest {
   final bool keepSubtitles;
 
   /// When non-null and non-empty, overrides [filenameTemplate] so the user
-  /// can rename the output file before download. This value must already
-  /// carry its extension (for example "My Video.mp4").
+  /// can rename the output file before download. Either a full file name
+  /// with its extension (for example "My Video.mp4"), or a name template
+  /// that keeps yt-dlp's extension placeholder (for example
+  /// "Title(1).%(ext)s"), which the app uses to force unique names for
+  /// repeated downloads of the same media.
   final String? outputFilename;
 
   DownloadRequest copyWith({String? outputFilename}) => DownloadRequest(

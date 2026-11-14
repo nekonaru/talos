@@ -1,4 +1,3 @@
-import 'dart:io';
 import '../widgets/section_label.dart';
 
 import 'package:flutter/material.dart';
@@ -195,17 +194,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Card(
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.folder_outlined),
-                  title: Text(l.downloadFolder),
-                  subtitle: Text(settings.downloadFolder?.isNotEmpty == true ? settings.downloadFolder! : l.ffmpegAuto),
-                  onTap: () async {
-                    final value = await _editDialog(title: l.downloadFolder, initial: settings.downloadFolder ?? '', hint: l.ffmpegAuto);
-                    if (value != null) {
-                      await manager.settings.mutate((s) => value.isEmpty ? s.copyWith(clearDownloadFolder: true) : s.copyWith(downloadFolder: value));
-                    }
-                  },
-                ),
+                if (desktop)
+                  ListTile(
+                    leading: const Icon(Icons.folder_outlined),
+                    title: Text(l.downloadFolder),
+                    subtitle: Text(settings.downloadFolder?.isNotEmpty == true ? settings.downloadFolder! : manager.outputDirectory),
+                    onTap: () async {
+                      final value = await _editDialog(title: l.downloadFolder, initial: settings.downloadFolder ?? '', hint: manager.outputDirectory);
+                      if (value != null) {
+                        await manager.settings.mutate((s) => value.isEmpty ? s.copyWith(clearDownloadFolder: true) : s.copyWith(downloadFolder: value));
+                      }
+                    },
+                  )
+                else ...[
+                  ListTile(
+                    leading: const Icon(Icons.folder_outlined),
+                    title: Text(settings.downloadFolderSAF.isNotEmpty ? l.downloadsCustomFolder : l.downloadsDefault),
+                    subtitle: Text(
+                      settings.downloadFolderSAF.isNotEmpty ? l.downloadsCustomFolderHint : l.downloadsDefaultHint,
+                    ),
+                    trailing: settings.downloadFolderSAF.isNotEmpty
+                        ? TextButton(
+                            onPressed: () async {
+                              await TalosStorageBridge.clearTree();
+                              await manager.settings.mutate((s) => s.copyWith(downloadFolderSAF: ''));
+                            },
+                            child: Text(l.downloadsResetDefault),
+                          )
+                        : TextButton(
+                            onPressed: () async {
+                              final uri = await TalosStorageBridge.pickDownloadsTree();
+                              if (uri != null && uri.isNotEmpty) {
+                                await manager.settings.mutate((s) => s.copyWith(downloadFolderSAF: uri));
+                              }
+                            },
+                            child: Text(l.safStoragePick),
+                          ),
+                  ),
+                ],
                 ListTile(
                   leading: const Icon(Icons.drive_file_rename_outline),
                   title: Text(l.filenameTemplate),
@@ -288,39 +314,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: settings.autoUpdateEngine,
                   onChanged: (value) => manager.settings.mutate((s) => s.copyWith(autoUpdateEngine: value)),
                 ),
-                if (Platform.isAndroid)
-                  ListTile(
-                    leading: const Icon(Icons.folder_open_outlined),
-                    title: Text(l.safStorageTitle),
-                    subtitle: Text(
-                      settings.downloadFolderSAF.isEmpty
-                          ? l.safStorageUnset
-                          : Uri.decodeComponent(settings.downloadFolderSAF.split('/').last),
-                    ),
-                    isThreeLine: settings.downloadFolderSAF.isNotEmpty,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (settings.downloadFolderSAF.isNotEmpty)
-                          TextButton(
-                            onPressed: () async {
-                              await TalosStorageBridge.clearTree();
-                              await manager.settings.mutate((s) => s.copyWith(downloadFolderSAF: ''));
-                            },
-                            child: Text(l.safStorageClear),
-                          ),
-                        TextButton(
-                          onPressed: () async {
-                            final uri = await TalosStorageBridge.pickDownloadsTree();
-                            if (uri != null && uri.isNotEmpty) {
-                              await manager.settings.mutate((s) => s.copyWith(downloadFolderSAF: uri));
-                            }
-                          },
-                          child: Text(l.safStoragePick),
-                        ),
-                      ],
-                    ),
-                  ),
               ],
             ),
           ),

@@ -162,7 +162,7 @@ _MP4_EXTENSIONS = ('.mp4', '.m4a', '.mov', '.3gp', '.3g2')
 
 
 def _dedupe(path):
-    """If [path] exists, return a sibling path with " (N)" suffix that does not.
+    """If [path] exists, return a sibling path with "(N)" suffix that does not.
 
     Used so merged output never overwrites a pre-existing file when the
     output filename would collide.
@@ -172,7 +172,7 @@ def _dedupe(path):
     dir_name = os.path.dirname(path)
     base, ext = os.path.splitext(os.path.basename(path))
     for i in range(1, 10000):
-        candidate = os.path.join(dir_name, '%s (%d)%s' % (base, i, ext))
+        candidate = os.path.join(dir_name, '%s(%d)%s' % (base, i, ext))
         if not os.path.exists(candidate):
             return candidate
     return path

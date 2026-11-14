@@ -7,13 +7,27 @@ import 'package:path_provider/path_provider.dart';
 import 'app.dart';
 import 'core/background_service.dart';
 import 'core/download_manager.dart';
+import 'core/storage_bridge.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initForegroundTask();
   final manager = await DownloadManager.create();
   unawaited(_maybeAutoUpdateEngine(manager));
+  unawaited(_promptFirstLaunchPermissions());
   runApp(TalosApp(manager: manager));
+}
+
+/// Ask for the permissions Talos needs right away on a fresh install:
+/// POST_NOTIFICATIONS on Android 13+ and WRITE_EXTERNAL_STORAGE on
+/// Android 7-9. A no-op on every later launch and off Android.
+Future<void> _promptFirstLaunchPermissions() async {
+  if (!Platform.isAndroid) return;
+  try {
+    await TalosStorageBridge.requestFirstLaunchPermissions();
+  } catch (_) {
+    // Best effort; notifications and downloads work either way.
+  }
 }
 
 /// Quietly checks for a managed engine update when the user opted in.

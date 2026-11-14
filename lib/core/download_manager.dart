@@ -52,9 +52,13 @@ class DownloadManager extends ChangeNotifier {
 
   static Future<DownloadManager> create({TalosEngine? engine}) async {
     final settings = await SettingsStore.load();
+    // The public Downloads folder is the default on Android: API 28 and
+    // older writes it directly; API 29+ copies through MediaStore after
+    // the download. SAF or a custom path overrides either.
+    final androidSdkInt = await TalosStorageBridge.androidSdkInt();
     final outputDir = settings.value.downloadFolder?.trim().isNotEmpty == true
         ? settings.value.downloadFolder!.trim()
-        : await defaultDownloadDirectory();
+        : await defaultDownloadDirectory(androidSdkInt: androidSdkInt);
     // Reconcile the persisted SAF tree URI against the native side: if the
     // bridge no longer finds it (folder deleted, grant revoked), clear it so
     // downloads fall back to app-private storage instead of silently failing.
@@ -193,16 +197,22 @@ class DownloadManager extends ChangeNotifier {
       await ensureForegroundService(text: task.title);
     }
 
-    // Resolve a unique output filename if the user asked for one but a
-    // file with that name is already present in the output directory.
+    // Resolve a unique output filename before download. Every non-playlist
+    // download must always run: when the target name already exists, Talos
+    // writes "name(1).ext", "name(2).ext" and so on. The user asked for
+    // unlimited repeats of the same video without any hidden deduplication.
     final effectiveRequest = (() {
-      final requested = task.request.outputFilename?.trim();
-      if (requested == null || requested.isEmpty) return task.request;
+      final typed = task.request.outputFilename?.trim();
       try {
         final dir = Directory(task.request.outputDir);
-        final unique = _uniqueFilename(dir, requested);
-        if (unique == requested) return task.request;
-        return task.request.copyWith(outputFilename: unique);
+        if (typed != null && typed.isNotEmpty) {
+          final unique = _uniqueFilename(dir, typed);
+          if (unique == typed) return task.request;
+          return task.request.copyWith(outputFilename: unique);
+        }
+        if (task.request.includePlaylist) return task.request;
+        final base = _uniqueOutputTemplate(dir, _sanitizeFilenameComponent(task.title));
+        return task.request.copyWith(outputFilename: '$base.%(ext)s');
       } catch (_) {
         // existsSync can fail on unusual paths (for example SAF content
         // URIs); fall back to the requested name unchanged.
@@ -253,31 +263,47 @@ class DownloadManager extends ChangeNotifier {
     if (outcome.error == null) {
       task.outputPath = outcome.outputPath ?? task.outputPath;
 
-      // When the user picked a SAF folder in Settings, copy the resulting
-      // file there. If the copy fails, treat the task as failed so the user
-      // sees it instead of finding a hidden file in private storage.
+      // On Android, when the user picked a SAF folder, or nothing at all
+      // (public Downloads/Talos is the default), copy the finished file
+      // there. A failed copy fails the task instead of hiding the file in
+      // private storage.
       final saf = _settings.value.downloadFolderSAF.trim();
-      if (Platform.isAndroid && saf.isNotEmpty && (task.outputPath?.isNotEmpty ?? false)) {
-        final localPath = task.outputPath!;
+      final plainSet = _settings.value.downloadFolder?.trim().isNotEmpty ?? false;
+      final localPath = task.outputPath ?? '';
+      int? deletedSize;
+      if (Platform.isAndroid && localPath.isNotEmpty && !localPath.startsWith('content://')) {
         final displayName = localPath.split(Platform.pathSeparator).last;
-        final uri = await TalosStorageBridge.copyToTree(localPath, displayName);
-        if (uri != null) {
+        final localSize = await _fileSize(localPath);
+        final directWrite = _outputDir == '/storage/emulated/0/Download/Talos';
+        String? saved;
+        if (saf.isNotEmpty) {
+          saved = await TalosStorageBridge.copyToTree(localPath, displayName);
+        } else if (!plainSet && !directWrite) {
+          saved = await TalosStorageBridge.saveToDownloads(localPath, displayName);
+        } else {
+          saved = localPath; // Custom plain path or API 24-28 direct write.
+        }
+        if (saved == null) {
+          task.status = TaskStatus.failed;
+          task.error = saf.isNotEmpty
+              ? 'The Talos folder is not writable in the selected storage. Re-pick the folder in Settings > Downloads, or clear it to go back to Downloads (default).'
+              : 'Talos could not save the file into Downloads/Talos. Check that storage and notification access are granted, or pick a different folder in Settings > Downloads.';
+          notifyListeners();
+          await _maybeStopForeground();
+          return;
+        }
+        if (saved != localPath) {
           try {
             await File(localPath).delete();
           } catch (_) {
             // Best effort; the file stays behind in the app sandbox.
           }
-          task.outputPath = uri;
-        } else {
-          task.status = TaskStatus.failed;
-          task.error = 'Talos folder is not writable in the selected storage. Re-pick the folder in Settings > Downloads, or clear it to use app private storage.';
-          notifyListeners();
-          await _maybeStopForeground();
-          return;
+          task.outputPath = saved;
+          deletedSize = localSize;
         }
       }
 
-      final size = await _fileSize(task.outputPath);
+      final size = deletedSize ?? await _fileSize(task.outputPath);
       if (!_settings.value.privateMode) {
         await _history.add(HistoryEntry(
           id: task.id,
@@ -317,10 +343,47 @@ class DownloadManager extends ChangeNotifier {
     final base = dot >= 0 ? name.substring(0, dot) : name;
     final ext = dot >= 0 ? name.substring(dot) : '';
     for (var i = 1; i < 10000; i++) {
-      final candidate = '$base ($i)$ext';
+      final candidate = '$base($i)$ext';
       if (!File('${dir.path}$sep$candidate').existsSync()) return candidate;
     }
     return name;
+  }
+
+  /// Make a raw title safe for a file name, loosely matching yt-dlp's rules:
+  /// path-unsafe characters become underscores, control characters go, the
+  /// result is trimmed and length-capped.
+  static String _sanitizeFilenameComponent(String title) {
+    var s = title
+        .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
+        .replaceAll(RegExp(r'[\x00-\x1f]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    // yt-dlp avoids trailing dots and spaces on Windows.
+    while (s.endsWith('.') || s.endsWith(' ')) {
+      s = s.substring(0, s.length - 1);
+    }
+    if (s.isEmpty) s = 'video';
+    if (s.length > 120) s = s.substring(0, 120).trimRight();
+    return s;
+  }
+
+  /// Find a base name that no file uses: "Title", "Title(1)", "Title(2)",
+  /// "Title(3)" and so on. Any file with a matching prefix counts, whatever
+  /// the extension.
+  static String _uniqueOutputTemplate(Directory dir, String base) {
+    if (!dir.existsSync()) return base;
+    final taken = dir
+        .listSync(followLinks: false)
+        .whereType<File>()
+        .map((f) => f.uri.pathSegments.isNotEmpty ? f.uri.pathSegments.last : f.path.split(Platform.pathSeparator).last)
+        .toSet();
+    bool used(String candidate) => taken.any((name) => name.startsWith('$candidate.'));
+    if (!used(base)) return base;
+    for (var i = 1; i < 10000; i++) {
+      final candidate = '$base($i)';
+      if (!used(candidate)) return candidate;
+    }
+    return base;
   }
 
   Future<bool> _ffmpegAvailable(String configured) async {

@@ -241,7 +241,58 @@ void main() {
     });
 
     expect(engine.lastRequest, isNotNull);
-    expect(engine.lastRequest!.outputFilename, 'clip (1).mp4');
+    expect(engine.lastRequest!.outputFilename, 'clip(1).mp4');
+  });
+
+  testWidgets('repeated download of the same video gets a fresh unique name', (tester) async {
+    final engine = FakeEngine();
+    final outDir = Directory.systemTemp.createTempSync('talos_dup');
+    File('${outDir.path}${Platform.pathSeparator}Example video.mp4').writeAsStringSync('first download');
+    late final DownloadManager manager;
+    await tester.runAsync(() async {
+      manager = await DownloadManager.create(engine: engine);
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/a',
+          videoMode: true,
+          outputDir: outDir.path,
+          includePlaylist: false,
+        ),
+        title: 'Example video',
+        kind: HistoryKind.video,
+      );
+      for (var i = 0; i < 100 && engine.lastRequest == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 20));
+      }
+    });
+
+    expect(engine.lastRequest, isNotNull);
+    expect(engine.lastRequest!.outputFilename, 'Example video(1).%(ext)s');
+  });
+
+  testWidgets('first download of a video uses the plain title template', (tester) async {
+    final engine = FakeEngine();
+    final outDir = Directory.systemTemp.createTempSync('talos_first');
+    late final DownloadManager manager;
+    await tester.runAsync(() async {
+      manager = await DownloadManager.create(engine: engine);
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/b',
+          videoMode: true,
+          outputDir: outDir.path,
+          includePlaylist: false,
+        ),
+        title: 'Fresh clip',
+        kind: HistoryKind.video,
+      );
+      for (var i = 0; i < 100 && engine.lastRequest == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 20));
+      }
+    });
+
+    expect(engine.lastRequest, isNotNull);
+    expect(engine.lastRequest!.outputFilename, 'Fresh clip.%(ext)s');
   });
 
   testWidgets('retry targets the configured per-type folder', (tester) async {
