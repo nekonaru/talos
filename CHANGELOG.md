@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.6.0
+
+Reliability and polish release: renaming a download no longer risks an unusable file, and the whole UI got a consistency pass.
+
+### New features
+
+- **Rename before download.** The Configure screen now has a File name field. Type the output file name with its extension (for example `My Video.mp4`) to rename a download. Empty keeps the automatic title-based name.
+- **Automatic duplicate handling.** If the file name you typed already exists in the output folder, Talos writes `name (1).ext` instead of overwriting or failing. The same deduplication is applied when the app merges video and audio streams in-process, so repeated downloads with the same name never end up as broken files.
+
+### Improvements
+
+- **UI consistency audit.** All section headings use one shared widget, the spacing scale was normalized, and empty states were unified. The Downloads screen shows a Go to Home button when it is empty, Fetch stays disabled until a link is entered, and the accent color dots render correctly in light and dark mode.
+- **Changelog housekeeping.** Removed a duplicated line in the v0.5.0 section.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.6.0-windows-x64.zip`. Linux: `Talos-v0.6.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.5.0
 
 Feature plus audit release: you can now check for the latest version right inside the app, and several audit findings were fixed.
@@ -21,7 +39,6 @@ Feature plus audit release: you can now check for the latest version right insid
 
 ### Improvements
 
-- **Translation audit.** A test now guarantees app_en.arb and app_id.arb have matching user-facing keys.
 - **Translation audit.** A test now guarantees app_en.arb and app_id.arb have matching user-facing keys.
 - **Look back.** ARB translation metadata is also validated to ensure placeholders are correctly registered.
 

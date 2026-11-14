@@ -5,6 +5,24 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.6.0
+
+Rilis reliabilitas dan polesan: mengganti nama unduhan tidak lagi berisiko menghasilkan file rusak, dan seluruh UI dirapikan agar konsisten.
+
+### Fitur baru
+
+- **Ganti nama sebelum download.** Layar Configure sekarang punya kolom File name. Ketik nama file output beserta ekstensinya (misalnya `Video Saya.mp4`) untuk mengganti nama unduhan. Kosong berarti nama otomatis berdasarkan judul.
+- **Penanganan duplikat otomatis.** Kalau nama file yang kamu ketik sudah ada di folder output, Talos menulis `nama (1).ext` alih-alih menimpa atau gagal. Dedupe yang sama berlaku saat aplikasi menggabungkan stream video dan audio di dalam app, jadi unduhan berulang dengan nama sama tidak akan berakhir sebagai file rusak.
+
+### Peningkatan
+
+- **Audit konsistensi UI.** Semua heading section memakai satu widget bersama, skala spacing dinormalkan, dan empty state disatukan. Layar Downloads menampilkan tombol Go to Home saat kosong, Fetch tetap nonaktif sampai kamu mengisi link, dan titik accent color tampil benar di mode light dan dark.
+- **Kerapian changelog.** Menghapus baris ganda di section v0.5.0.
+
+### Download / Instalasi
+
+Download file untuk platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.6.0-windows-x64.zip`. Linux: `Talos-v0.6.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.5.0
 
 Rilis fitur audit plus: sekarang kamu bisa cek apakah ada versi terbaru dari dalam app, plus beberapa perbaikan audit.
