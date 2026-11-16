@@ -5,6 +5,29 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.8.0
+
+Rilis fitur terbesar sejauh ini: Talos sekarang bisa memutar unduhan langsung di dalam aplikasi, dan tab Finished bisa dicari plus punya thumbnail.
+
+### Fitur baru
+
+- **Pemutar bawaan.** Unduhan yang sudah selesai terbuka di pemutar dalam aplikasi: play/pause, slider seek, tombol mundur 10 detik, dan tombol maju 30 detik. Berfungsi untuk video maupun audio. Kalau file tidak bisa diputar di dalam aplikasi, kamu masih bisa membukanya dengan pemutar sistem.
+- **Cari unduhan selesai.** Tab Finished punya kolom pencarian yang memfilter berdasarkan judul video, nama channel, atau URL.
+- **Thumbnail di Finished.** Unduhan yang tercatat mulai sekarang menampilkan thumbnail videonya.
+
+### Perbaikan bug
+
+- **Instalasi baru bisa dianggap "tidak merespons" saat dialog izin muncul selama cold start.** Dialog izin sekarang menunggu sampai frame pertama selesai tampil, jadi aplikasi tidak pernah memblokir input saat dialog menunggu jawabanmu.
+- **Entri selesai dengan content URI tidak bisa dibuka.** Handler Android asli dipakai untuk content URI, jadi buka dan bagikan berfungsi untuk file yang tersimpan lewat MediaStore maupun folder SAF.
+
+### Peningkatan
+
+- **Riwayat menyimpan thumbnail** untuk unduhan selesai mulai sekarang. Entri lama tetap memakai ikon generik.
+
+### Download / Instalasi
+
+Download file untuk platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.8.0-windows-x64.zip`. Linux: `Talos-v0.8.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.7.0
 
 Rilis reliabilitas: unduhan sekarang langsung tersimpan di folder publik Downloads/Talos secara default, dan video yang sama bisa diunduh berkali-kali tanpa batas.
