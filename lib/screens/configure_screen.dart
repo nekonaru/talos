@@ -134,6 +134,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       request,
       title: widget.probe.title,
       kind: _videoMode ? HistoryKind.video : HistoryKind.audio,
+      thumbnailUrl: widget.probe.thumbnail,
     );
 
     if (!mounted) return;

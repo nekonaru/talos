@@ -18,6 +18,7 @@ class HistoryEntry {
     required this.dateMs,
     this.uploader,
     this.sizeBytes,
+    this.thumbnailUrl,
   });
 
   factory HistoryEntry.fromJson(Map<String, dynamic> json) {
@@ -33,6 +34,7 @@ class HistoryEntry {
       dateMs: (json['dateMs'] as num?)?.toInt() ?? 0,
       uploader: json['uploader'] as String?,
       sizeBytes: (json['sizeBytes'] as num?)?.toInt(),
+      thumbnailUrl: json['thumbnailUrl'] as String?,
     );
   }
 
@@ -44,6 +46,7 @@ class HistoryEntry {
   final int dateMs;
   final String? uploader;
   final int? sizeBytes;
+  final String? thumbnailUrl;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -54,6 +57,7 @@ class HistoryEntry {
         'dateMs': dateMs,
         'uploader': uploader,
         'sizeBytes': sizeBytes,
+        'thumbnailUrl': thumbnailUrl,
       };
 }
 

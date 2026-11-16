@@ -5,6 +5,29 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.8.0
+
+Biggest feature release so far: Talos now plays your downloads inside the app, and the Finished tab is searchable with thumbnails.
+
+### New features
+
+- **Built-in player.** Finished downloads open in an in-app player: play/pause, a seek slider, a 10-second rewind button and a 30-second forward button. Works for both video and audio files. If a file cannot be played in-app, you can open it with the system player instead.
+- **Search finished downloads.** The Finished tab has a search field that filters by video title, channel name or URL.
+- **Thumbnails in Finished.** Entries recorded from now on show the video thumbnail.
+
+### Bug fixes
+
+- **Fresh installs could be flagged as "not responding" when the permission prompt appeared during cold start.** The prompt now waits until after the first frame renders, so the app never blocks input while the system dialog waits for your answer.
+- **Finished entries with content URIs could not be opened.** Native Android handlers are used for content URIs, so opening and sharing works for files saved through MediaStore or a SAF folder.
+
+### Improvements
+
+- **History keeps the thumbnail** for new finished entries. Older entries keep the generic icon.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.8.0-windows-x64.zip`. Linux: `Talos-v0.8.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.7.0
 
 Reliability release: downloads now land in your public Downloads/Talos folder by default, and the same video can be downloaded as many times as you like.

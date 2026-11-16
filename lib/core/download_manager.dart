@@ -18,6 +18,7 @@ class DownloadTask {
     required this.url,
     required this.kind,
     required this.request,
+    this.thumbnailUrl,
   });
 
   final String id;
@@ -25,6 +26,7 @@ class DownloadTask {
   final String url;
   final HistoryKind kind;
   final DownloadRequest request;
+  final String? thumbnailUrl;
 
   TaskStatus status = TaskStatus.queued;
   double progress = 0;
@@ -91,13 +93,14 @@ class DownloadManager extends ChangeNotifier {
   List<DownloadTask> get finishedTasks =>
       _tasks.where((t) => t.status != TaskStatus.running && t.status != TaskStatus.queued).toList();
 
-  Future<void> enqueue(DownloadRequest request, {required String title, required HistoryKind kind}) async {
+  Future<void> enqueue(DownloadRequest request, {required String title, required HistoryKind kind, String? thumbnailUrl}) async {
     final task = DownloadTask(
       id: DateTime.now().microsecondsSinceEpoch.toRadixString(16),
       title: title,
       url: request.url,
       kind: kind,
       request: request,
+      thumbnailUrl: thumbnailUrl,
     );
     _tasks.insert(0, task);
     notifyListeners();
@@ -156,7 +159,7 @@ class DownloadManager extends ChangeNotifier {
       outputFilename: task.request.outputFilename,
     );
     _tasks.remove(task);
-    await enqueue(rebuilt, title: task.title, kind: task.kind);
+    await enqueue(rebuilt, title: task.title, kind: task.kind, thumbnailUrl: task.thumbnailUrl);
   }
 
   void removeTask(DownloadTask task) {
@@ -313,6 +316,7 @@ class DownloadManager extends ChangeNotifier {
           kind: task.kind,
           dateMs: DateTime.now().millisecondsSinceEpoch,
           sizeBytes: size,
+          thumbnailUrl: task.thumbnailUrl,
         ));
       }
       // Completed work moves to the Finished tab via history.

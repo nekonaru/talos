@@ -13,6 +13,7 @@ import '../core/format.dart';
 import '../core/history_store.dart';
 import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
+import 'player_screen.dart';
 
 class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key, this.onGoHome});
@@ -26,54 +27,52 @@ class DownloadsScreen extends StatefulWidget {
 
 class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  final _searchController = TextEditingController();
+  String _query = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onTabChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _onSearchChanged() {
+    final value = _searchController.text.trim().toLowerCase();
+    if (value != _query && mounted) setState(() => _query = value);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
     _tabController.dispose();
     super.dispose();
   }
 
-  Future<void> _openFile(String path) async {
-    final l = AppLocalizations.of(context)!;
-    if (Platform.isAndroid && path.startsWith('content://')) {
-      final ok = await TalosStorageBridge.openUri(path);
-      if (!ok && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
-      }
-      return;
-    }
-    try {
-      final result = await OpenFile.open(path);
-      if (result.type != ResultType.done) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.unknownError)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
-      }
-    }
-  }
-
   Future<void> _openFolder(String path) async {
     final l = AppLocalizations.of(context)!;
-    final parent = File(path).parent.absolute.path;
     if (Platform.isAndroid || Platform.isIOS) {
-      await Clipboard.setData(ClipboardData(text: parent));
+      if (path.startsWith('content://')) {
+        // The path is a content URI, not a filesystem path; copy the URI
+        // itself so the user can paste it into a file manager that
+        // understands it. Otherwise copy the parent folder.
+        await Clipboard.setData(ClipboardData(text: path));
+      } else {
+        await Clipboard.setData(ClipboardData(text: File(path).parent.absolute.path));
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.copied)));
       }
       return;
     }
-    final uri = Uri.directory(parent);
+    final uri = Uri.directory(File(path).parent.absolute.path);
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {
@@ -187,6 +186,14 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     final manager = TalosScope.of(context);
     final tasks = manager.tasks.where((t) => t.status != TaskStatus.completed).toList();
     final history = manager.history.entries;
+    final finished = _query.isEmpty
+        ? history
+        : history
+            .where((e) =>
+                e.title.toLowerCase().contains(_query) ||
+                e.url.toLowerCase().contains(_query) ||
+                (e.uploader ?? '').toLowerCase().contains(_query))
+            .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -204,50 +211,98 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
             ),
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          if (tasks.isEmpty)
-            _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
-          else
-            ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              itemCount: tasks.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final task = tasks[index];
-                return _TaskCard(
-                  task: task,
-                  onCancel: () => manager.cancel(task),
-                  onRetry: () => manager.retry(task),
-                  onRemove: () => manager.removeTask(task),
-                  onShowLog: () => _showLog(context, task),
-                );
-              },
+          if (_tabController.index == 1)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: l.searchFinishedHint,
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                ),
+              ),
             ),
-          if (history.isEmpty)
-            _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
-          else
-            ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              itemCount: history.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final entry = history[index];
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                if (tasks.isEmpty)
+                  _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
+                else
+                  ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    itemCount: tasks.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
+                      return _TaskCard(
+                        task: task,
+                        onCancel: () => manager.cancel(task),
+                        onRetry: () => manager.retry(task),
+                        onRemove: () => manager.removeTask(task),
+                        onShowLog: () => _showLog(context, task),
+                      );
+                    },
+                  ),
+                if (history.isEmpty)
+                  _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
+                else if (finished.isEmpty)
+                  _EmptyState(hint: l.searchFinishedHint, onGoHome: null)
+                else
+                  ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    itemCount: finished.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final entry = finished[index];
                 return _HistoryCard(
                   entry: entry,
                   onCopyPath: () => _copyPath(entry.filePath),
-                  onOpen: () => _openFile(entry.filePath),
+                  onOpen: () => _openEntry(context, entry),
+                  onOpenExternal: () => _openWithSystem(entry.filePath),
                   onFolder: () => _openFolder(entry.filePath),
                   onShare: Platform.isAndroid || Platform.isIOS ? () => _share(entry.filePath) : null,
                   onDelete: () => _deleteFile(context, entry),
                   onRemove: () => manager.history.remove(entry.id),
                 );
-              },
+                    },
+                  ),
+              ],
             ),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _openEntry(BuildContext context, HistoryEntry entry) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => PlayerScreen(entry: entry)),
+    );
+  }
+
+  Future<void> _openWithSystem(String path) async {
+    final l = AppLocalizations.of(context)!;
+    if (Platform.isAndroid && path.startsWith('content://')) {
+      final ok = await TalosStorageBridge.openUri(path);
+      if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
+      }
+      return;
+    }
+    try {
+      final result = await OpenFile.open(path);
+      if (result.type != ResultType.done && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
+      }
+    }
   }
 }
 
@@ -395,6 +450,7 @@ class _HistoryCard extends StatelessWidget {
   const _HistoryCard({
     required this.entry,
     required this.onOpen,
+    required this.onOpenExternal,
     required this.onFolder,
     required this.onCopyPath,
     required this.onShare,
@@ -404,6 +460,7 @@ class _HistoryCard extends StatelessWidget {
 
   final HistoryEntry entry;
   final VoidCallback onOpen;
+  final VoidCallback onOpenExternal;
   final VoidCallback onFolder;
   final VoidCallback onCopyPath;
   final VoidCallback? onShare;
@@ -421,10 +478,7 @@ class _HistoryCard extends StatelessWidget {
         onTap: onOpen,
         borderRadius: BorderRadius.circular(16),
         child: ListTile(
-          leading: Icon(
-            entry.kind == HistoryKind.audio ? Icons.music_note : Icons.movie_outlined,
-            color: theme.colorScheme.primary,
-          ),
+          leading: _ThumbnailLeading(entry: entry),
           title: Text(entry.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,6 +507,8 @@ class _HistoryCard extends StatelessWidget {
               switch (value) {
                 case 'open':
                   onOpen();
+                case 'openExternal':
+                  onOpenExternal();
                 case 'folder':
                   onFolder();
                 case 'copyPath':
@@ -467,6 +523,7 @@ class _HistoryCard extends StatelessWidget {
             },
             itemBuilder: (context) => [
               PopupMenuItem(value: 'open', child: Text(l.open)),
+              PopupMenuItem(value: 'openExternal', child: Text(l.openWithSystemPlayer)),
               if (isDesktop)
                 PopupMenuItem(value: 'folder', child: Text(l.openFolder))
               else
@@ -477,6 +534,34 @@ class _HistoryCard extends StatelessWidget {
               PopupMenuItem(value: 'delete', child: Text(l.deleteFile)),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+class _ThumbnailLeading extends StatelessWidget {
+  const _ThumbnailLeading({required this.entry});
+
+  final HistoryEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final icon = Icon(
+      entry.kind == HistoryKind.audio ? Icons.music_note : Icons.movie_outlined,
+      color: theme.colorScheme.primary,
+    );
+    final url = entry.thumbnailUrl;
+    if (url == null || url.isEmpty) return icon;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => icon,
         ),
       ),
     );
