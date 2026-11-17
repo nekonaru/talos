@@ -102,7 +102,7 @@ class DownloadManager extends ChangeNotifier {
       request: request,
       thumbnailUrl: thumbnailUrl,
     );
-    _tasks.insert(0, task);
+    _tasks.add(task);
     notifyListeners();
     unawaited(_pump());
   }
@@ -173,13 +173,35 @@ class DownloadManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Move a task to a new position in the queue. Indices refer to the
+  /// queued/running order shown by the Active tab, i.e. only tasks whose
+  /// status is not completed. [newIndex] is the final insertion index
+  /// (the same semantics Flutter's onReorderItem uses), so it already
+  /// accounts for the removed item.
+  void reorder(int oldIndex, int newIndex) {
+    final visible = _tasks.where((t) => t.status != TaskStatus.completed).toList();
+    if (oldIndex < 0 || oldIndex >= visible.length) return;
+    final moved = visible.removeAt(oldIndex);
+    if (newIndex < 0) newIndex = 0;
+    if (newIndex > visible.length) newIndex = visible.length;
+    visible.insert(newIndex, moved);
+    // Rebuild internal order: keep visibility-ordered tasks ahead of
+    // completed ones (finished tasks are not shown in Active anyway).
+    final completed = _tasks.where((t) => t.status == TaskStatus.completed).toList();
+    _tasks
+      ..clear()
+      ..addAll(visible)
+      ..addAll(completed);
+    notifyListeners();
+  }
+
   Future<void> _pump() async {
     if (_pumping) return;
     _pumping = true;
     try {
       while (true) {
         DownloadTask? next;
-        for (final task in _tasks.reversed) {
+        for (final task in _tasks) {
           if (task.status == TaskStatus.queued) next = task;
         }
         if (next == null) break;

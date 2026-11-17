@@ -232,13 +232,17 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 if (tasks.isEmpty)
                   _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
                 else
-                  ListView.separated(
+                  ReorderableListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                     itemCount: tasks.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    onReorderItem: (oldIndex, newIndex) {
+                      manager.reorder(oldIndex, newIndex);
+                    },
                     itemBuilder: (context, index) {
                       final task = tasks[index];
                       return _TaskCard(
+                        key: ValueKey(task.id),
+                        dragIndex: index,
                         task: task,
                         onCancel: () => manager.cancel(task),
                         onRetry: () => manager.retry(task),
@@ -344,7 +348,9 @@ class _EmptyState extends StatelessWidget {
 
 class _TaskCard extends StatelessWidget {
   const _TaskCard({
+    super.key,
     required this.task,
+    required this.dragIndex,
     required this.onCancel,
     required this.onRetry,
     required this.onRemove,
@@ -352,6 +358,7 @@ class _TaskCard extends StatelessWidget {
   });
 
   final DownloadTask task;
+  final int? dragIndex;
   final VoidCallback onCancel;
   final VoidCallback onRetry;
   final VoidCallback onRemove;
@@ -393,6 +400,15 @@ class _TaskCard extends StatelessWidget {
                 ),
                 if (running || queued)
                   IconButton(tooltip: l.cancel, icon: const Icon(Icons.close_rounded), onPressed: onCancel),
+                if (queued && dragIndex != null)
+                  ReorderableDragStartListener(
+                    index: dragIndex!,
+                    enabled: true,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      child: Icon(Icons.drag_handle, size: 20),
+                    ),
+                  ),
                 if (failed || cancelled) ...[
                   IconButton(tooltip: l.taskLog, icon: const Icon(Icons.description_outlined), onPressed: onShowLog),
                   IconButton(tooltip: l.retry, icon: const Icon(Icons.refresh_rounded), onPressed: onRetry),

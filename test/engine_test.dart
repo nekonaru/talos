@@ -43,6 +43,13 @@ void main() {
       expect(event.outputPath, 'video.mkv');
     });
 
+    test('parses merger failure as an error', () {
+      final event = parseYtdlpLine('[Merger] Merge failed (exit 1)');
+      expect(event!.stage, 'merge');
+      expect(event.error, 'Merge failed (exit 1)');
+      expect(event.outputPath, isNull);
+    });
+
     test('parses playlist progress', () {
       final event = parseYtdlpLine('[download] Downloading item 3 of 10');
       expect(event!.stage, 'playlist');

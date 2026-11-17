@@ -5,6 +5,29 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.9.0
+
+Reliability and power-user release: the download queue is now reorderable, merge failures surface as real errors, and a single tap wipes Talos data for a clean start.
+
+### New features
+
+- **Drag to reorder the Active queue.** Queued tasks can be moved up or down so the next download starts sooner.
+- **Clipboard link detection.** When Talos opens and the link field is empty, a URL found in the clipboard is pasted automatically so you can fetch immediately.
+- **Danger zone reset.** Settings > Danger zone > Reset all data wipes settings, finished downloads history, custom command templates and SAF folder shortcuts, leaving Talos in a clean state.
+
+### Bug fixes
+
+- **Android inline merge failures were reported as success.** The `[Merger] Merge failed` line is now parsed as an error, so a broken video+audio merge surfaces as a failed task with a readable message instead of a "completed" entry with an unusable file.
+
+### Improvements
+
+- **No deprecated APIs.** The Active list now uses the new `onReorderItem` callback.
+- **63 tests passing.**
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.9.0-windows-x64.zip`. Linux: `Talos-v0.9.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.8.0
 
 Biggest feature release so far: Talos now plays your downloads inside the app, and the Finished tab is searchable with thumbnails.

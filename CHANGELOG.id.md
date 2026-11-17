@@ -5,6 +5,29 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.9.0
+
+Rilis reliabilitas dan fitur untuk power-user: antrian download sekarang bisa diurutkan, kegagalan merge terbaca sebagai error sungguhan, dan satu tombol menghapus semua data Talos untuk memulai bersih.
+
+### Fitur baru
+
+- **Geser untuk mengurutkan Active queue.** Task yang menunggu bisa dinaikkan atau diturunkan agar download berikutnya mulai lebih cepat.
+- **Deteksi link di clipboard.** Saat Talos dibuka dan kolom link kosong, URL yang ditemukan di clipboard langsung ditempel otomatis supaya bisa langsung diambil.
+- **Reset di Danger zone.** Pengaturan > Danger zone > Reset all data menghapus pengaturan, riwayat unduhan selesai, template perintah khusus, dan shortcut folder SAF, meninggalkan Talos dalam keadaan bersih.
+
+### Perbaikan bug
+
+- **Kegagalan merge saat Android menampilkan sebagai sukses.** Baris `[Merger] Merge failed` sekarang diparse sebagai error, sehingga penggabungan video+audio yang rusak tampil sebagai task gagal dengan pesan yang jelas alih-alih entri "selesai" dengan file yang tidak bisa diputar.
+
+### Peningkatan
+
+- **Tidak ada API usang.** Active list sekarang memakai callback `onReorderItem` yang baru.
+- **63 test lulus.**
+
+### Download / Instalasi
+
+Download file untuk platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.9.0-windows-x64.zip`. Linux: `Talos-v0.9.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.8.0
 
 Rilis fitur terbesar sejauh ini: Talos sekarang bisa memutar unduhan langsung di dalam aplikasi, dan tab Finished bisa dicari plus punya thumbnail.

@@ -48,6 +48,16 @@ EngineProgress? parseYtdlpLine(String line) {
     return EngineProgress(error: trimmed.replaceFirst(RegExp(r'^ERROR:\s*'), ''));
   }
 
+  if (trimmed.startsWith('[Merger]')) {
+    final merged = _merging.firstMatch(trimmed);
+    if (merged != null) {
+      return EngineProgress(stage: 'merge', outputPath: merged.group(1));
+    }
+    if (trimmed.contains('Merge failed')) {
+      return EngineProgress(stage: 'merge', error: trimmed.replaceFirst('[Merger] ', ''));
+    }
+  }
+
   final playlist = _playlistItem.firstMatch(trimmed);
   if (playlist != null) {
     return EngineProgress(
@@ -73,7 +83,6 @@ EngineProgress? parseYtdlpLine(String line) {
   if (merging != null) {
     return EngineProgress(stage: 'merge', outputPath: merging.group(1));
   }
-
   if (trimmed.contains('[download]') && trimmed.contains('%')) {
     final percent = _percent.firstMatch(trimmed);
     final size = _totalSize.firstMatch(trimmed);

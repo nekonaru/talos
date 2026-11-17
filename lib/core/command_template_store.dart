@@ -82,6 +82,16 @@ class CommandTemplateStore extends ChangeNotifier {
     await _persist();
   }
 
+  static Future<void> resetAll() async {
+    final support = await getApplicationSupportDirectory();
+    final file = File('${support.path}${Platform.pathSeparator}commands.json');
+    try {
+      if (await file.exists()) await file.delete();
+    } catch (_) {
+      // A missing or unwritable file is fine.
+    }
+  }
+
   Future<void> _persist() async {
     try {
       await _file.parent.create(recursive: true);

@@ -122,7 +122,11 @@ class _AndroidDownloadSession implements TalosDownloadSession {
         if (parsed.error != null) _lastError = parsed.error;
         _controller.add(parsed);
       case 'done':
-        _finish(SessionOutcome(outputPath: _lastOutputPath));
+        if (_lastError != null) {
+          _finish(SessionOutcome(error: _lastError, outputPath: _lastOutputPath));
+        } else {
+          _finish(SessionOutcome(outputPath: _lastOutputPath));
+        }
       case 'error':
         final message = (event['message'] as String?) ?? _lastError ?? 'Download failed';
         _finish(SessionOutcome(error: message, outputPath: _lastOutputPath));

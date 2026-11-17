@@ -36,6 +36,24 @@ class _HomeScreenState extends State<HomeScreen> {
     _urlController.addListener(_onUrlChanged);
     _checkSharedIntent();
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshEngine());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardUrl());
+  }
+
+  Future<void> _detectClipboardUrl() async {
+    try {
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      final text = data?.text;
+      if (text == null || !mounted) return;
+      if (_urlController.text.isNotEmpty) return;
+      final match = RegExp(r'https?://\S+').firstMatch(text);
+      if (match == null || !mounted) return;
+      setState(() {
+        _urlController.text = match.group(0)!;
+        _urlController.selection = TextSelection.collapsed(offset: _urlController.text.length);
+      });
+    } catch (_) {
+      // Clipboard is optional; silent fallback.
+    }
   }
 
   void _onUrlChanged() {
