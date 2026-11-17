@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -213,6 +214,26 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
       ),
       body: Column(
         children: [
+          if (_tabController.index == 0)
+            Builder(builder: (context) {
+              final retryable = tasks.where((t) => t.status == TaskStatus.failed || t.status == TaskStatus.cancelled).toList();
+              if (retryable.isEmpty) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      for (final task in retryable) {
+                        unawaited(manager.retry(task));
+                      }
+                    },
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: Text(l.retryAll),
+                  ),
+                ),
+              );
+            }),
           if (_tabController.index == 1)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),

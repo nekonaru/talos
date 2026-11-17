@@ -46,6 +46,31 @@
   "resetAllDataBody": "Menghapus semua pengaturan Talos, riwayat unduhan selesai, template perintah khusus, dan shortcut folder yang tersimpan. Tindakan ini tidak bisa dibatalkan.",
   "resetAllDataConfirm": "Reset",
   "resetAllDataDone": "Semua data Talos telah direset",
+  "batchFetchTitle": "Batch download",
+  "batchFetchHint": "{count} link terdeteksi. Unduh semuanya dengan pengaturan yang sama.",
+  "@batchFetchHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchFetchVideo": "Semua sebagai Video (720p)",
+  "batchFetchAudio": "Semua sebagai Audio (MP3 192k)",
+  "batchFetchStart": "Mulai semua",
+  "batchQueued": "Ditambahkan {queued} dari {total}",
+  "@batchQueued": {
+    "placeholders": {
+      "queued": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "fetchAll": "Ambil semua",
+  "retryAll": "Ulangi semua",
   "remove": "Hapus dari daftar",
   "deleteFile": "Hapus file",
   "retry": "Coba lagi",
