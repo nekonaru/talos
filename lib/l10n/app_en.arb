@@ -48,6 +48,31 @@
   "resetAllDataBody": "This clears all Talos settings, the history of finished downloads, custom command templates, and any saved folder shortcuts. This action cannot be undone.",
   "resetAllDataConfirm": "Reset",
   "resetAllDataDone": "All Talos data has been reset",
+  "batchFetchTitle": "Batch download",
+  "batchFetchHint": "{count} links found. Download all of them with the same settings.",
+  "@batchFetchHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchFetchVideo": "All as Video (720p)",
+  "batchFetchAudio": "All as Audio (MP3 192k)",
+  "batchFetchStart": "Start all",
+  "batchQueued": "Queued {queued} of {total}",
+  "@batchQueued": {
+    "placeholders": {
+      "queued": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "fetchAll": "Fetch all",
+  "retryAll": "Retry all",
   "remove": "Remove from list",
   "deleteFile": "Delete file",
   "retry": "Retry",

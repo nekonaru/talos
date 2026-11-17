@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../app_scope.dart';
 import '../core/app_info.dart';
+import '../core/engine/models.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
 import '../gen/app_localizations.dart';
@@ -45,15 +46,19 @@ class _HomeScreenState extends State<HomeScreen> {
       final text = data?.text;
       if (text == null || !mounted) return;
       if (_urlController.text.isNotEmpty) return;
-      final match = RegExp(r'https?://\S+').firstMatch(text);
-      if (match == null || !mounted) return;
+      final matches = RegExp(r'https?://\S+').allMatches(text).map((m) => m.group(0)!).where((u) => u.length > 10).toList();
+      if (matches.isEmpty || !mounted) return;
       setState(() {
-        _urlController.text = match.group(0)!;
+        _urlController.text = matches.join('\n');
         _urlController.selection = TextSelection.collapsed(offset: _urlController.text.length);
       });
     } catch (_) {
       // Clipboard is optional; silent fallback.
     }
+  }
+
+  List<String> _detectUrls(String text) {
+    return RegExp(r'https?://\S+').allMatches(text).map((m) => m.group(0)!).where((u) => u.length > 10).toList();
   }
 
   void _onUrlChanged() {
@@ -134,6 +139,93 @@ class _HomeScreenState extends State<HomeScreen> {
     if (text != null && text.isNotEmpty) {
       _urlController.text = text;
       _urlController.selection = TextSelection.collapsed(offset: text.length);
+    }
+  }
+
+  void _handleFetch() {
+    final urls = _detectUrls(_urlController.text);
+    if (urls.length > 1) {
+      unawaited(_batchFetch());
+    } else {
+      unawaited(_fetch());
+    }
+  }
+
+  Future<void> _batchFetch() async {
+    final urls = _detectUrls(_urlController.text);
+    if (urls.length < 2 || _busy) return;
+    final l = AppLocalizations.of(context)!;
+    final mode = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: Text(l.batchFetchTitle),
+        children: [
+          ListTile(
+            leading: const Icon(Icons.movie_outlined),
+            title: Text(l.batchFetchVideo),
+            onTap: () => Navigator.of(dialogContext).pop('video'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.music_note_outlined),
+            title: Text(l.batchFetchAudio),
+            onTap: () => Navigator.of(dialogContext).pop('audio'),
+          ),
+        ],
+      ),
+    );
+    if (mode == null) return;
+    final isAudio = mode == 'audio';
+    if (!mounted) return;
+    final manager = TalosScope.of(context);
+    final settings = manager.settings.value;
+    setState(() => _busy = true);
+    try {
+      // Ensure the engine is ready before probing.
+      if (!_engineReady) {
+        try {
+          await _setupEngine();
+        } catch (_) {
+          if (mounted) setState(() => _busy = false);
+          return;
+        }
+      }
+      final outputDir = isAudio
+          ? (settings.audioFolder?.isNotEmpty == true ? settings.audioFolder! : manager.outputDirectory)
+          : (settings.videoFolder?.isNotEmpty == true ? settings.videoFolder! : manager.outputDirectory);
+      var queued = 0;
+      for (final url in urls) {
+        try {
+          final probe = await manager.engine.probe(url, proxy: settings.proxy);
+          if (!mounted) return;
+          await manager.enqueue(
+            DownloadRequest(
+              url: probe.webpageUrl,
+              videoMode: !isAudio,
+              outputDir: outputDir,
+              maxHeight: isAudio ? null : 720,
+              audioFormat: isAudio ? settings.defaultAudioFormat : 'mp3',
+              audioBitrate: isAudio ? settings.defaultAudioBitrate : '192',
+              embedSubtitles: settings.embedSubtitles,
+              embedMetadata: settings.embedMetadata,
+              includePlaylist: probe.isPlaylist,
+              filenameTemplate: settings.filenameTemplate,
+            ),
+            title: probe.title,
+            kind: isAudio ? HistoryKind.audio : HistoryKind.video,
+            thumbnailUrl: probe.thumbnail,
+          );
+          queued++;
+        } catch (_) {
+          // Continue with the rest even if one URL fails.
+        }
+      }
+      if (mounted) setState(_urlController.clear);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.batchQueued(queued, urls.length))),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -231,48 +323,58 @@ class _HomeScreenState extends State<HomeScreen> {
                   onSetup: _setupEngine,
                 ),
                 if (!_engineReady) const SizedBox(height: 16),
-                TextField(
-                  controller: _urlController,
-                  keyboardType: TextInputType.url,
-                  textInputAction: TextInputAction.go,
-                  onSubmitted: (_) => _fetch(),
-                  style: theme.textTheme.bodyLarge,
-                  decoration: InputDecoration(
-                    hintText: l.urlHint,
-                    prefixIcon: const Icon(Icons.link),
-                    suffixIcon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_urlController.text.isNotEmpty)
-                          IconButton(
-                            tooltip: l.clear,
-                            icon: const Icon(Icons.close),
-                            onPressed: () => setState(_urlController.clear),
+                Builder(builder: (context) {
+                  final url = _urlController.text.trim();
+                  final detected = _detectUrls(url);
+                  final isBatch = detected.length > 1;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        controller: _urlController,
+                        keyboardType: TextInputType.url,
+                        textInputAction: TextInputAction.go,
+                        onSubmitted: (_) => _handleFetch(),
+                        style: theme.textTheme.bodyLarge,
+                        decoration: InputDecoration(
+                          hintText: l.urlHint,
+                          prefixIcon: const Icon(Icons.link),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_urlController.text.isNotEmpty)
+                                IconButton(
+                                  tooltip: l.clear,
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () => setState(_urlController.clear),
+                                ),
+                              IconButton(
+                                tooltip: l.paste,
+                                icon: const Icon(Icons.content_paste_rounded),
+                                onPressed: _paste,
+                              ),
+                            ],
                           ),
-                        IconButton(
-                          tooltip: l.paste,
-                          icon: const Icon(Icons.content_paste_rounded),
-                          onPressed: _paste,
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 52,
-                  child: FilledButton.icon(
-                    onPressed: (_busy || _urlController.text.trim().isEmpty) ? null : _fetch,
-                    icon: _busy
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.south_east_rounded),
-                    label: Text(_busy ? l.fetching : l.fetch),
-                  ),
-                ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 52,
+                        child: FilledButton.icon(
+                          onPressed: (_busy || url.isEmpty) ? null : _handleFetch,
+                          icon: _busy
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.south_east_rounded),
+                          label: Text(_busy ? l.fetching : (isBatch ? l.fetchAll : l.fetch)),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
                 const SizedBox(height: 32),
                 if (recent.isNotEmpty) ...[
                   SectionLabel(l.finished),
