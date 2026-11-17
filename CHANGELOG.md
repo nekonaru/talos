@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.10.0
+
+This release makes Talos smarter about working with multiple links at once and recovering from stuck downloads.
+
+### New features
+
+- **Batch fetch.** Paste multiple links in the input field and tap Fetch all; Talos probes them one by one and enqueues them with your defaults. Choose Video 720p or Audio MP3 192k in the dialog. The input field label switches to "Fetch all" automatically.
+- **Retry all failed tasks.** The Active tab now shows a "Retry all" button above the list when any task failed or was cancelled, so you can re-enqueue them in one tap.
+
+### Improvements
+
+- **Clipboard auto-fill handles multiple links.** When multiple URLs are in your clipboard, they are all pasted into the field, ready for batch fetch.
+- **63 tests passing.**
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.10.0-windows-x64.zip`. Linux: `Talos-v0.10.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.9.0
 
 Reliability and power-user release: the download queue is now reorderable, merge failures surface as real errors, and a single tap wipes Talos data for a clean start.

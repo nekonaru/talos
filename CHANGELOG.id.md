@@ -5,6 +5,24 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.10.0
+
+Rilis ini membuat Talos lebih pintar saat bekerja dengan banyak link sekaligus dan membantu pemulihan download yang macet.
+
+### Fitur baru
+
+- **Batch fetch.** Tempel beberapa link di kolom input lalu tap Fetch all; Talos mengekstrak satu per satu dan memasukkan ke antrian dengan pengaturan default kamu. Pilih Video 720p atau Audio MP3 192k di dialog. Label tombol berubah ke "Fetch all" secara otomatis.
+- **Retry all untuk task gagal.** Tab Active menampilkan tombol "Retry all" di atas daftar kalau ada task yang gagal atau dibatalkan, sehingga kamu bisa memasukkan ulang semuanya dengan sekali tap.
+
+### Peningkatan
+
+- **Clipboard auto-fill menangani banyak link.** Kalau beberapa URL ada di clipboard, semuanya ditempel ke field siap untuk batch fetch.
+- **63 test lulus.**
+
+### Download / Instalasi
+
+Download file untuk platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.10.0-windows-x64.zip`. Linux: `Talos-v0.10.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.9.0
 
 Rilis reliabilitas dan fitur untuk power-user: antrian download sekarang bisa diurutkan, kegagalan merge terbaca sebagai error sungguhan, dan satu tombol menghapus semua data Talos untuk memulai bersih.
