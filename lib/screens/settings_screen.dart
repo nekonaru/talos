@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../app_scope.dart';
 import '../core/app_info.dart';
+import '../core/command_template_store.dart';
+import '../core/settings_store.dart';
 import '../core/storage_bridge.dart';
 import '../core/update_checker.dart';
 import '../core/theme.dart';
@@ -695,6 +697,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () => _openLink(context, sponsor.$2),
                   ),
               ],
+            ),
+          ),
+          SectionLabel(l.dangerZone),
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.delete_forever_outlined, color: theme.colorScheme.error),
+              title: Text(l.resetAllData),
+              subtitle: Text(l.resetAllDataHint),
+              trailing: Icon(Icons.chevron_right, color: theme.colorScheme.error),
+              onTap: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: Text(l.resetAllDataTitle),
+                    content: Text(l.resetAllDataBody),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(false),
+                        child: Text(l.cancel),
+                      ),
+                      FilledButton(
+                        style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error),
+                        onPressed: () => Navigator.of(dialogContext).pop(true),
+                        child: Text(l.resetAllDataConfirm),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed != true || !context.mounted) return;
+                final messenger = ScaffoldMessenger.of(context);
+                await manager.settings.mutate((_) => TalosSettings());
+                await manager.history.clear();
+                await CommandTemplateStore.resetAll();
+                await TalosStorageBridge.clearTree();
+                if (!context.mounted) return;
+                messenger.showSnackBar(
+                  SnackBar(content: Text(l.resetAllDataDone)),
+                );
+              },
             ),
           ),
         ],
