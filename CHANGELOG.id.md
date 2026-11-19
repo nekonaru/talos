@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.11.0
+
+Rilis identitas baru yang dipimpin oleh mark helm Talos, plus upgrade kecil tapi berguna di daftar Finished.
+
+### Fitur baru
+
+- **Identitas baru.** Project sekarang memakai helm perunggu di atas tile gelap, menggantikan simbol mata sebelumnya. Logo, ikon aplikasi, layar pembuka, dan aset README semuanya diperbarui.
+- **Unduhan favorit.** Di tab Finished, setiap entri sekarang punya ikon bintang di samping menu. Tekan untuk menandai atau mencabut favorit. Chip "Favorites" memfilter daftar hanya ke entri yang kamu tandai.
+
+### Peningkatan
+
+- **Aset native konsisten.** Ikon Android, iOS, macOS, Windows, dan Linux semuanya merender mark baru dari sumber SVG yang sama.
+
+### Download / Instalasi
+
+Download file untuk platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.11.0-windows-x64.zip`. Linux: `Talos-v0.11.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.10.0
 
 Rilis ini membuat Talos lebih pintar saat bekerja dengan banyak link sekaligus dan membantu pemulihan download yang macet.

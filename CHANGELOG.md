@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.11.0
+
+A fresh identity release led by the new Talos helmet mark, plus a small but useful upgrade to the Finished list.
+
+### New features
+
+- **New brand identity.** The project now uses a bronze helmet on a dark tile, replacing the previous eye-sigil. Logo, app icons, launch screens and README assets are all updated.
+- **Favorite downloads.** In the Finished tab, every entry now has a star icon next to the menu. Tap it to mark or unmark favorites. A "Favorites" chip filters the list to only your starred entries.
+
+### Improvements
+
+- **Native file associations.** Android, iOS, macOS, Windows and Linux icons all render the new mark from the same source SVG data.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.11.0-windows-x64.zip`. Linux: `Talos-v0.11.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.10.0
 
 This release makes Talos smarter about working with multiple links at once and recovering from stuck downloads.
