@@ -71,6 +71,7 @@
   },
   "fetchAll": "Ambil semua",
   "retryAll": "Ulangi semua",
+  "favorite": "Favorit",
   "remove": "Hapus dari daftar",
   "deleteFile": "Hapus file",
   "retry": "Coba lagi",

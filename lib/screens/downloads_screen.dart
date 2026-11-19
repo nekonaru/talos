@@ -31,6 +31,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
   final _searchController = TextEditingController();
   String _query = '';
 
+  bool _showFavorites = false;
+
   @override
   void initState() {
     super.initState();
@@ -187,9 +189,12 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     final manager = TalosScope.of(context);
     final tasks = manager.tasks.where((t) => t.status != TaskStatus.completed).toList();
     final history = manager.history.entries;
+    final favoritesOnly = _showFavorites
+        ? history.where((e) => e.favorite).toList()
+        : history;
     final finished = _query.isEmpty
-        ? history
-        : history
+        ? favoritesOnly
+        : favoritesOnly
             .where((e) =>
                 e.title.toLowerCase().contains(_query) ||
                 e.url.toLowerCase().contains(_query) ||
@@ -234,18 +239,41 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 ),
               );
             }),
-          if (_tabController.index == 1)
+          if (_tabController.index == 1) ...[
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: l.searchFinishedHint,
-                  prefixIcon: const Icon(Icons.search),
-                  isDense: true,
-                ),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: l.searchFinishedHint,
+                        prefixIcon: const Icon(Icons.search),
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilterChip(
+                    avatar: Icon(
+                      _showFavorites ? Icons.star_rounded : Icons.star_border_rounded,
+                      size: 18,
+                    ),
+                    label: Text(l.favorite),
+                    selected: _showFavorites,
+                    showCheckmark: false,
+                    onSelected: (value) {
+                      setState(() {
+                        _showFavorites = value;
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
+            const SizedBox(height: 4),
+          ],
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -288,6 +316,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                   onCopyPath: () => _copyPath(entry.filePath),
                   onOpen: () => _openEntry(context, entry),
                   onOpenExternal: () => _openWithSystem(entry.filePath),
+                  onToggleFavorite: () => unawaited(manager.history.toggleFavorite(entry.id)),
                   onFolder: () => _openFolder(entry.filePath),
                   onShare: Platform.isAndroid || Platform.isIOS ? () => _share(entry.filePath) : null,
                   onDelete: () => _deleteFile(context, entry),
@@ -488,6 +517,7 @@ class _HistoryCard extends StatelessWidget {
     required this.entry,
     required this.onOpen,
     required this.onOpenExternal,
+    required this.onToggleFavorite,
     required this.onFolder,
     required this.onCopyPath,
     required this.onShare,
@@ -498,6 +528,7 @@ class _HistoryCard extends StatelessWidget {
   final HistoryEntry entry;
   final VoidCallback onOpen;
   final VoidCallback onOpenExternal;
+  final VoidCallback onToggleFavorite;
   final VoidCallback onFolder;
   final VoidCallback onCopyPath;
   final VoidCallback? onShare;
@@ -538,37 +569,50 @@ class _HistoryCard extends StatelessWidget {
               ],
             ],
           ),
-          trailing: PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (value) {
-              switch (value) {
-                case 'open':
-                  onOpen();
-                case 'openExternal':
-                  onOpenExternal();
-                case 'folder':
-                  onFolder();
-                case 'copyPath':
-                  onCopyPath();
-                case 'share':
-                  onShare?.call();
-                case 'delete':
-                  onDelete();
-                case 'remove':
-                  onRemove();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'open', child: Text(l.open)),
-              PopupMenuItem(value: 'openExternal', child: Text(l.openWithSystemPlayer)),
-              if (isDesktop)
-                PopupMenuItem(value: 'folder', child: Text(l.openFolder))
-              else
-                PopupMenuItem(value: 'copyPath', child: Text(l.copyPath)),
-              if (onShare != null) PopupMenuItem(value: 'share', child: Text(l.share)),
-              const PopupMenuDivider(),
-              PopupMenuItem(value: 'remove', child: Text(l.remove)),
-              PopupMenuItem(value: 'delete', child: Text(l.deleteFile)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: l.favorite,
+                icon: Icon(
+                  entry.favorite ? Icons.star_rounded : Icons.star_border_rounded,
+                  color: entry.favorite ? theme.colorScheme.primary : null,
+                ),
+                onPressed: onToggleFavorite,
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'open':
+                      onOpen();
+                    case 'openExternal':
+                      onOpenExternal();
+                    case 'folder':
+                      onFolder();
+                    case 'copyPath':
+                      onCopyPath();
+                    case 'share':
+                      onShare?.call();
+                    case 'delete':
+                      onDelete();
+                    case 'remove':
+                      onRemove();
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(value: 'open', child: Text(l.open)),
+                  PopupMenuItem(value: 'openExternal', child: Text(l.openWithSystemPlayer)),
+                  if (isDesktop)
+                    PopupMenuItem(value: 'folder', child: Text(l.openFolder))
+                  else
+                    PopupMenuItem(value: 'copyPath', child: Text(l.copyPath)),
+                  if (onShare != null) PopupMenuItem(value: 'share', child: Text(l.share)),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(value: 'remove', child: Text(l.remove)),
+                  PopupMenuItem(value: 'delete', child: Text(l.deleteFile)),
+                ],
+              ),
             ],
           ),
         ),

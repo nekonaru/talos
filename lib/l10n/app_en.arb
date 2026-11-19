@@ -73,6 +73,7 @@
   },
   "fetchAll": "Fetch all",
   "retryAll": "Retry all",
+  "favorite": "Favorites",
   "remove": "Remove from list",
   "deleteFile": "Delete file",
   "retry": "Retry",

@@ -1,5 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" xmlns:c2pa="http://c2pa.org/manifest">
   <title>Talos</title>
-  <path fill="#D09A5B" fill-rule="evenodd" d="M12 128 Q128 14 244 128 Q128 242 12 128 Z M40 128 Q128 50 216 128 Q128 206 40 128 Z"/>
-  <path fill="#D09A5B" d="M110 84h36v50h20L128 168 88 134h22z"/>
+  <defs>
+    <linearGradient id="bz" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F0BB74"/>
+      <stop offset=".5" stop-color="#F0BB74"/>
+      <stop offset=".5" stop-color="#B06A2C"/>
+      <stop offset="1" stop-color="#B06A2C"/>
+    </linearGradient>
+    <linearGradient id="plume" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF7A3D"/>
+      <stop offset="1" stop-color="#9E2417"/>
+    </linearGradient>
+    <radialGradient id="aura" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#FF9F2E" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#FF9F2E" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <circle cx="256" cy="262" r="215" fill="url(#aura)"/>
+  <g transform="translate(51.2 59.2) scale(.8)">
+    <path d="M146 196 C128 96 214 38 256 38 C298 38 384 96 366 196 Z" fill="url(#plume)" stroke="url(#plume)" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M256 40 V190 M224 48 Q200 110 192 190 M288 48 Q312 110 320 190" fill="none" stroke="#5E0F0A" stroke-opacity=".55" stroke-width="7" stroke-linecap="round"/>
+    <path d="M256 96 C336 96 394 156 394 240 V306 C394 358 360 394 322 420 L292 440 Q256 454 220 440 L190 420 C152 394 118 358 118 306 V240 C118 156 176 96 256 96 Z" fill="url(#bz)" stroke="url(#bz)" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M256 96 C336 96 394 156 394 240 V306 C394 358 360 394 322 420 L292 440 Q256 454 220 440 L190 420 C152 394 118 358 118 306 V240 C118 156 176 96 256 96 Z" transform="translate(256 270) scale(.93) translate(-256 -270)" fill="none" stroke="#FFE9C4" stroke-opacity=".45" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M128 206 Q256 168 384 206" fill="none" stroke="#7A4318" stroke-opacity=".55" stroke-width="9" stroke-linecap="round"/>
+    <path d="M186 218 H326 Q340 218 340 232 V248 Q340 262 326 262 H272 V318 H292 L256 374 L220 318 H240 V262 H186 Q172 262 172 248 V232 Q172 218 186 218 Z" fill="none" stroke="#FF9F2E" stroke-width="12" stroke-linejoin="round" filter="url(#glow)"/>
+    <path d="M186 218 H326 Q340 218 340 232 V248 Q340 262 326 262 H272 V318 H292 L256 374 L220 318 H240 V262 H186 Q172 262 172 248 V232 Q172 218 186 218 Z" fill="#1A0708" stroke="#FFC15E" stroke-width="6" stroke-linejoin="round"/>
+  </g>
 </svg>
