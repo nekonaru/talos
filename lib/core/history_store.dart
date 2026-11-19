@@ -19,6 +19,7 @@ class HistoryEntry {
     this.uploader,
     this.sizeBytes,
     this.thumbnailUrl,
+    this.favorite = false,
   });
 
   factory HistoryEntry.fromJson(Map<String, dynamic> json) {
@@ -35,6 +36,7 @@ class HistoryEntry {
       uploader: json['uploader'] as String?,
       sizeBytes: (json['sizeBytes'] as num?)?.toInt(),
       thumbnailUrl: json['thumbnailUrl'] as String?,
+      favorite: (json['favorite'] as bool?) ?? false,
     );
   }
 
@@ -47,6 +49,7 @@ class HistoryEntry {
   final String? uploader;
   final int? sizeBytes;
   final String? thumbnailUrl;
+  bool favorite;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -58,6 +61,7 @@ class HistoryEntry {
         'uploader': uploader,
         'sizeBytes': sizeBytes,
         'thumbnailUrl': thumbnailUrl,
+        'favorite': favorite,
       };
 }
 
@@ -97,6 +101,17 @@ class HistoryStore extends ChangeNotifier {
     _entries.insert(0, entry);
     if (_entries.length > _maxEntries) {
       _entries = _entries.sublist(0, _maxEntries);
+    }
+    notifyListeners();
+    await _persist();
+  }
+
+  Future<void> toggleFavorite(String id) async {
+    for (final entry in _entries) {
+      if (entry.id == id) {
+        entry.favorite = !entry.favorite;
+        break;
+      }
     }
     notifyListeners();
     await _persist();
