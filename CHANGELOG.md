@@ -5,6 +5,34 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.12.0
+
+A control-focused update for the Finished library. Sort, filter and clean up finished downloads without leaving the tab.
+
+### New features
+
+- **Sort finished downloads.** Open the sort menu in the Finished tab to order entries by Newest, Oldest, Largest, Smallest or Title A-Z. Size sorting treats entries without a known size as zero.
+- **Filter by media type.** The type menu switches the Finished list between All, Video and Audio. It combines with the Favorites chip and the search box.
+- **Batch delete.** Long-press a finished entry to enter selection mode, tap more entries to add them, then use Select all or Delete selected. Deleting removes the files and their history rows after one confirmation.
+
+### Improvements
+
+- **68 tests passing.** Added coverage for every sort mode, batch history removal, corrupt history rows and malformed progress output.
+- **Deep audit pass.** Fixed the anomalies found in engine setup, queue handling, settings and the Finished list.
+
+### Bug fixes
+
+- **Windows engine setup.** FFmpeg setup now reads the current checksum for the rolling latest build instead of a pinned hash that goes stale on each release, and Update Engine replaces the existing binary instead of failing on Windows.
+- **History resilience.** One malformed saved row no longer discards the entire finished list on startup.
+- **Batch downloads.** Batch mode now applies the configured proxy, cookies, quality and other transfer settings instead of silently dropping them.
+- **Queue safety.** A failure to start the Android engine no longer deadlocks the queue, and cancelling an inactive task no longer kills the active download.
+- **Progress parsing.** Malformed numbers in yt-dlp output no longer throw inside the progress listener.
+- **Settings cleanup.** Removed a duplicated Subtitle language entry and disposed dialog text controllers.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.12.0-windows-x64.zip`. Linux: `Talos-v0.12.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.11.0
 
 A fresh identity release led by the new Talos helmet mark, plus a small but useful upgrade to the Finished list.
