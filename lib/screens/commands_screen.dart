@@ -67,7 +67,10 @@ class _CommandsScreenState extends State<CommandsScreen> {
           ),
         ],
       ),
-    );
+    ).whenComplete(() {
+      nameController.dispose();
+      argsController.dispose();
+    });
     if (result == null || _store == null) return;
     if (existing == null) {
       await _store!.add(result);
@@ -105,45 +108,22 @@ class _CommandsScreenState extends State<CommandsScreen> {
           FilledButton(onPressed: () => Navigator.of(context).pop(controller.text.trim()), child: Text(l.run)),
         ],
       ),
-    );
+    ).whenComplete(controller.dispose);
     if (url == null || url.isEmpty || !mounted) return;
     await _showRunOutput(template, url);
   }
 
   Future<void> _showRunOutput(CommandTemplate template, String url) async {
-    final l = AppLocalizations.of(context)!;
     final manager = TalosScope.of(context);
-    final lines = <String>[];
-    StreamSubscription<String>? subscription;
+    // Create the stream once. Subscribing inside the dialog builder caused a
+    // rebuild loop: onDone cleared the subscription, the rebuild started a
+    // new one, and the command ran forever.
+    final stream = manager.engine.runCustomCommand(template.args, url);
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          subscription ??= manager.engine.runCustomCommand(template.args, url).listen(
-            (line) => setDialogState(() => lines.add(line)),
-            onDone: () => setDialogState(() => subscription = null),
-          );
-          final running = subscription != null;
-          return AlertDialog(
-            title: Text(template.name),
-            content: SizedBox(
-              width: double.maxFinite,
-              height: 320,
-              child: SingleChildScrollView(
-                reverse: true,
-                child: Text(lines.join('\n'), style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
-              ),
-            ),
-            actions: [
-              if (running) const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
-              FilledButton(onPressed: running ? null : () => Navigator.of(context).pop(), child: Text(l.close)),
-            ],
-          );
-        },
-      ),
+      builder: (context) => _RunOutputDialog(template: template, stream: stream),
     );
-    await subscription?.cancel();
   }
 
   @override
@@ -202,6 +182,93 @@ class _CommandsScreenState extends State<CommandsScreen> {
                     );
                   },
                 ),
+    );
+  }
+}
+
+/// Owns its subscription so the command starts exactly once and is cancelled
+/// when the dialog closes. The log stays readable and Cancel is available for
+/// long-running commands.
+class _RunOutputDialog extends StatefulWidget {
+  const _RunOutputDialog({required this.template, required this.stream});
+
+  final CommandTemplate template;
+  final Stream<String> stream;
+
+  @override
+  State<_RunOutputDialog> createState() => _RunOutputDialogState();
+}
+
+class _RunOutputDialogState extends State<_RunOutputDialog> {
+  final lines = <String>[];
+  StreamSubscription<String>? _subscription;
+  bool _running = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscription = widget.stream.listen(
+      (line) {
+        if (mounted) setState(() => lines.add(line));
+      },
+      onDone: () {
+        if (mounted) setState(() => _running = false);
+      },
+      onError: (Object error) {
+        if (mounted) {
+          setState(() {
+            lines.add(error.toString());
+            _running = false;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    unawaited(_subscription?.cancel());
+    super.dispose();
+  }
+
+  void _cancel() {
+    unawaited(_subscription?.cancel());
+    if (mounted) setState(() => _running = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(widget.template.name),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 320,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.all(12),
+          child: SingleChildScrollView(
+            reverse: true,
+            child: Text(
+              lines.isEmpty ? l.logEmpty : lines.join('\n'),
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        if (_running)
+          TextButton(onPressed: _cancel, child: Text(l.cancel)),
+        if (_running)
+          const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+        FilledButton(
+          onPressed: _running ? null : () => Navigator.of(context).pop(),
+          child: Text(l.close),
+        ),
+      ],
     );
   }
 }

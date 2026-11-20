@@ -89,8 +89,8 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
           const SizedBox(height: 16),
           SegmentedButton<bool>(
             segments: [
-              ButtonSegment(value: true, label: Text(l.formatAuto, style: const TextStyle(inherit: false)), icon: const Icon(Icons.auto_awesome)),
-              ButtonSegment(value: false, label: Text(l.formatSelection, style: const TextStyle(inherit: false)), icon: const Icon(Icons.tune)),
+              ButtonSegment(value: true, label: Text(l.formatAuto), icon: const Icon(Icons.auto_awesome)),
+              ButtonSegment(value: false, label: Text(l.formatSelection), icon: const Icon(Icons.tune)),
             ],
             selected: {_bestMode},
             onSelectionChanged: (selection) {
@@ -106,12 +106,12 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
             },
           ),
           const SizedBox(height: 24),
-          const SectionLabel('VIDEO'),
+          SectionLabel(l.filterVideo.toUpperCase()),
           for (final format in videoFormats)
             ListTile(
               onTap: () => setState(() => _videoId = format.id),
               leading: Icon(_videoId == format.id ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: theme.colorScheme.primary, size: 20),
-              title: Text(format.recommended ? '★  RECOMMENDED · ${format.resolution ?? format.note}  (${format.ext.toUpperCase()})' : '${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
+              title: Text(format.recommended ? '★ ${l.recommended} · ${format.resolution ?? format.note}  (${format.ext.toUpperCase()})' : '${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
               subtitle: Text([
                 format.filesize != null ? formatBytes(format.filesize!) : '? B',
                 if (format.vcodec != null) format.vcodec!,
@@ -124,12 +124,12 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(l.noVideoFormats, style: theme.textTheme.bodyMedium),
             ),
-          const SectionLabel('AUDIO'),
+          SectionLabel(l.filterAudio.toUpperCase()),
           for (final format in audioFormats)
             ListTile(
               onTap: () => setState(() => _audioId = format.id),
               leading: Icon(_audioId == format.id ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: theme.colorScheme.primary, size: 20),
-              title: Text(format.recommended ? '★  RECOMMENDED · ${format.resolution ?? format.note}  (${format.ext.toUpperCase()})' : '${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
+              title: Text(format.recommended ? '★ ${l.recommended} · ${format.resolution ?? format.note}  (${format.ext.toUpperCase()})' : '${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
               subtitle: Text([
                 format.filesize != null ? formatBytes(format.filesize!) : '? B',
                 if (format.acodec != null) format.acodec!,

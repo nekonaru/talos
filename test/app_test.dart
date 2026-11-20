@@ -12,6 +12,7 @@ import 'package:talos/core/engine/engine.dart';
 import 'package:talos/core/engine/models.dart';
 import 'package:talos/core/engine/progress_parser.dart';
 import 'package:talos/core/history_store.dart';
+import 'package:talos/core/settings_store.dart';
 
 class FakeSession implements TalosDownloadSession {
   FakeSession();
@@ -390,5 +391,63 @@ void main() {
       () => parseYtdlpLine('[download]  10.0% of 1.2.3MiB at 1.2.3MiB/s ETA 00:12'),
       returnsNormally,
     );
+  });
+
+  test('clear flags reset nullable settings fields', () async {
+    final store = await SettingsStore.load();
+    await store.mutate((s) => s.copyWith(
+          videoFolder: 'v',
+          audioFolder: 'a',
+          customCommandDirectory: 'c',
+          clipStartSeconds: 5,
+          clipEndSeconds: 10,
+        ));
+    expect(store.value.videoFolder, 'v');
+    expect(store.value.clipEndSeconds, 10);
+    await store.mutate((s) => s.copyWith(
+          clearVideoFolder: true,
+          clearAudioFolder: true,
+          clearCustomCommandDirectory: true,
+          clearClipRange: true,
+        ));
+    expect(store.value.videoFolder, isNull);
+    expect(store.value.audioFolder, isNull);
+    expect(store.value.customCommandDirectory, isNull);
+    expect(store.value.clipStartSeconds, isNull);
+    expect(store.value.clipEndSeconds, isNull);
+  });
+
+  testWidgets('queue starts the first visible task after one finishes', (tester) async {
+    final engine = FakeEngine();
+    late final DownloadManager manager;
+    await tester.runAsync(() async {
+      manager = await DownloadManager.create(engine: engine);
+      for (final name in ['A', 'B', 'C']) {
+        await manager.enqueue(
+          DownloadRequest(
+            url: 'https://example.invalid/${name.toLowerCase()}',
+            videoMode: true,
+            outputDir: 'out',
+          ),
+          title: name,
+          kind: HistoryKind.video,
+        );
+        if (name == 'A') {
+          for (var i = 0; i < 100 && engine.lastSession == null; i++) {
+            await Future.delayed(const Duration(milliseconds: 10));
+          }
+        }
+      }
+      // A is running and B, C are queued. Finish A so the pump picks next.
+      engine.lastSession!.complete('/tmp/a.mp4');
+      for (var i = 0; i < 200; i++) {
+        final running = manager.tasks.where((t) => t.status == TaskStatus.running).toList();
+        if (running.length == 1 && running.first.title == 'B') break;
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+    });
+    final running = manager.tasks.where((t) => t.status == TaskStatus.running).toList();
+    expect(running, hasLength(1));
+    expect(running.first.title, 'B');
   });
 }

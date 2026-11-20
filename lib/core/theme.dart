@@ -72,6 +72,11 @@ class TalosTheme {
     final palette = brightness == Brightness.dark ? TalosPalette.dark : TalosPalette.light;
     final base = ThemeData(brightness: brightness, useMaterial3: true);
     final accentMain = brightness == Brightness.dark ? accent.dark : accent.deep;
+    // Guarantee readable text on filled accent buttons for every accent hue.
+    final onAccent = ThemeData.estimateBrightnessForColor(accentMain) == Brightness.dark
+        ? const Color(0xFFFFFFFF)
+        : const Color(0xFF161311);
+    final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(12));
     final colorScheme = ColorScheme.fromSeed(
       seedColor: accentMain,
       brightness: brightness,
@@ -87,6 +92,7 @@ class TalosTheme {
       colorScheme: colorScheme.copyWith(
         surface: palette.surface,
         onSurface: palette.ink,
+        onPrimary: onAccent,
         surfaceContainerHighest: palette.surfaceRaised,
         outlineVariant: palette.outline,
       ),
@@ -102,10 +108,18 @@ class TalosTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: palette.surface,
         indicatorColor: accentMain.withValues(alpha: 0.22),
-        iconTheme: WidgetStatePropertyAll(IconThemeData(color: palette.inkMuted)),
-        labelTextStyle: WidgetStatePropertyAll(
-          TextStyle(fontFamily: 'Inter', fontSize: 12, color: palette.inkMuted),
-        ),
+        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+              color: states.contains(WidgetState.selected) ? accentMain : palette.inkMuted,
+            )),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            color: selected ? accentMain : palette.inkMuted,
+          );
+        }),
       ),
       navigationRailTheme: const NavigationRailThemeData(),
       cardTheme: CardThemeData(
@@ -148,6 +162,38 @@ class TalosTheme {
         iconColor: palette.inkMuted,
         textColor: palette.ink,
       ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: accentMain,
+          foregroundColor: onAccent,
+          shape: buttonShape,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: accentMain,
+          side: BorderSide(color: palette.outline),
+          shape: buttonShape,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: accentMain,
+          shape: buttonShape,
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: palette.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: palette.surface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: accentMain),
     );
   }
 

@@ -321,6 +321,7 @@ class _PlayerControlsState extends State<_PlayerControls> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final value = _controller.value;
     final total = value.duration.inMilliseconds;
     final position = value.position.inMilliseconds;
@@ -375,7 +376,7 @@ class _PlayerControlsState extends State<_PlayerControls> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                tooltip: 'Back 10 seconds',
+                tooltip: l.skipBack,
                 icon: const Icon(Icons.replay_10_rounded, color: Colors.white, size: 32),
                 onPressed: () => _skip(const Duration(seconds: -10)),
               ),
@@ -388,7 +389,7 @@ class _PlayerControlsState extends State<_PlayerControls> {
               ),
               const SizedBox(width: 16),
               IconButton(
-                tooltip: 'Forward 30 seconds',
+                tooltip: l.skipForward,
                 icon: const Icon(Icons.forward_30_rounded, color: Colors.white, size: 32),
                 onPressed: () => _skip(const Duration(seconds: 30)),
               ),

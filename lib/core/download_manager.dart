@@ -86,6 +86,7 @@ class DownloadManager extends ChangeNotifier {
   final List<DownloadTask> _tasks = [];
   TalosDownloadSession? _activeSession;
   bool _pumping = false;
+  int _resetGeneration = 0;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
   List<DownloadTask> get activeTasks =>
@@ -176,6 +177,18 @@ class DownloadManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Cancels active work and removes every task. Used by "Reset all data";
+  /// the generation bump makes any in-flight [_run] skip writing history
+  /// after the reset, so a cancelled download cannot repopulate the list.
+  Future<void> resetAll() async {
+    _resetGeneration++;
+    await _activeSession?.cancel();
+    _activeSession = null;
+    _tasks.clear();
+    notifyListeners();
+    await stopForegroundService();
+  }
+
   /// Move a task to a new position in the queue. Indices refer to the
   /// queued/running order shown by the Active tab, i.e. only tasks whose
   /// status is not completed. [newIndex] is the final insertion index
@@ -205,7 +218,12 @@ class DownloadManager extends ChangeNotifier {
       while (true) {
         DownloadTask? next;
         for (final task in _tasks) {
-          if (task.status == TaskStatus.queued) next = task;
+          if (task.status == TaskStatus.queued) {
+            next = task;
+            // Tasks are stored in display order. Take the first queued one so
+            // drag-to-reorder actually controls which download starts next.
+            break;
+          }
         }
         if (next == null) break;
         await _run(next);
@@ -216,6 +234,7 @@ class DownloadManager extends ChangeNotifier {
   }
 
   Future<void> _run(DownloadTask task) async {
+    final generation = _resetGeneration;
     task.status = TaskStatus.running;
     task.stage = 'starting';
     notifyListeners();
@@ -269,6 +288,7 @@ class DownloadManager extends ChangeNotifier {
     final subscription = session.events.listen((event) {
       if (event.error != null) {
         task.error = event.error;
+        notifyListeners();
         return;
       }
       if (event.fraction != null) task.progress = event.fraction!.clamp(0, 1);
@@ -287,6 +307,12 @@ class DownloadManager extends ChangeNotifier {
     await subscription.cancel();
     await rawSubscription?.cancel();
     _activeSession = null;
+
+    // A reset while this download was in flight invalidates all post-processing.
+    if (generation != _resetGeneration) {
+      await _maybeStopForeground();
+      return;
+    }
 
     if (outcome.error == null) {
       task.outputPath = outcome.outputPath ?? task.outputPath;
@@ -332,6 +358,10 @@ class DownloadManager extends ChangeNotifier {
       }
 
       final size = deletedSize ?? await _fileSize(task.outputPath);
+      if (generation != _resetGeneration) {
+        await _maybeStopForeground();
+        return;
+      }
       if (!_settings.value.privateMode) {
         await _history.add(HistoryEntry(
           id: task.id,

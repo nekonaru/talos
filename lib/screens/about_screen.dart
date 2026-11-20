@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/app_info.dart';
@@ -11,7 +12,13 @@ class AboutScreen extends StatelessWidget {
   Future<void> _open(BuildContext context, String url) async {
     final l = AppLocalizations.of(context)!;
     try {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      final opened = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      if (!opened && context.mounted) {
+        await Clipboard.setData(ClipboardData(text: url));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.linkUnavailable)));
+        }
+      }
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
@@ -41,7 +48,7 @@ class AboutScreen extends StatelessWidget {
             style: theme.textTheme.displaySmall?.copyWith(letterSpacing: 10),
           ),
           const SizedBox(height: 4),
-          Text(TalosInfo.tagline.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 3.2)),
+          Text(TalosInfo.tagline.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2)),
           const SizedBox(height: 16),
           Container(height: 2, width: 56, color: theme.colorScheme.primary),
           const SizedBox(height: 24),
@@ -66,7 +73,7 @@ class AboutScreen extends StatelessWidget {
               context: context,
               applicationName: TalosInfo.appName,
               applicationVersion: TalosInfo.appVersion,
-              applicationLegalese: 'Talos is MIT licensed. Bundled components and tools used at runtime carry their own licenses.',
+              applicationLegalese: l.licenseNotice,
             ),
             icon: const Icon(Icons.article_outlined),
             label: Text(l.licenses),

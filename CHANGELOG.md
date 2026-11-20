@@ -5,6 +5,34 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.13.0
+
+A stability and design pass over the features already in Talos. No new feature families: this release fixes defects found in a deep audit and makes the existing screens calmer and easier to use.
+
+### Bug fixes
+
+- **Custom commands.** Running a template no longer restarts the command forever when it finishes. A Cancel action is available while it runs, and dialog text controllers are disposed.
+- **Queue order.** Downloads now start in the order shown in the Active tab, so drag-to-reorder has a real effect.
+- **Clearing settings.** Video folder, audio folder, custom command folder and clip ranges can now be cleared and stay cleared.
+- **Reset all data.** Reset now cancels active downloads, removes queued and failed tasks, and stops an in-flight download from writing a new history row.
+- **Batch downloads.** Archive and clip-range settings now apply in batch mode, matching a single download.
+- **Link feedback.** Tapping a link with no external handler now copies the URL and shows a message instead of doing nothing.
+- **Dark theme labels.** Format-segment labels inherit the app theme again instead of rendering black.
+- **Localization.** Removed hardcoded English strings from Format selection, Player, About and Settings, and corrected the Android FFmpeg error text.
+
+### Improvements
+
+- **Navigation emphasis.** The active tab now uses the accent color for its icon and label in both themes.
+- **Finished tab layout.** Search has its own full-width row with the complete hint visible; Favorites, type filter and sort sit on a compact second row.
+- **Theme picker.** The theme selector is full width so all three options fit on small screens.
+- **Touch targets.** Accent swatches and the drag handle now have 48dp hit areas with accessible labels.
+- **Consistent controls.** Buttons, dialogs, progress indicators and switches now share one theme. Crop artwork uses a full-row switch.
+- **70 tests passing.** Added coverage for queue order and clearing settings.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.13.0-windows-x64.zip`. Linux: `Talos-v0.13.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.12.0
 
 A control-focused update for the Finished library. Sort, filter and clean up finished downloads without leaving the tab.
