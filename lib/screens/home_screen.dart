@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../app_scope.dart';
 import '../core/app_info.dart';
@@ -140,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _paste() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
     final text = data?.text?.trim();
     if (text != null && text.isNotEmpty) {
       _urlController.text = text;
@@ -197,6 +199,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final outputDir = isAudio
           ? (settings.audioFolder?.isNotEmpty == true ? settings.audioFolder! : manager.outputDirectory)
           : (settings.videoFolder?.isNotEmpty == true ? settings.videoFolder! : manager.outputDirectory);
+      final support = await getApplicationSupportDirectory();
+      final archivePath = settings.downloadArchive
+          ? '${support.path}${Platform.pathSeparator}download_archive.txt'
+          : '';
       var queued = 0;
       for (final url in urls) {
         try {
@@ -236,6 +242,9 @@ class _HomeScreenState extends State<HomeScreen> {
               downloadSubtitles: settings.downloadSubtitles,
               autoSubtitle: settings.autoSubtitle,
               keepSubtitles: settings.keepSubtitles,
+              downloadArchive: archivePath,
+              clipStartSeconds: settings.clipStartSeconds,
+              clipEndSeconds: settings.clipEndSeconds,
             ),
             title: probe.title,
             kind: isAudio ? HistoryKind.audio : HistoryKind.video,
@@ -338,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 4),
                 Text(
                   TalosInfo.tagline.toUpperCase(),
-                  style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 3.2),
+                  style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2),
                 ),
                 const SizedBox(height: 16),
                 Container(height: 2, width: 56, color: theme.colorScheme.primary),
@@ -429,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'yt-dlp $_engineVersion',
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodySmall,
                   ),
                 ],
               ],

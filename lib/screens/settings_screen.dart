@@ -1,6 +1,7 @@
 import '../widgets/section_label.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_scope.dart';
@@ -74,7 +75,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _openLink(BuildContext context, String url) async {
     final l = AppLocalizations.of(context)!;
     try {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      final opened = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      if (!opened && context.mounted) {
+        await Clipboard.setData(ClipboardData(text: url));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.linkUnavailable)));
+        }
+      }
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.unknownError)));
@@ -169,7 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Icon(_engineReady ? Icons.check_circle_outline : Icons.error_outline,
                       color: _engineReady ? theme.colorScheme.primary : theme.colorScheme.error),
                   title: Text(l.engineStatus),
-                  subtitle: Text(_engineReady ? (_engineVersion ?? '') : l.engineMissing),
+                  subtitle: Text(_engineReady ? (_engineVersion ?? l.engineReady) : l.engineMissing),
                   trailing: _updating
                       ? SizedBox(
                           width: 28,
@@ -254,7 +261,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(settings.customCommandDirectory?.isNotEmpty == true ? settings.customCommandDirectory! : l.customCommandDirectoryHint),
                   onTap: () async {
                     final value = await _editDialog(title: l.customCommandDirectory, initial: settings.customCommandDirectory ?? '', hint: l.customCommandDirectoryHint);
-                    if (value != null) await manager.settings.mutate((s) => s.copyWith(customCommandDirectory: value.isEmpty ? null : value));
+                    if (value != null) {
+                      await manager.settings.mutate((s) => value.isEmpty
+                          ? s.copyWith(clearCustomCommandDirectory: true)
+                          : s.copyWith(customCommandDirectory: value));
+                    }
                   },
                 ),
                 SwitchListTile(
@@ -291,7 +302,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(settings.videoFolder?.isNotEmpty == true ? settings.videoFolder! : l.videoFolderHint),
                   onTap: () async {
                     final value = await _editDialog(title: l.videoFolder, initial: settings.videoFolder ?? '', hint: l.videoFolderHint);
-                    if (value != null) await manager.settings.mutate((s) => s.copyWith(videoFolder: value.isEmpty ? null : value));
+                    if (value != null) {
+                      await manager.settings.mutate((s) => value.isEmpty
+                          ? s.copyWith(clearVideoFolder: true)
+                          : s.copyWith(videoFolder: value));
+                    }
                   },
                 ),
                 ListTile(
@@ -300,7 +315,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(settings.audioFolder?.isNotEmpty == true ? settings.audioFolder! : l.audioFolderHint),
                   onTap: () async {
                     final value = await _editDialog(title: l.audioFolder, initial: settings.audioFolder ?? '', hint: l.audioFolderHint);
-                    if (value != null) await manager.settings.mutate((s) => s.copyWith(audioFolder: value.isEmpty ? null : value));
+                    if (value != null) {
+                      await manager.settings.mutate((s) => value.isEmpty
+                          ? s.copyWith(clearAudioFolder: true)
+                          : s.copyWith(audioFolder: value));
+                    }
                   },
                 ),
                 ListTile(
@@ -332,8 +351,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: DropdownButton<int>(
                     value: settings.defaultMaxHeight,
                     underline: const SizedBox(),
-                    items: const [
-                      DropdownMenuItem(value: 0, child: Text('Best')),
+                    items: [
+                      DropdownMenuItem(value: 0, child: Text(l.qualityBest)),
                       DropdownMenuItem(value: 2160, child: Text('2160p')),
                       DropdownMenuItem(value: 1440, child: Text('1440p')),
                       DropdownMenuItem(value: 1080, child: Text('1080p')),
@@ -350,12 +369,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: DropdownButton<String>(
                     value: settings.defaultAudioFormat,
                     underline: const SizedBox(),
-                    items: const [
+                    items: [
                       DropdownMenuItem(value: 'mp3', child: Text('MP3')),
                       DropdownMenuItem(value: 'm4a', child: Text('M4A')),
                       DropdownMenuItem(value: 'opus', child: Text('Opus')),
                       DropdownMenuItem(value: 'flac', child: Text('FLAC')),
-                      DropdownMenuItem(value: 'best', child: Text('Best')),
+                      DropdownMenuItem(value: 'best', child: Text(l.qualityBest)),
                     ],
                     onChanged: (value) => manager.settings.mutate((s) => s.copyWith(defaultAudioFormat: value ?? 'mp3')),
                   ),
@@ -384,14 +403,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (value) => manager.settings.mutate((s) => s.copyWith(defaultAudioBitrate: value ?? '192')),
                   ),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.crop_square_outlined),
+                SwitchListTile(
+                  secondary: const Icon(Icons.crop_square_outlined),
                   title: Text(l.cropArtwork),
                   subtitle: Text(l.cropArtworkHint),
-                  trailing: Switch(
-                    value: settings.cropArtwork,
-                    onChanged: (value) => manager.settings.mutate((s) => s.copyWith(cropArtwork: value)),
-                  ),
+                  value: settings.cropArtwork,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(cropArtwork: value)),
                 ),
                 SwitchListTile(
                   secondary: const Icon(Icons.subtitles_outlined),
@@ -437,7 +454,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     final value = await _editDialog(
                       title: l.subtitleFormat,
                       initial: settings.subtitleFormat,
-                      hint: 'srt, vtt, ass',
+                      hint: l.subtitleFormatHint,
                     );
                     if (value != null) await manager.settings.mutate((s) => s.copyWith(subtitleFormat: value));
                   },
@@ -457,7 +474,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     final result = await _clipRangeDialog(ctx, settings.clipStartSeconds, settings.clipEndSeconds);
                     if (!mounted) return;
                     if (result == null) return;
-                    await manager.settings.mutate((s) => s.copyWith(clipStartSeconds: result.$1, clipEndSeconds: result.$2));
+                    await manager.settings.mutate((s) => result.$1 == null && result.$2 == null
+                        ? s.copyWith(clearClipRange: true)
+                        : s.copyWith(clipStartSeconds: result.$1, clipEndSeconds: result.$2));
                   },
                 ),
                 ListTile(
@@ -467,8 +486,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: DropdownButton<String>(
                     value: settings.remuxContainer,
                     underline: const SizedBox(),
-                    items: const [
-                      DropdownMenuItem(value: '', child: Text('None')),
+                    items: [
+                      DropdownMenuItem(value: '', child: Text(l.qualityNone)),
                       DropdownMenuItem(value: 'mp4', child: Text('MP4')),
                       DropdownMenuItem(value: 'mkv', child: Text('MKV')),
                       DropdownMenuItem(value: 'webm', child: Text('WebM')),
@@ -544,7 +563,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       final value = await _editDialog(
                         title: l.sponsorBlock,
                         initial: settings.sponsorBlockCategories,
-                        hint: 'sponsor,selfpromo',
+                        hint: l.sponsorBlockHint,
                       );
                       if (value != null && value.isNotEmpty) {
                         await manager.settings.mutate((s) => s.copyWith(sponsorBlockCategories: value));
@@ -599,17 +618,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Card(
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.brightness_6_outlined),
-                  title: Text(l.theme),
-                  trailing: SegmentedButton<String>(
-                    segments: [
-                      ButtonSegment(value: 'system', label: Text(l.themeSystem)),
-                      ButtonSegment(value: 'light', label: Text(l.themeLight)),
-                      ButtonSegment(value: 'dark', label: Text(l.themeDark)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.brightness_6_outlined, size: 24),
+                          const SizedBox(width: 12),
+                          Text(l.theme, style: theme.textTheme.titleMedium),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      SegmentedButton<String>(
+                        segments: [
+                          ButtonSegment(value: 'system', label: Text(l.themeSystem)),
+                          ButtonSegment(value: 'light', label: Text(l.themeLight)),
+                          ButtonSegment(value: 'dark', label: Text(l.themeDark)),
+                        ],
+                        selected: {settings.themeMode},
+                        onSelectionChanged: (selection) => manager.settings.mutate((s) => s.copyWith(themeMode: selection.first)),
+                      ),
                     ],
-                    selected: {settings.themeMode},
-                    onSelectionChanged: (selection) => manager.settings.mutate((s) => s.copyWith(themeMode: selection.first)),
                   ),
                 ),
                 ListTile(
@@ -717,6 +748,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
                 if (confirmed != true || !context.mounted) return;
                 final messenger = ScaffoldMessenger.of(context);
+                // Cancel and drop in-flight work first so a running download
+                // cannot add a fresh history row after the reset.
+                await manager.resetAll();
                 await manager.settings.mutate((_) => TalosSettings());
                 await manager.history.clear();
                 await CommandTemplateStore.resetAll();
@@ -745,17 +779,28 @@ class _AccentDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: isDark ? accent.dark : accent.deep,
-          shape: BoxShape.circle,
-          border: Border.all(color: selected ? theme.colorScheme.primary : Colors.transparent, width: 3),
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: accent.name,
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: isDark ? accent.dark : accent.deep,
+                shape: BoxShape.circle,
+                border: Border.all(color: selected ? theme.colorScheme.primary : Colors.transparent, width: 3),
+              ),
+              child: selected ? const Icon(Icons.check, size: 16, color: Colors.black87) : null,
+            ),
+          ),
         ),
-        child: selected ? const Icon(Icons.check, size: 16, color: Colors.black87) : null,
       ),
     );
   }

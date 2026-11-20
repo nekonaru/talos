@@ -81,6 +81,8 @@
   "sortTitleAToZ": "Title A-Z",
   "noFavoritesYet": "No favorites yet. Tap the star on an entry to save it.",
   "filterByType": "Filter by type",
+  "sortBy": "Sort by",
+  "dragToReorder": "Drag to reorder",
   "filterAll": "All",
   "filterVideo": "Video",
   "filterAudio": "Audio",
@@ -92,7 +94,6 @@
       }
     }
   },
-  "selectAll": "Select all",
   "deleteSelected": "Delete selected",
   "deleteSelectedConfirm": "Delete {count} downloaded file(s) and remove them from the list?",
   "@deleteSelectedConfirm": {
@@ -103,6 +104,13 @@
     }
   },
   "deleteSelectedFailed": "Some files could not be deleted and remain in the list.",
+  "linkUnavailable": "No app can open this link. The URL was copied to the clipboard.",
+  "recommended": "Recommended",
+  "qualityNone": "None",
+  "safFolder": "(SAF folder)",
+  "skipBack": "Back 10 seconds",
+  "skipForward": "Forward 30 seconds",
+  "licenseNotice": "Talos is MIT licensed. Bundled components and tools used at runtime carry their own licenses.",
   "remove": "Remove from list",
   "deleteFile": "Delete file",
   "retry": "Retry",
@@ -231,7 +239,7 @@
   "errUnavailable": "The video is unavailable (private, removed, or region-locked).",
   "errPrivate": "This video is private. Download it with a cookies.txt from a matching account.",
   "err404": "Not found (HTTP 404). Check the URL.",
-  "errFfmpeg": "FFmpeg is not available. On desktop, open Settings and update the engine. On Android, embedding and merging are not available yet.",
+  "errFfmpeg": "FFmpeg is not available. On desktop, open Settings and update the engine. On Android, stream merging uses the bundled FFmpegKit; reinstall the app if it is missing.",
   "errLive": "The live event is still in progress. Wait for it to end, then try again.",
   "shareFailed": "Could not share the file",
   "logEmpty": "(the log is empty)",

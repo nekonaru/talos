@@ -84,6 +84,9 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
       }
 
       final buffer = StringBuffer()..writeln('# Talos cookie export');
+      // webview_flutter 4.x does not expose a cookie's Secure flag or expiry,
+      // so the Netscape fields below use the session-cookie defaults. yt-dlp
+      // still receives the correct name, value, domain and path.
       for (final cookie in cookies) {
         final flag = cookie.domain.startsWith('.') ? 'TRUE' : 'FALSE';
         buffer.writeln([

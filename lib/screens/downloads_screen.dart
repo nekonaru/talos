@@ -368,19 +368,19 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
           if (_tabController.index == 1) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: l.searchFinishedHint,
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
               child: Row(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: l.searchFinishedHint,
-                        prefixIcon: const Icon(Icons.search),
-                        isDense: true,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   FilterChip(
                     avatar: Icon(
                       _showFavorites ? Icons.star_rounded : Icons.star_border_rounded,
@@ -395,7 +395,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                       });
                     },
                   ),
-                  const SizedBox(width: 2),
+                  const Spacer(),
                   PopupMenuButton<String>(
                     tooltip: l.filterByType,
                     icon: Icon(
@@ -414,6 +414,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                     ],
                   ),
                   PopupMenuButton<String>(
+                    tooltip: l.sortBy,
                     icon: const Icon(Icons.sort),
                     onSelected: (value) {
                       setState(() {
@@ -620,9 +621,16 @@ class _TaskCard extends StatelessWidget {
                   ReorderableDragStartListener(
                     index: dragIndex!,
                     enabled: true,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                      child: Icon(Icons.drag_handle, size: 20),
+                    child: Tooltip(
+                      message: l.dragToReorder,
+                      child: Semantics(
+                        label: l.dragToReorder,
+                        child: const SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Center(child: Icon(Icons.drag_handle, size: 24)),
+                        ),
+                      ),
                     ),
                   ),
                 if (failed || cancelled) ...[
@@ -737,11 +745,11 @@ class _HistoryCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   path.startsWith('content://')
-                      ? '(SAF folder) ${Uri.tryParse(path)?.host ?? path.split('/').last}'
+                      ? '${l.safFolder} ${Uri.tryParse(path)?.host ?? path.split('/').last}'
                       : List<String>.from(path.split(Platform.pathSeparator)).reversed.take(3).toList().reversed.join(Platform.pathSeparator),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontSize: 10, color: theme.colorScheme.onSurfaceVariant),
+                  style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontSize: 10),
                 ),
               ],
             ],

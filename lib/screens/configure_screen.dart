@@ -72,7 +72,9 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
     final label = video.resolution ?? video.note;
     final codec = (video.vcodec ?? '').split('.').first.toUpperCase();
     final ext = video.ext.toUpperCase();
-    return '${l.formatAuto} ($label $ext $codec)';
+    final parts = [label, ext, codec].where((part) => part.trim().isNotEmpty).toList();
+    if (parts.isEmpty) return l.formatAuto;
+    return '${l.formatAuto} (${parts.join(' ')})';
   }
 
   Future<void> _startDownload() async {
@@ -248,15 +250,21 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                 ),
                 if (probe.isPlaylist && entries.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         '${l.playlistTitle} · ${l.playlistCount(entries.length)}',
                         style: theme.textTheme.titleMedium,
                       ),
-                      const Spacer(),
-                      TextButton(onPressed: () => setState(() => _selected = {for (final e in entries) e.index}), child: Text(l.selectAll)),
-                      TextButton(onPressed: () => setState(() => _selected = {}), child: Text(l.selectNone)),
+                      const SizedBox(height: 2),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(onPressed: () => setState(() => _selected = {for (final e in entries) e.index}), child: Text(l.selectAll)),
+                          TextButton(onPressed: () => setState(() => _selected = {}), child: Text(l.selectNone)),
+                        ],
+                      ),
                     ],
                   ),
                   for (final entry in entries)
