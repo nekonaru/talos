@@ -5,6 +5,34 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.13.0
+
+Fokus stabilitas dan desain untuk fitur yang sudah ada di Talos. Tidak ada keluarga fitur baru: rilis ini memperbaiki temuan audit mendalam dan membuat layar yang ada lebih rapi serta lebih mudah dipakai.
+
+### Perbaikan bug
+
+- **Perintah kustom.** Menjalankan template tidak lagi mengulang perintah selamanya saat selesai. Ada aksi Batal saat perintah berjalan, dan text controller dialog dibuang.
+- **Urutan antrean.** Unduhan sekarang dimulai sesuai urutan yang terlihat di tab Active, sehingga tarik-urut benar-benar berpengaruh.
+- **Mengosongkan pengaturan.** Folder video, folder audio, folder perintah kustom, dan rentang clip sekarang bisa dikosongkan dan tetap kosong.
+- **Reset semua data.** Reset sekarang membatalkan unduhan aktif, menghapus tugas yang antre atau gagal, dan mencegah unduhan yang sedang berjalan menulis baris riwayat baru.
+- **Unduhan batch.** Pengaturan arsip dan rentang clip sekarang ikut diterapkan di mode batch, sama seperti unduhan tunggal.
+- **Umpan balik tautan.** Mengetuk tautan tanpa aplikasi pembuka sekarang menyalin URL dan menampilkan pesan, alih-alih tidak melakukan apa pun.
+- **Label tema gelap.** Label segmen format kembali mewarisi tema aplikasi alih-alih tampil hitam.
+- **Lokalisasi.** Menghapus string bahasa Inggris yang tertanam di Format selection, Player, About, dan Settings, serta memperbaiki teks error FFmpeg Android.
+
+### Peningkatan
+
+- **Penekanan navigasi.** Tab yang aktif sekarang memakai warna aksen untuk ikon dan label di kedua tema.
+- **Tata letak tab Finished.** Pencarian punya baris penuh tersendiri dengan hint yang terlihat lengkap; Favorites, filter jenis, dan urutan berada di baris kedua yang ringkas.
+- **Pemilih tema.** Selektor tema sekarang penuh lebar sehingga ketiga opsi muat di layar kecil.
+- **Area sentuh.** Swatch aksen dan gagang tarik sekarang punya area sentuh 48dp dengan label aksesibilitas.
+- **Kontrol konsisten.** Tombol, dialog, indikator progres, dan switch sekarang memakai satu tema. Crop artwork memakai switch selebar baris.
+- **70 test lulus.** Menambah cakupan untuk urutan antrean dan pengosongan pengaturan.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.13.0-windows-x64.zip`. Linux: `Talos-v0.13.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.12.0
 
 Update fokus kontrol untuk pustaka Finished. Urutkan, filter, dan bersihkan unduhan selesai tanpa meninggalkan tab.
