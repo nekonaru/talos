@@ -23,8 +23,10 @@ class HistoryEntry {
   });
 
   factory HistoryEntry.fromJson(Map<String, dynamic> json) {
+    final id = json['id'];
+    if (id is! String) throw const FormatException('History entry is missing an id');
     return HistoryEntry(
-      id: json['id'] as String,
+      id: id,
       title: json['title'] as String? ?? 'Unknown title',
       url: json['url'] as String? ?? '',
       filePath: json['filePath'] as String? ?? '',
@@ -63,6 +65,38 @@ class HistoryEntry {
         'thumbnailUrl': thumbnailUrl,
         'favorite': favorite,
       };
+
+  /// Decodes one entry, returning null for a malformed record. Used when
+  /// loading so a single bad row cannot discard the rest of the history.
+  static HistoryEntry? tryFromJson(Map<String, dynamic> json) {
+    try {
+      return HistoryEntry.fromJson(json);
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+/// Returns a new list of [entries] ordered by [sort].
+///
+/// Supported values: newest, oldest, largest, smallest, title. Unknown values
+/// fall back to newest first. Entries without a size are treated as zero.
+List<HistoryEntry> sortedHistory(Iterable<HistoryEntry> entries, String sort) {
+  final list = entries.toList();
+  switch (sort) {
+    case 'oldest':
+      list.sort((a, b) => a.dateMs.compareTo(b.dateMs));
+    case 'largest':
+      list.sort((a, b) => (b.sizeBytes ?? 0).compareTo(a.sizeBytes ?? 0));
+    case 'smallest':
+      list.sort((a, b) => (a.sizeBytes ?? 0).compareTo(b.sizeBytes ?? 0));
+    case 'title':
+      list.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+    case 'newest':
+    default:
+      list.sort((a, b) => b.dateMs.compareTo(a.dateMs));
+  }
+  return list;
 }
 
 /// Append-only style log of finished downloads, newest first.
@@ -84,10 +118,11 @@ class HistoryStore extends ChangeNotifier {
       if (await file.exists()) {
         final decoded = jsonDecode(await file.readAsString());
         if (decoded is List) {
-          entries = [
-            for (final item in decoded)
-              if (item is Map<String, dynamic>) HistoryEntry.fromJson(item),
-          ];
+          entries = decoded
+              .whereType<Map<String, dynamic>>()
+              .map(HistoryEntry.tryFromJson)
+              .whereType<HistoryEntry>()
+              .toList();
           entries.sort((a, b) => b.dateMs.compareTo(a.dateMs));
         }
       }
@@ -119,6 +154,15 @@ class HistoryStore extends ChangeNotifier {
 
   Future<void> remove(String id) async {
     _entries.removeWhere((e) => e.id == id);
+    notifyListeners();
+    await _persist();
+  }
+
+  /// Removes every entry whose id is in [ids]. Unknown ids are ignored.
+  Future<void> removeMany(Iterable<String> ids) async {
+    final set = ids.toSet();
+    if (set.isEmpty) return;
+    _entries.removeWhere((e) => set.contains(e.id));
     notifyListeners();
     await _persist();
   }

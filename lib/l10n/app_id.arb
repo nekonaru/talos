@@ -55,8 +55,8 @@
       }
     }
   },
-  "batchFetchVideo": "Semua sebagai Video (720p)",
-  "batchFetchAudio": "Semua sebagai Audio (MP3 192k)",
+  "batchFetchVideo": "Semua sebagai Video",
+  "batchFetchAudio": "Semua sebagai Audio",
   "batchFetchStart": "Mulai semua",
   "batchQueued": "Ditambahkan {queued} dari {total}",
   "@batchQueued": {
@@ -72,6 +72,35 @@
   "fetchAll": "Ambil semua",
   "retryAll": "Ulangi semua",
   "favorite": "Favorit",
+  "sortNewest": "Terbaru",
+  "sortOldest": "Terlama",
+  "sortLargest": "Terbesar",
+  "sortSmallest": "Terkecil",
+  "sortTitleAToZ": "Judul A-Z",
+  "noFavoritesYet": "Belum ada favorit. Tekan bintang pada entri untuk menyimpannya.",
+  "filterByType": "Filter menurut jenis",
+  "filterAll": "Semua",
+  "filterVideo": "Video",
+  "filterAudio": "Audio",
+  "selectedCount": "{count} dipilih",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAll": "Pilih semua",
+  "deleteSelected": "Hapus yang dipilih",
+  "deleteSelectedConfirm": "Hapus {count} file unduhan dan keluarkan dari daftar?",
+  "@deleteSelectedConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteSelectedFailed": "Beberapa file tidak bisa dihapus dan tetap ada di daftar.",
   "remove": "Hapus dari daftar",
   "deleteFile": "Hapus file",
   "retry": "Coba lagi",

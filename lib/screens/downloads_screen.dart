@@ -32,6 +32,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
   String _query = '';
 
   bool _showFavorites = false;
+  String _finishedSort = 'newest';
+  String _kindFilter = 'all';
+  final Set<String> _selectedIds = <String>{};
+  bool _selectionMode = false;
 
   @override
   void initState() {
@@ -42,7 +46,15 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
   }
 
   void _onTabChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {
+      // Selection only belongs to the Finished tab. Leaving it clears the
+      // stale selection so returning later starts fresh.
+      if (_tabController.index != 1 && _selectionMode) {
+        _selectionMode = false;
+        _selectedIds.clear();
+      }
+    });
   }
 
   void _onSearchChanged() {
@@ -149,6 +161,94 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     if (confirmed == true) await manager.history.clear();
   }
 
+  void _enterSelection(String id) {
+    setState(() {
+      _selectionMode = true;
+      _selectedIds
+        ..clear()
+        ..add(id);
+    });
+  }
+
+  void _exitSelection() {
+    setState(() {
+      _selectionMode = false;
+      _selectedIds.clear();
+    });
+  }
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+      if (_selectedIds.isEmpty) _selectionMode = false;
+    });
+  }
+
+  void _toggleSelectAll(List<HistoryEntry> entries) {
+    setState(() {
+      final allSelected = entries.isNotEmpty && entries.every((e) => _selectedIds.contains(e.id));
+      if (allSelected) {
+        _selectedIds.clear();
+        _selectionMode = false;
+      } else {
+        _selectedIds
+          ..clear()
+          ..addAll(entries.map((e) => e.id));
+        if (entries.isNotEmpty) _selectionMode = true;
+      }
+    });
+  }
+
+  /// Returns true when the file is gone (deleted or already missing).
+  Future<bool> _deleteFileSilently(String path) async {
+    if (path.startsWith('content://')) {
+      return await TalosStorageBridge.deleteUri(path);
+    }
+    try {
+      final file = File(path);
+      if (!await file.exists()) return true;
+      await file.delete();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _deleteSelected(BuildContext context, List<HistoryEntry> entries) async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.of(context);
+    final selected = entries.where((e) => _selectedIds.contains(e.id)).toList();
+    if (selected.isEmpty) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.deleteSelected),
+        content: Text(l.deleteSelectedConfirm(selected.length)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l.cancel)),
+          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l.delete)),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final removed = <String>[];
+    for (final entry in selected) {
+      if (await _deleteFileSilently(entry.filePath)) {
+        removed.add(entry.id);
+      }
+    }
+    await manager.history.removeMany(removed);
+    if (!mounted || !context.mounted) return;
+    _exitSelection();
+    if (removed.length != selected.length) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.deleteSelectedFailed)));
+    }
+  }
+
   Future<void> _showLog(BuildContext context, DownloadTask task) async {
     final l = AppLocalizations.of(context)!;
     final log = task.log;
@@ -191,32 +291,58 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     final history = manager.history.entries;
     final favoritesOnly = _showFavorites
         ? history.where((e) => e.favorite).toList()
-        : history;
+        : history.toList();
+    final sorted = sortedHistory(favoritesOnly, _finishedSort);
+    final typeFiltered = _kindFilter == 'all'
+        ? sorted
+        : sorted.where((e) => e.kind.name == _kindFilter).toList();
     final finished = _query.isEmpty
-        ? favoritesOnly
-        : favoritesOnly
+        ? typeFiltered
+        : typeFiltered
             .where((e) =>
                 e.title.toLowerCase().contains(_query) ||
                 e.url.toLowerCase().contains(_query) ||
                 (e.uploader ?? '').toLowerCase().contains(_query))
             .toList();
+    final selectedCount = history.where((e) => _selectedIds.contains(e.id)).length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l.downloads),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [Tab(text: l.active), Tab(text: l.finished)],
-        ),
-        actions: [
-          if (history.isNotEmpty)
-            IconButton(
-              tooltip: l.clearFinished,
-              icon: const Icon(Icons.playlist_remove_outlined),
-              onPressed: () => _confirmClearHistory(context),
+      appBar: _selectionMode && _tabController.index == 1
+          ? AppBar(
+              leading: IconButton(
+                tooltip: l.cancel,
+                icon: const Icon(Icons.close),
+                onPressed: _exitSelection,
+              ),
+              title: Text(l.selectedCount(selectedCount)),
+              actions: [
+                IconButton(
+                  tooltip: l.selectAll,
+                  icon: const Icon(Icons.select_all),
+                  onPressed: () => _toggleSelectAll(finished),
+                ),
+                IconButton(
+                  tooltip: l.deleteSelected,
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: selectedCount == 0 ? null : () => _deleteSelected(context, history),
+                ),
+              ],
+            )
+          : AppBar(
+              title: Text(l.downloads),
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: [Tab(text: l.active), Tab(text: l.finished)],
+              ),
+              actions: [
+                if (history.isNotEmpty)
+                  IconButton(
+                    tooltip: l.clearFinished,
+                    icon: const Icon(Icons.playlist_remove_outlined),
+                    onPressed: () => _confirmClearHistory(context),
+                  ),
+              ],
             ),
-        ],
-      ),
       body: Column(
         children: [
           if (_tabController.index == 0)
@@ -269,6 +395,39 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                       });
                     },
                   ),
+                  const SizedBox(width: 2),
+                  PopupMenuButton<String>(
+                    tooltip: l.filterByType,
+                    icon: Icon(
+                      Icons.filter_list,
+                      color: _kindFilter == 'all' ? null : Theme.of(context).colorScheme.primary,
+                    ),
+                    onSelected: (value) {
+                      setState(() {
+                        _kindFilter = value;
+                      });
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(value: 'all', child: Text(l.filterAll)),
+                      PopupMenuItem(value: 'video', child: Text(l.filterVideo)),
+                      PopupMenuItem(value: 'audio', child: Text(l.filterAudio)),
+                    ],
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.sort),
+                    onSelected: (value) {
+                      setState(() {
+                        _finishedSort = value;
+                      });
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(value: 'newest', child: Text(l.sortNewest)),
+                      PopupMenuItem(value: 'oldest', child: Text(l.sortOldest)),
+                      PopupMenuItem(value: 'largest', child: Text(l.sortLargest)),
+                      PopupMenuItem(value: 'smallest', child: Text(l.sortSmallest)),
+                      PopupMenuItem(value: 'title', child: Text(l.sortTitleAToZ)),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -303,7 +462,10 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 if (history.isEmpty)
                   _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
                 else if (finished.isEmpty)
-                  _EmptyState(hint: l.searchFinishedHint, onGoHome: null)
+                  _EmptyState(
+                    hint: _showFavorites ? l.noFavoritesYet : l.searchFinishedHint,
+                    onGoHome: null,
+                  )
                 else
                   ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -311,17 +473,21 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final entry = finished[index];
-                return _HistoryCard(
-                  entry: entry,
-                  onCopyPath: () => _copyPath(entry.filePath),
-                  onOpen: () => _openEntry(context, entry),
-                  onOpenExternal: () => _openWithSystem(entry.filePath),
-                  onToggleFavorite: () => unawaited(manager.history.toggleFavorite(entry.id)),
-                  onFolder: () => _openFolder(entry.filePath),
-                  onShare: Platform.isAndroid || Platform.isIOS ? () => _share(entry.filePath) : null,
-                  onDelete: () => _deleteFile(context, entry),
-                  onRemove: () => manager.history.remove(entry.id),
-                );
+                      return _HistoryCard(
+                        entry: entry,
+                        selectionMode: _selectionMode,
+                        selected: _selectedIds.contains(entry.id),
+                        onToggleSelection: () => _toggleSelection(entry.id),
+                        onLongPress: () => _enterSelection(entry.id),
+                        onCopyPath: () => _copyPath(entry.filePath),
+                        onOpen: () => _openEntry(context, entry),
+                        onOpenExternal: () => _openWithSystem(entry.filePath),
+                        onToggleFavorite: () => unawaited(manager.history.toggleFavorite(entry.id)),
+                        onFolder: () => _openFolder(entry.filePath),
+                        onShare: Platform.isAndroid || Platform.isIOS ? () => _share(entry.filePath) : null,
+                        onDelete: () => _deleteFile(context, entry),
+                        onRemove: () => unawaited(manager.history.remove(entry.id)),
+                      );
                     },
                   ),
               ],
@@ -515,6 +681,10 @@ class _TaskCard extends StatelessWidget {
 class _HistoryCard extends StatelessWidget {
   const _HistoryCard({
     required this.entry,
+    required this.selectionMode,
+    required this.selected,
+    required this.onToggleSelection,
+    required this.onLongPress,
     required this.onOpen,
     required this.onOpenExternal,
     required this.onToggleFavorite,
@@ -526,6 +696,10 @@ class _HistoryCard extends StatelessWidget {
   });
 
   final HistoryEntry entry;
+  final bool selectionMode;
+  final bool selected;
+  final VoidCallback onToggleSelection;
+  final VoidCallback onLongPress;
   final VoidCallback onOpen;
   final VoidCallback onOpenExternal;
   final VoidCallback onToggleFavorite;
@@ -543,10 +717,13 @@ class _HistoryCard extends StatelessWidget {
     final path = entry.filePath;
     return Card(
       child: InkWell(
-        onTap: onOpen,
+        onTap: selectionMode ? onToggleSelection : onOpen,
+        onLongPress: onLongPress,
         borderRadius: BorderRadius.circular(16),
         child: ListTile(
-          leading: _ThumbnailLeading(entry: entry),
+          leading: selectionMode
+              ? _SelectionLeading(selected: selected)
+              : _ThumbnailLeading(entry: entry),
           title: Text(entry.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,7 +746,9 @@ class _HistoryCard extends StatelessWidget {
               ],
             ],
           ),
-          trailing: Row(
+          trailing: selectionMode
+              ? const SizedBox.shrink()
+              : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
@@ -620,6 +799,35 @@ class _HistoryCard extends StatelessWidget {
     );
   }
 }
+class _SelectionLeading extends StatelessWidget {
+  const _SelectionLeading({required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 48,
+      height: 48,
+      child: Center(
+        child: Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: selected ? theme.colorScheme.primary : null,
+            border: selected ? null : Border.all(color: theme.colorScheme.outline),
+          ),
+          child: selected
+              ? Icon(Icons.check, size: 18, color: theme.colorScheme.onPrimary)
+              : null,
+        ),
+      ),
+    );
+  }
+}
+
 class _ThumbnailLeading extends StatelessWidget {
   const _ThumbnailLeading({required this.entry});
 
