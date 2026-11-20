@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:talos/app.dart';
 import 'package:talos/core/download_manager.dart';
 import 'package:talos/core/engine/engine.dart';
 import 'package:talos/core/engine/models.dart';
+import 'package:talos/core/engine/progress_parser.dart';
 import 'package:talos/core/history_store.dart';
 
 class FakeSession implements TalosDownloadSession {
@@ -312,5 +315,80 @@ void main() {
 
     final retried = manager.tasks.first;
     expect(retried.request.outputDir, 'afolder');
+  });
+
+  HistoryEntry entry(
+    String id, {
+    required int dateMs,
+    int? sizeBytes,
+    String title = 'Item',
+    HistoryKind kind = HistoryKind.video,
+    bool favorite = false,
+  }) {
+    return HistoryEntry(
+      id: id,
+      title: title,
+      url: 'https://example.invalid/$id',
+      filePath: '/tmp/$id.mp4',
+      kind: kind,
+      dateMs: dateMs,
+      sizeBytes: sizeBytes,
+      favorite: favorite,
+    );
+  }
+
+  test('sortedHistory orders by newest and oldest', () {
+    final entries = [
+      entry('a', dateMs: 100),
+      entry('b', dateMs: 300),
+      entry('c', dateMs: 200),
+    ];
+    expect(sortedHistory(entries, 'newest').map((e) => e.id).toList(), ['b', 'c', 'a']);
+    expect(sortedHistory(entries, 'oldest').map((e) => e.id).toList(), ['a', 'c', 'b']);
+  });
+
+  test('sortedHistory handles sizes, titles and an unknown sort', () {
+    final entries = [
+      entry('a', dateMs: 100, sizeBytes: 500, title: 'beta'),
+      entry('b', dateMs: 300, sizeBytes: null, title: 'Alpha'),
+      entry('c', dateMs: 200, sizeBytes: 1000, title: 'charlie'),
+    ];
+    expect(sortedHistory(entries, 'largest').map((e) => e.id).toList(), ['c', 'a', 'b']);
+    expect(sortedHistory(entries, 'smallest').map((e) => e.id).toList(), ['b', 'a', 'c']);
+    expect(sortedHistory(entries, 'title').map((e) => e.id).toList(), ['b', 'a', 'c']);
+    expect(sortedHistory(entries, 'bogus').map((e) => e.id).toList(), ['b', 'c', 'a']);
+  });
+
+  test('removeMany removes only matching ids and persists', () async {
+    final store = await HistoryStore.load();
+    await store.add(entry('a', dateMs: 1));
+    await store.add(entry('b', dateMs: 2));
+    await store.add(entry('c', dateMs: 3));
+    await store.removeMany(['a', 'c', 'missing']);
+    expect(store.entries.map((e) => e.id).toList(), ['b']);
+    final reloaded = await HistoryStore.load();
+    expect(reloaded.entries.map((e) => e.id).toList(), ['b']);
+    await store.removeMany([]);
+    expect(store.entries, hasLength(1));
+  });
+
+  test('a malformed history row does not discard the valid ones', () async {
+    final support = await getApplicationSupportDirectory();
+    await support.create(recursive: true);
+    final file = File('${support.path}${Platform.pathSeparator}history.json');
+    await file.writeAsString(jsonEncode([
+      entry('a', dateMs: 100).toJson(),
+      {'title': 'no id here'},
+      entry('b', dateMs: 200).toJson(),
+    ]));
+    final store = await HistoryStore.load();
+    expect(store.entries.map((e) => e.id).toList(), ['b', 'a']);
+  });
+
+  test('progress parser tolerates malformed numbers', () {
+    expect(
+      () => parseYtdlpLine('[download]  10.0% of 1.2.3MiB at 1.2.3MiB/s ETA 00:12'),
+      returnsNormally,
+    );
   });
 }

@@ -104,8 +104,13 @@ class _AndroidDownloadSession implements TalosDownloadSession {
         'args': _args,
         'merge': _merge,
       });
-    } on PlatformException catch (e) {
-      _finish(SessionOutcome(error: e.message ?? 'Engine failed to start'));
+    } catch (e) {
+      // A missing plugin or any other channel failure must complete the
+      // outcome too. Otherwise the sequential queue awaits forever.
+      final message = e is PlatformException && e.message != null
+          ? e.message!
+          : 'Engine failed to start: $e';
+      _finish(SessionOutcome(error: message));
     }
   }
 

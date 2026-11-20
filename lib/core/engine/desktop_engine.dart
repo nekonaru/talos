@@ -175,7 +175,10 @@ class DesktopEngine implements TalosEngine {
       if (digest != expected) {
         throw StateError('Checksum mismatch for $asset');
       }
-      await tmp.rename(target.path);
+      // File.rename does not overwrite an existing file on Windows, so an
+      // "Update Engine" run would always fail with a FileSystemException.
+      // File.copy replaces the destination on every desktop platform.
+      await tmp.copy(target.path);
     } finally {
       try {
         if (await tmp.exists()) await tmp.delete();
@@ -235,7 +238,13 @@ class DesktopEngine implements TalosEngine {
     if (candidate.existsSync() && await _versionOf(candidate.path) != null) return;
 
     const url = 'https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip';
-    const expectedSha256 = '60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba';
+    // The zip is a rolling "latest" build, so its hash changes with every
+    // FFmpeg release. Fetch the matching checksum instead of pinning a value
+    // that goes stale on the next publish.
+    final expectedSha256 = (await _fetchString('$url.sha256')).trim().toLowerCase();
+    if (expectedSha256.length != 64) {
+      throw StateError('Managed FFmpeg checksum is unavailable. Install FFmpeg manually and set its path in Settings, or try again later.');
+    }
     onPhase?.call('ffmpeg-download', 0);
 
     final tmp = File('${dir.path}${Platform.pathSeparator}ffmpeg-essentials.zip.download');

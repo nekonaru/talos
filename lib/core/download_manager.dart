@@ -113,6 +113,9 @@ class DownloadManager extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    // Only a running task maps to the active session. Cancelling a failed,
+    // cancelled or completed task must not kill an unrelated download.
+    if (task.status != TaskStatus.running) return;
     await _activeSession?.cancel();
   }
 

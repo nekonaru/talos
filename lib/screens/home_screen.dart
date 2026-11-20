@@ -30,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _setupPhase = '';
   String? _engineVersion;
   bool _engineReady = true;
+  bool _sharedUrlApplied = false;
 
   @override
   void initState() {
@@ -45,7 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final data = await Clipboard.getData(Clipboard.kTextPlain);
       final text = data?.text;
       if (text == null || !mounted) return;
-      if (_urlController.text.isNotEmpty) return;
+      // A shared link always wins over clipboard content, even when the
+      // clipboard read resolves after the intent event has arrived.
+      if (_sharedUrlApplied || _urlController.text.isNotEmpty) return;
       final matches = RegExp(r'https?://\S+').allMatches(text).map((m) => m.group(0)!).where((u) => u.length > 10).toList();
       if (matches.isEmpty || !mounted) return;
       setState(() {
@@ -73,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final shared = await const MethodChannel('id.nekonaru.talos/intent')
             .invokeMethod<String>('getInitialPendingUrl');
         if (shared != null && shared.isNotEmpty && mounted) {
+          _sharedUrlApplied = true;
           _urlController.text = shared;
           _urlController.selection = TextSelection.collapsed(offset: shared.length);
         }
@@ -81,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
             .listen((event) {
           if (event is String && event.isNotEmpty && mounted) {
             setState(() {
+              _sharedUrlApplied = true;
               _urlController.text = event;
               _urlController.selection = TextSelection.collapsed(offset: event.length);
             });
@@ -202,13 +207,35 @@ class _HomeScreenState extends State<HomeScreen> {
               url: probe.webpageUrl,
               videoMode: !isAudio,
               outputDir: outputDir,
-              maxHeight: isAudio ? null : 720,
+              maxHeight: isAudio ? null : (settings.defaultMaxHeight == 0 ? null : settings.defaultMaxHeight),
               audioFormat: isAudio ? settings.defaultAudioFormat : 'mp3',
               audioBitrate: isAudio ? settings.defaultAudioBitrate : '192',
               embedSubtitles: settings.embedSubtitles,
               embedMetadata: settings.embedMetadata,
               includePlaylist: probe.isPlaylist,
               filenameTemplate: settings.filenameTemplate,
+              // Batch downloads must honour the same transport settings as a
+              // single download, otherwise a configured proxy or cookies file
+              // is silently dropped and every queued item fails.
+              proxy: settings.proxy,
+              rateLimit: settings.rateLimit,
+              useAria2: settings.useAria2,
+              concurrentFragments: settings.concurrentFragments,
+              ffmpegPath: settings.ffmpegPath,
+              sponsorBlockCategories: settings.sponsorBlockEnabled ? settings.sponsorBlockCategories : '',
+              cookiesPath: settings.cookiesPath,
+              subtitleLanguage: settings.subtitleLanguage,
+              restrictFilenames: settings.restrictFilenames,
+              cropArtwork: settings.cropArtwork,
+              subtitleFormat: settings.subtitleFormat,
+              forceIpv4: settings.forceIpv4,
+              remuxContainer: settings.remuxContainer,
+              maxFilesize: settings.maxFilesize,
+              userAgent: settings.userAgent,
+              formatSort: settings.formatSort,
+              downloadSubtitles: settings.downloadSubtitles,
+              autoSubtitle: settings.autoSubtitle,
+              keepSubtitles: settings.keepSubtitles,
             ),
             title: probe.title,
             kind: isAudio ? HistoryKind.audio : HistoryKind.video,

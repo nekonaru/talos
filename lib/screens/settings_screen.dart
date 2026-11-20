@@ -103,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           FilledButton(onPressed: () => Navigator.of(context).pop(controller.text.trim()), child: Text(AppLocalizations.of(context)!.save)),
         ],
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 
   Future<(int?, int?)?> _clipRangeDialog(BuildContext context, int? startSec, int? endSec) {
@@ -141,7 +141,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-    );
+    ).whenComplete(() {
+      startController.dispose();
+      endController.dispose();
+    });
   }
 
   @override
@@ -555,19 +558,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () async {
                     final value = await _editDialog(title: l.cookies, initial: settings.cookiesPath, hint: l.cookiesHint);
                     if (value != null) await manager.settings.mutate((s) => s.copyWith(cookiesPath: value));
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.subtitles_outlined),
-                  title: Text(l.subtitleLanguage),
-                  subtitle: Text(settings.subtitleLanguage.isEmpty ? l.subtitleLanguageHint : settings.subtitleLanguage),
-                  onTap: () async {
-                    final value = await _editDialog(
-                      title: l.subtitleLanguage,
-                      initial: settings.subtitleLanguage,
-                      hint: l.subtitleLanguageHint,
-                    );
-                    if (value != null) await manager.settings.mutate((s) => s.copyWith(subtitleLanguage: value));
                   },
                 ),
                 if (desktop)

@@ -90,12 +90,22 @@ EngineProgress? parseYtdlpLine(String line) {
     final eta = _eta.firstMatch(trimmed);
     int? totalBytes;
     if (size != null) {
-      totalBytes = (double.tryParse(size.group(1)!)! * _unitToBytes(size.group(2)!)).round();
+      final value = double.tryParse(size.group(1) ?? '');
+      if (value != null) {
+        totalBytes = (value * _unitToBytes(size.group(2) ?? '')).round();
+      }
     }
-    final fraction = percent != null ? double.tryParse(percent.group(1)!)! / 100.0 : null;
+    double? fraction;
+    if (percent != null) {
+      final value = double.tryParse(percent.group(1) ?? '');
+      if (value != null) fraction = value / 100.0;
+    }
     double? speedBytes;
     if (speed != null) {
-      speedBytes = double.tryParse(speed.group(1)!)! * _unitToBytes(speed.group(2)!);
+      final value = double.tryParse(speed.group(1) ?? '');
+      if (value != null) {
+        speedBytes = value * _unitToBytes(speed.group(2) ?? '');
+      }
     }
     return EngineProgress(
       stage: 'download',

@@ -5,6 +5,34 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.12.0
+
+Update fokus kontrol untuk pustaka Finished. Urutkan, filter, dan bersihkan unduhan selesai tanpa meninggalkan tab.
+
+### Fitur baru
+
+- **Urutkan unduhan selesai.** Buka menu urutkan di tab Finished untuk mengurutkan entri berdasarkan Terbaru, Terlama, Terbesar, Terkecil, atau Judul A-Z. Pengurutan ukuran menganggap entri tanpa ukuran yang diketahui sebagai nol.
+- **Filter menurut jenis.** Menu jenis mengganti daftar Finished antara Semua, Video, dan Audio. Filter ini digabung dengan chip Favorites dan kotak pencarian.
+- **Hapus banyak.** Tahan lama entri selesai untuk masuk mode pilih, tekan entri lain untuk menambahnya, lalu gunakan Pilih semua atau Hapus yang dipilih. Penghapusan menghapus file dan baris riwayatnya setelah satu konfirmasi.
+
+### Peningkatan
+
+- **68 test lulus.** Menambah cakupan untuk semua mode urutan, penghapusan riwayat banyak, baris riwayat rusak, dan keluaran progres yang malformed.
+- **Audit mendalam.** Memperbaiki anomali yang ditemukan pada setup engine, penanganan antrean, pengaturan, dan daftar Finished.
+
+### Perbaikan bug
+
+- **Setup engine Windows.** Setup FFmpeg sekarang membaca checksum terbaru untuk build rolling latest, bukan hash tetap yang basi setiap rilis, dan Update Engine mengganti binary yang ada alih-alih gagal di Windows.
+- **Ketahanan riwayat.** Satu baris tersimpan yang rusak tidak lagi menghilangkan seluruh daftar selesai saat startup.
+- **Unduhan batch.** Mode batch sekarang menerapkan proxy, cookies, kualitas, dan pengaturan transfer lain yang dikonfigurasi, alih-alih membuangnya diam-diam.
+- **Keamanan antrean.** Kegagalan memulai engine Android tidak lagi mengunci antrean, dan membatalkan tugas yang tidak aktif tidak lagi menghentikan unduhan yang sedang berjalan.
+- **Parsing progres.** Angka yang rusak pada keluaran yt-dlp tidak lagi melempar error di listener progres.
+- **Bersihkan pengaturan.** Menghapus entri Subtitle language yang dobel dan membuang text controller dialog.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.12.0-windows-x64.zip`. Linux: `Talos-v0.12.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.11.0
 
 Rilis identitas baru yang dipimpin oleh mark helm Talos, plus upgrade kecil tapi berguna di daftar Finished.

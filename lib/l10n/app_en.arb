@@ -57,8 +57,8 @@
       }
     }
   },
-  "batchFetchVideo": "All as Video (720p)",
-  "batchFetchAudio": "All as Audio (MP3 192k)",
+  "batchFetchVideo": "All as Video",
+  "batchFetchAudio": "All as Audio",
   "batchFetchStart": "Start all",
   "batchQueued": "Queued {queued} of {total}",
   "@batchQueued": {
@@ -74,6 +74,35 @@
   "fetchAll": "Fetch all",
   "retryAll": "Retry all",
   "favorite": "Favorites",
+  "sortNewest": "Newest",
+  "sortOldest": "Oldest",
+  "sortLargest": "Largest",
+  "sortSmallest": "Smallest",
+  "sortTitleAToZ": "Title A-Z",
+  "noFavoritesYet": "No favorites yet. Tap the star on an entry to save it.",
+  "filterByType": "Filter by type",
+  "filterAll": "All",
+  "filterVideo": "Video",
+  "filterAudio": "Audio",
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAll": "Select all",
+  "deleteSelected": "Delete selected",
+  "deleteSelectedConfirm": "Delete {count} downloaded file(s) and remove them from the list?",
+  "@deleteSelectedConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteSelectedFailed": "Some files could not be deleted and remain in the list.",
   "remove": "Remove from list",
   "deleteFile": "Delete file",
   "retry": "Retry",
