@@ -5,6 +5,40 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.14.0
+
+A large update led by a smooth animated intro, backed by another deep audit that closed defects across the download flow, settings and player.
+
+### New features
+
+- **Animated intro.** A short brand reveal plays on launch: the helmet scales and fades in with a soft halo, the wordmark rises, a bronze progress line draws, then the whole scene fades into the app. Tap anywhere to skip. Reduced-motion users see a static, instant version. Timing uses shared motion tokens.
+- **Theme-aware native splash.** The Android launch background now matches the active system theme, so light-theme users no longer see a dark flash before the app opens. The same shield mark is used across the native splash and the intro.
+
+### Bug fixes
+
+- **Embed subtitles switch.** The Configure toggle now actually controls `--embed-subs`; subtitles are no longer always embedded on desktop or never embedded on Android.
+- **Cancel during startup.** Tapping Cancel while permissions or ffmpeg probing are still running now stops the download instead of being ignored. Reset also stops an in-flight task before it can write history.
+- **Custom command folder.** The configured output folder is now passed to custom commands as their working directory.
+- **Single-link fetch.** Pasting a link with surrounding text or trailing punctuation now uses the extracted URL, matching batch mode.
+- **Clearer errors.** Engine setup failures show one friendly message instead of a raw error plus a duplicate. Storage-save failures are now localized instead of hardcoded English.
+- **Clip range display.** A clip range with only an end time no longer shows "null sec".
+- **Audio format filter.** Muxed video+audio formats are no longer listed as audio-only, which previously produced invalid download selectors.
+- **Selection safety.** Changing search or filters now clears multi-selection, so batch delete cannot touch entries that are no longer visible.
+- **Settings resilience.** Stale or hand-edited dropdown values are normalized on load, preventing a crash on the Settings screen.
+- **Link fallbacks.** The update Download button now copies the URL and shows a message when no browser is available.
+- **Player cleanup.** Failed initialize/play now disposes the controller, and the controls no longer rebuild twice per position update.
+- **Share-intent race.** A link shared during cold start is buffered natively and replayed once Dart subscribes, so it is never dropped.
+
+### Improvements
+
+- **Untranslated strings.** Remaining English phrases in Bahasa Indonesia were translated, and the About screen now marks aria2 as an optional external tool.
+- **Consistent chrome.** Navigation rail (wide layout) now uses theme colors; accent swatch check marks adapt to each accent's brightness.
+- **72 tests passing**, including new coverage for subtitle embedding and settings normalization.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.14.0-windows-x64.zip`. Linux: `Talos-v0.14.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.13.0
 
 A stability and design pass over the features already in Talos. No new feature families: this release fixes defects found in a deep audit and makes the existing screens calmer and easier to use.
