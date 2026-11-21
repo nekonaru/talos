@@ -140,8 +140,12 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
     );
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.queued)));
-    Navigator.of(context).maybePop();
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    navigator.maybePop();
+    // Show on the previous route's messenger after the pop completes, so the
+    // confirmation is not lost with this screen's disappearing Scaffold.
+    messenger.showSnackBar(SnackBar(content: Text(l.queued)));
   }
 
   @override

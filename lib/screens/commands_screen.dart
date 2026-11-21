@@ -115,10 +115,13 @@ class _CommandsScreenState extends State<CommandsScreen> {
 
   Future<void> _showRunOutput(CommandTemplate template, String url) async {
     final manager = TalosScope.of(context);
+    // Honour the configured custom-command output folder when set.
+    final configuredDir = manager.settings.value.customCommandDirectory?.trim();
+    final workingDir = configuredDir != null && configuredDir.isNotEmpty ? configuredDir : null;
     // Create the stream once. Subscribing inside the dialog builder caused a
     // rebuild loop: onDone cleared the subscription, the rebuild started a
     // new one, and the command ran forever.
-    final stream = manager.engine.runCustomCommand(template.args, url);
+    final stream = manager.engine.runCustomCommand(template.args, url, workingDir: workingDir);
     await showDialog<void>(
       context: context,
       barrierDismissible: false,

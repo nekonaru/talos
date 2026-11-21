@@ -1,0 +1,11 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/talos_paper" />
+    <item
+        android:gravity="center"
+        android:width="128dp"
+        android:height="128dp">
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/talos_splash_mark" />
+    </item>
+</layer-list>

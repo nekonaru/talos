@@ -49,6 +49,24 @@ class TalosPalette {
   );
 }
 
+/// Shared motion tokens. Intro and transitions use these values so timing
+/// stays consistent instead of each screen inventing its own numbers.
+class TalosMotion {
+  const TalosMotion._();
+
+  static const Duration quick = Duration(milliseconds: 180);
+  static const Duration standard = Duration(milliseconds: 320);
+  static const Duration expressive = Duration(milliseconds: 520);
+
+  /// Entrances decelerate; exits accelerate. Same family across the app.
+  static const Curve entering = Curves.easeOutCubic;
+  static const Curve exiting = Curves.easeInCubic;
+
+  static const Duration introEntrance = Duration(milliseconds: 1000);
+  static const Duration introHold = Duration(milliseconds: 480);
+  static const Duration introExit = Duration(milliseconds: 300);
+}
+
 /// Selectable accent hues. Persisted by name in settings.
 enum TalosAccent {
   bronze(Color(0xFFD09A5B), Color(0xFF8A5A2B)),
@@ -121,7 +139,23 @@ class TalosTheme {
           );
         }),
       ),
-      navigationRailTheme: const NavigationRailThemeData(),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: palette.surface,
+        indicatorColor: accentMain.withValues(alpha: 0.22),
+        selectedIconTheme: IconThemeData(color: accentMain),
+        unselectedIconTheme: IconThemeData(color: palette.inkMuted),
+        selectedLabelTextStyle: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: accentMain,
+        ),
+        unselectedLabelTextStyle: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 12,
+          color: palette.inkMuted,
+        ),
+      ),
       cardTheme: CardThemeData(
         color: palette.surface,
         shape: RoundedRectangleBorder(

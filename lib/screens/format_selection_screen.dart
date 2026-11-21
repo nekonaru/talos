@@ -33,8 +33,11 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
   }
 
   List<YtdlpFormat> get _audioFormats {
+    // Only audio-only streams belong here. Muxed formats (both codecs
+    // present) would produce an invalid selector when combined with a video
+    // id, and would download a video stream when picked alone.
     final list = widget.probe.formats
-        .where((f) => f.acodec != 'none' || f.vcodec == 'none')
+        .where((f) => f.acodec != 'none' && f.vcodec == 'none')
         .toList();
     list.sort((a, b) {
       if (a.recommended != b.recommended) return a.recommended ? -1 : 1;

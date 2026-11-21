@@ -5,6 +5,40 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.14.0
+
+Update besar yang dipimpin oleh intro beranimasi halus, dibarengi audit mendalam lain yang menutup temuan pada alur unduhan, pengaturan, dan pemutar.
+
+### Fitur baru
+
+- **Intro beranimasi.** Reveal brand singkat saat aplikasi dibuka: helm muncul dengan skala dan fade halus disertai halo lembut, wordmark naik, garis progres perunggu tergambar, lalu seluruh adegan memudar ke aplikasi. Ketuk di mana saja untuk melewati. Pengguna reduced-motion melihat versi statis dan instan. Waktu memakai motion token bersama.
+- **Splash native mengikuti tema.** Latar peluncuran Android sekarang mengikuti tema sistem, sehingga pengguna tema terang tidak melihat kilatan gelap sebelum aplikasi terbuka. Mark helm yang sama dipakai di splash native dan intro.
+
+### Perbaikan bug
+
+- **Switch embedding subtitle.** Toggle di Configure sekarang benar-benar mengontrol `--embed-subs`; subtitle tidak lagi selalu disematkan di desktop atau tidak pernah di Android.
+- **Batal saat startup.** Mengetuk Batal saat izin atau probing ffmpeg masih berjalan sekarang menghentikan unduhan, alih-alih diabaikan. Reset juga menghentikan tugas yang sedang berjalan sebelum sempat menulis riwayat.
+- **Folder perintah kustom.** Folder output yang dikonfigurasi sekarang diteruskan ke perintah kustom sebagai direktori kerja.
+- **Fetch satu tautan.**Menempelkan tautan dengan teks di sekitarnya atau tanda baca di akhir sekarang memakai URL yang diekstrak, sama seperti mode batch.
+- **Error lebih jelas.** Kegagalan setup engine menampilkan satu pesan ramah, bukan error mentah plus duplikat. Kegagalan penyimpanan kini dilokalisasi, bukan bahasa Inggris yang tertanam.
+- **Tampilan rentang clip.** Rentang yang hanya punya waktu akhir tidak lagi menampilkan "null detik".
+- **Filter format audio.** Format muxed video+audio tidak lagi tercantum sebagai audio-murni, yang sebelumnya menghasilkan selector unduhan yang tidak valid.
+- **Keamanan seleksi.** Mengubah pencarian atau filter sekarang menghapus multi-seleksi, sehingga hapus banyak tidak menyentuh entri yang tidak lagi terlihat.
+- **Ketahanan pengaturan.** Nilai dropdown yang usang atau diedit manual dinormalisasi saat dimuat, mencegah crash di layar Pengaturan.
+- **Fallback tautan.** Tombol Download pada pembaruan sekarang menyalin URL dan menampilkan pesan jika tidak ada browser.
+- **Bersihkan pemutar.** Gagal initialize/play sekarang membuang controller, dan kontrol tidak lagi rebuild dua kali per update posisi.
+- **Race share-intent.** Tautan yang dibagikan saat cold start kini ditampung native dan diputar ulang setelah Dart berlangganan, sehingga tidak hilang.
+
+### Peningkatan
+
+- **String belum diterjemahkan.** Frasa bahasa Inggris yang tersisa di Bahasa Indonesia diterjemahkan, dan layar About sekarang menandai aria2 sebagai alat eksternal opsional.
+- **Chrome konsisten.** Navigation rail (layout lebar) sekarang memakai warna tema; tanda centang swatch aksen menyesuaikan kecerahan tiap aksen.
+- **72 test lulus**, termasuk cakupan baru untuk embedding subtitle dan normalisasi pengaturan.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.14.0-windows-x64.zip`. Linux: `Talos-v0.14.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.13.0
 
 Fokus stabilitas dan desain untuk fitur yang sudah ada di Talos. Tidak ada keluarga fitur baru: rilis ini memperbaiki temuan audit mendalam dan membuat layar yang ada lebih rapi serta lebih mudah dipakai.

@@ -32,7 +32,7 @@ class AboutScreen extends StatelessWidget {
     final chips = <(String, String)>[
       ('yt-dlp', 'Unlicense'),
       ('FFmpegKit (Android)', 'LGPL-3.0'),
-      ('aria2', 'GPL-2.0'),
+      ('aria2 (optional, external)', 'GPL-2.0'),
       ('Flutter', 'BSD-3-Clause'),
       ('Chaquopy (Android)', 'MIT'),
       ('Marcellus, Inter', 'SIL Open Font License'),

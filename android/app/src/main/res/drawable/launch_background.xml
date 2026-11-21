@@ -6,6 +6,6 @@
         android:height="128dp">
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/ic_launcher_foreground" />
+            android:src="@drawable/talos_splash_mark" />
     </item>
 </layer-list>

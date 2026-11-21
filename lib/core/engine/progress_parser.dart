@@ -143,7 +143,7 @@ void _tagRecommended(List<YtdlpFormat> formats) {
   }
 
   int audioScore(YtdlpFormat f) {
-    final isAudioOnly = (f.acodec != null && f.acodec != 'none') || f.vcodec == 'none';
+    final isAudioOnly = f.acodec != null && f.acodec != 'none' && f.vcodec == 'none';
     if (!isAudioOnly) return -1;
     var score = ((f.abr ?? 0).round()) * 10;
     if (f.ext == 'm4a' || f.ext == 'aac') score += 200;

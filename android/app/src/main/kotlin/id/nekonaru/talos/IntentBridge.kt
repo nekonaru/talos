@@ -11,6 +11,9 @@ import io.flutter.plugin.common.MethodChannel
  */
 class IntentBridge {
     private var eventSink: EventChannel.EventSink? = null
+    // A share delivered before Dart subscribes is buffered and replayed on
+    // onListen, so a cold-start share is never dropped in that gap.
+    private var bufferedUrl: String? = null
 
     fun attach(flutterEngine: FlutterEngine, initialIntent: Intent?) {
         var pendingUrl = extractShareUrl(initialIntent)
@@ -30,6 +33,10 @@ class IntentBridge {
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                     eventSink = events
+                    bufferedUrl?.let { url ->
+                        events?.success(url)
+                        bufferedUrl = null
+                    }
                 }
 
                 override fun onCancel(arguments: Any?) {
@@ -40,7 +47,14 @@ class IntentBridge {
 
     fun onNewIntent(intent: Intent?) {
         val url = extractShareUrl(intent) ?: return
-        eventSink?.success(url)
+        val sink = eventSink
+        if (sink != null) {
+            sink.success(url)
+        } else {
+            // Dart has not subscribed yet (cold start). Keep the latest link
+            // and replay it when the event channel is listened to.
+            bufferedUrl = url
+        }
     }
 
     private fun extractShareUrl(intent: Intent?): String? {

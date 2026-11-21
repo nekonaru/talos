@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:talos/app.dart';
 import 'package:talos/core/download_manager.dart';
+import 'package:talos/core/engine/command_builder.dart';
 import 'package:talos/core/engine/engine.dart';
 import 'package:talos/core/engine/models.dart';
 import 'package:talos/core/engine/progress_parser.dart';
@@ -150,7 +151,7 @@ void main() {
       manager = await DownloadManager.create(engine: FakeEngine());
     });
 
-    await tester.pumpWidget(TalosApp(manager: manager));
+    await tester.pumpWidget(TalosApp(manager: manager, showIntro: false));
     await tester.pumpAndSettle();
 
     expect(find.text('TALOS'), findsOneWidget);
@@ -168,7 +169,7 @@ void main() {
       await manager.settings.mutate((s) => s.copyWith(privateMode: true));
     });
 
-    await tester.pumpWidget(TalosApp(manager: manager));
+    await tester.pumpWidget(TalosApp(manager: manager, showIntro: false));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
@@ -197,7 +198,7 @@ void main() {
       manager = await DownloadManager.create(engine: engine);
     });
 
-    await tester.pumpWidget(TalosApp(manager: manager));
+    await tester.pumpWidget(TalosApp(manager: manager, showIntro: false));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
@@ -415,6 +416,44 @@ void main() {
     expect(store.value.customCommandDirectory, isNull);
     expect(store.value.clipStartSeconds, isNull);
     expect(store.value.clipEndSeconds, isNull);
+  });
+
+  test('embedSubtitles switch controls --embed-subs', () {
+    DownloadRequest request({required bool embedSubtitles}) => DownloadRequest(
+          url: 'https://example.invalid/a',
+          videoMode: true,
+          outputDir: 'out',
+          downloadSubtitles: true,
+          embedSubtitles: embedSubtitles,
+        );
+    final withEmbed = CommandBuilder.downloadArgs(request(embedSubtitles: true), ffmpegAvailable: true);
+    final withoutEmbed = CommandBuilder.downloadArgs(request(embedSubtitles: false), ffmpegAvailable: true);
+    expect(withEmbed, contains('--embed-subs'));
+    expect(withoutEmbed, isNot(contains('--embed-subs')));
+    // Without ffmpeg, never embed regardless of the switch.
+    final noFfmpeg = CommandBuilder.downloadArgs(request(embedSubtitles: true), ffmpegAvailable: false);
+    expect(noFfmpeg, isNot(contains('--embed-subs')));
+  });
+
+  test('settings normalization rejects stale dropdown values', () async {
+    final support = await getApplicationSupportDirectory();
+    await support.create(recursive: true);
+    final file = File('${support.path}${Platform.pathSeparator}settings.json');
+    await file.writeAsString(jsonEncode({
+      'themeMode': 'old-removed-theme',
+      'defaultMaxHeight': 9999,
+      'defaultAudioFormat': 'wav',
+      'concurrentFragments': 7,
+      'remuxContainer': 'avi',
+      'engineChannel': 'experimental',
+    }));
+    final store = await SettingsStore.load();
+    expect(store.value.themeMode, 'system');
+    expect(store.value.defaultMaxHeight, 720);
+    expect(store.value.defaultAudioFormat, 'mp3');
+    expect(store.value.concurrentFragments, 4);
+    expect(store.value.remuxContainer, '');
+    expect(store.value.engineChannel, 'stable');
   });
 
   testWidgets('queue starts the first visible task after one finishes', (tester) async {

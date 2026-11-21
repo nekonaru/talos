@@ -118,6 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Sets up the engine and lets errors propagate so callers can show one
+  /// friendly message instead of a raw error followed by a second one.
   Future<void> _setupEngine() async {
     setState(() => _settingUp = true);
     final manager = TalosScope.of(context);
@@ -130,10 +132,6 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       });
       await _refreshEngine();
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
-      }
     } finally {
       if (mounted) setState(() => _settingUp = false);
     }
@@ -153,8 +151,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final urls = _detectUrls(_urlController.text);
     if (urls.length > 1) {
       unawaited(_batchFetch());
-    } else {
-      unawaited(_fetch());
+    } else if (urls.length == 1) {
+      // Pass the extracted URL so surrounding text or trailing punctuation
+      // does not break the probe, matching the batch path.
+      unawaited(_fetch(urls.first));
     }
   }
 
@@ -187,15 +187,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final settings = manager.settings.value;
     setState(() => _busy = true);
     try {
-      // Ensure the engine is ready before probing.
-      if (!_engineReady) {
-        try {
-          await _setupEngine();
-        } catch (_) {
-          if (mounted) setState(() => _busy = false);
-          return;
-        }
-      }
+      // Ensure the engine is ready before probing. Errors are handled by the
+      // outer catch so the user gets one clear message.
+      if (!_engineReady) await _setupEngine();
+      if (!mounted) return;
       final outputDir = isAudio
           ? (settings.audioFolder?.isNotEmpty == true ? settings.audioFolder! : manager.outputDirectory)
           : (settings.videoFolder?.isNotEmpty == true ? settings.videoFolder! : manager.outputDirectory);
@@ -260,27 +255,23 @@ class _HomeScreenState extends State<HomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l.batchQueued(queued, urls.length))),
       );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_friendlyError(error))),
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
-  Future<void> _fetch() async {
-    final url = _urlController.text.trim();
+  Future<void> _fetch(String url) async {
     if (url.isEmpty || _busy) return;
     setState(() => _busy = true);
     final manager = TalosScope.of(context);
-    // Ensure the engine is installed before trying to probe.
-    if (!_engineReady) {
-      try {
-        await _setupEngine();
-      } catch (_) {
-        // Error surfaces in the banner; stop here.
-        if (mounted) setState(() => _busy = false);
-        return;
-      }
-    }
     try {
+      if (!_engineReady) await _setupEngine();
+      if (!mounted) return;
       final probe = await manager.engine.probe(url, proxy: manager.settings.value.proxy);
       if (!mounted) return;
       await Navigator.of(context).push(
