@@ -16,6 +16,19 @@ import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
 import 'player_screen.dart';
 
+/// Resolves stable error codes from the download engine to localized text.
+/// Unknown values are returned unchanged (raw engine messages).
+String _resolveTaskError(AppLocalizations l, String code) {
+  switch (code) {
+    case kErrSafNotWritable:
+      return l.errSafNotWritable;
+    case kErrSaveToDownloads:
+      return l.errSaveToDownloads;
+    default:
+      return code;
+  }
+}
+
 class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key, this.onGoHome});
 
@@ -59,7 +72,15 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
 
   void _onSearchChanged() {
     final value = _searchController.text.trim().toLowerCase();
-    if (value != _query && mounted) setState(() => _query = value);
+    if (value != _query && mounted) {
+      setState(() {
+        _query = value;
+        // A filter change can hide selected rows. Clear selection so a later
+        // delete can never act on entries the user can no longer see.
+        _selectionMode = false;
+        _selectedIds.clear();
+      });
+    }
   }
 
   @override
@@ -304,7 +325,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 e.url.toLowerCase().contains(_query) ||
                 (e.uploader ?? '').toLowerCase().contains(_query))
             .toList();
-    final selectedCount = history.where((e) => _selectedIds.contains(e.id)).length;
+    final selectedCount = finished.where((e) => _selectedIds.contains(e.id)).length;
 
     return Scaffold(
       appBar: _selectionMode && _tabController.index == 1
@@ -324,7 +345,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 IconButton(
                   tooltip: l.deleteSelected,
                   icon: const Icon(Icons.delete_outline),
-                  onPressed: selectedCount == 0 ? null : () => _deleteSelected(context, history),
+                  onPressed: selectedCount == 0 ? null : () => _deleteSelected(context, finished),
                 ),
               ],
             )
@@ -392,6 +413,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                     onSelected: (value) {
                       setState(() {
                         _showFavorites = value;
+                        _selectionMode = false;
+                        _selectedIds.clear();
                       });
                     },
                   ),
@@ -405,6 +428,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                     onSelected: (value) {
                       setState(() {
                         _kindFilter = value;
+                        _selectionMode = false;
+                        _selectedIds.clear();
                       });
                     },
                     itemBuilder: (context) => [
@@ -668,11 +693,11 @@ class _TaskCard extends StatelessWidget {
               const SizedBox(height: 8),
               InkWell(
                 onTap: () {
-                  Clipboard.setData(ClipboardData(text: task.error!));
+                  Clipboard.setData(ClipboardData(text: _resolveTaskError(l, task.error!)));
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.copied)));
                 },
                 child: Text(
-                  task.error!,
+                  _resolveTaskError(l, task.error!),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error, decoration: TextDecoration.underline),

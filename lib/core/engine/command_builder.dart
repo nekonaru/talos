@@ -51,7 +51,7 @@ class CommandBuilder {
       }
       if (request.downloadSubtitles) {
         args.addAll(['--write-subs']);
-        if (ffmpegAvailable) args.add('--embed-subs');
+        if (ffmpegAvailable && request.embedSubtitles) args.add('--embed-subs');
         if (request.autoSubtitle) args.add('--write-auto-subs');
         if (request.keepSubtitles) args.add('--keep-subs');
         if (request.subtitleLanguage.isNotEmpty) {

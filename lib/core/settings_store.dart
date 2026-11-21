@@ -56,19 +56,26 @@ class TalosSettings {
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
+    // Persisted values may come from an older build or a hand-edited file.
+    // Normalize fixed-choice fields so a stale value can never crash a
+    // DropdownButton with "value not in items".
+    String choice(String? value, List<String> allowed, String fallback) =>
+        value != null && allowed.contains(value) ? value : fallback;
+    int intChoice(int? value, List<int> allowed, int fallback) =>
+        value != null && allowed.contains(value) ? value : fallback;
     return TalosSettings(
-      themeMode: json['themeMode'] as String? ?? 'system',
+      themeMode: choice(json['themeMode'] as String?, const ['system', 'light', 'dark'], 'system'),
       accent: json['accent'] as String? ?? 'bronze',
       downloadFolder: json['downloadFolder'] as String?,
       downloadFolderSAF: json['downloadFolderSAF'] as String? ?? '',
       filenameTemplate: json['filenameTemplate'] as String? ?? '%(title)s.%(ext)s',
-      defaultMaxHeight: (json['defaultMaxHeight'] as num?)?.toInt() ?? 720,
-      defaultAudioFormat: json['defaultAudioFormat'] as String? ?? 'mp3',
-      defaultAudioBitrate: json['defaultAudioBitrate'] as String? ?? '192',
+      defaultMaxHeight: intChoice((json['defaultMaxHeight'] as num?)?.toInt(), const [0, 2160, 1440, 1080, 720, 480, 360], 720),
+      defaultAudioFormat: choice(json['defaultAudioFormat'] as String?, const ['mp3', 'm4a', 'opus', 'flac', 'best'], 'mp3'),
+      defaultAudioBitrate: choice(json['defaultAudioBitrate'] as String?, const ['128', '192', '256', '320'], '192'),
       proxy: json['proxy'] as String? ?? '',
       rateLimit: json['rateLimit'] as String? ?? '',
       useAria2: json['useAria2'] as bool? ?? false,
-      concurrentFragments: (json['concurrentFragments'] as num?)?.toInt() ?? 4,
+      concurrentFragments: intChoice((json['concurrentFragments'] as num?)?.toInt(), const [1, 2, 4, 8, 16], 4),
       embedSubtitles: json['embedSubtitles'] as bool? ?? true,
       embedMetadata: json['embedMetadata'] as bool? ?? true,
       ffmpegPath: json['ffmpegPath'] as String? ?? '',
@@ -84,14 +91,14 @@ class TalosSettings {
       clipStartSeconds: (json['clipStartSeconds'] as num?)?.toInt(),
       clipEndSeconds: (json['clipEndSeconds'] as num?)?.toInt(),
       forceIpv4: json['forceIpv4'] as bool? ?? false,
-      remuxContainer: json['remuxContainer'] as String? ?? '',
+      remuxContainer: choice(json['remuxContainer'] as String?, const ['', 'mp4', 'mkv', 'webm'], ''),
       maxFilesize: json['maxFilesize'] as String? ?? '',
       userAgent: json['userAgent'] as String? ?? '',
       formatSort: json['formatSort'] as String? ?? '',
       videoFolder: json['videoFolder'] as String?,
       audioFolder: json['audioFolder'] as String?,
       autoUpdateEngine: json['autoUpdateEngine'] as bool? ?? false,
-      engineChannel: json['engineChannel'] as String? ?? 'stable',
+      engineChannel: choice(json['engineChannel'] as String?, const ['stable', 'nightly'], 'stable'),
       downloadNotification: json['downloadNotification'] as bool? ?? true,
       downloadSubtitles: json['downloadSubtitles'] as bool? ?? true,
       autoSubtitle: json['autoSubtitle'] as bool? ?? false,

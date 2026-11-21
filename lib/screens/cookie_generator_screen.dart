@@ -32,7 +32,7 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
     final controller = WebViewController();
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF161311))
+      ..setBackgroundColor(Theme.of(context).scaffoldBackgroundColor)
       ..setNavigationDelegate(
         NavigationDelegate(
           onUrlChange: (change) {

@@ -40,7 +40,17 @@ class DownloadTask {
   String? outputPath;
   String? error;
   final List<String> log = [];
+
+  /// Set when the user cancels while the task is running but before an engine
+  /// session exists yet. [_run] checks this before starting the download so a
+  /// tap on Cancel during the setup window is never silently ignored.
+  bool cancelRequested = false;
 }
+
+/// Error codes resolved to localized text by the UI. Kept as constants so a
+/// failed task stores a stable code rather than a hardcoded English message.
+const String kErrSafNotWritable = 'talos.err.safNotWritable';
+const String kErrSaveToDownloads = 'talos.err.saveToDownloads';
 
 /// Sequential download queue. One task runs at a time so engine output is
 /// unambiguous and sites are not hammered with parallel requests.
@@ -117,6 +127,9 @@ class DownloadManager extends ChangeNotifier {
     // Only a running task maps to the active session. Cancelling a failed,
     // cancelled or completed task must not kill an unrelated download.
     if (task.status != TaskStatus.running) return;
+    // Record the intent immediately. The session may not exist yet while
+    // permissions and ffmpeg probing are still in flight.
+    task.cancelRequested = true;
     await _activeSession?.cancel();
   }
 
@@ -182,11 +195,23 @@ class DownloadManager extends ChangeNotifier {
   /// after the reset, so a cancelled download cannot repopulate the list.
   Future<void> resetAll() async {
     _resetGeneration++;
+    for (final task in _tasks) {
+      task.cancelRequested = true;
+    }
     await _activeSession?.cancel();
     _activeSession = null;
     _tasks.clear();
     notifyListeners();
     await stopForegroundService();
+  }
+
+  /// Marks a task cancelled when a stop was requested before the engine
+  /// session ever started. No file or history row exists at this point.
+  Future<void> _finishCancelledBeforeStart(DownloadTask task) async {
+    task.status = TaskStatus.cancelled;
+    task.stage = 'cancelled';
+    notifyListeners();
+    await _maybeStopForeground();
   }
 
   /// Move a task to a new position in the queue. Indices refer to the
@@ -243,6 +268,10 @@ class DownloadManager extends ChangeNotifier {
       await requestTalosNotificationPermission();
       await ensureForegroundService(text: task.title);
     }
+    if (task.cancelRequested || generation != _resetGeneration) {
+      await _finishCancelledBeforeStart(task);
+      return;
+    }
 
     // Resolve a unique output filename before download. Every non-playlist
     // download must always run: when the target name already exists, Talos
@@ -276,11 +305,21 @@ class DownloadManager extends ChangeNotifier {
 
     final configuredFfmpeg = _settings.value.ffmpegPath.trim();
     final ffmpegAvailable = await _ffmpegAvailable(configuredFfmpeg);
+    if (task.cancelRequested || generation != _resetGeneration) {
+      await _finishCancelledBeforeStart(task);
+      return;
+    }
 
     final session = _engine.download(
       effectiveRequest,
       ffmpegAvailable: ffmpegAvailable,
     );
+    // A cancel may have arrived while download() was starting the process.
+    if (task.cancelRequested || generation != _resetGeneration) {
+      await session.cancel();
+      await _finishCancelledBeforeStart(task);
+      return;
+    }
     _activeSession = session;
     final rawSubscription = session.rawLog?.listen((line) {
       if (task.log.length < 500) task.log.add(line);
@@ -339,9 +378,10 @@ class DownloadManager extends ChangeNotifier {
         }
         if (saved == null) {
           task.status = TaskStatus.failed;
+          // Store a stable code; the UI resolves it to the active locale.
           task.error = saf.isNotEmpty
-              ? 'The Talos folder is not writable in the selected storage. Re-pick the folder in Settings > Downloads, or clear it to go back to Downloads (default).'
-              : 'Talos could not save the file into Downloads/Talos. Check that storage and notification access are granted, or pick a different folder in Settings > Downloads.';
+              ? kErrSafNotWritable
+              : kErrSaveToDownloads;
           notifyListeners();
           await _maybeStopForeground();
           return;

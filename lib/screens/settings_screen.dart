@@ -466,7 +466,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     final start = settings.clipStartSeconds;
                     final end = settings.clipEndSeconds;
                     if (start == null && end == null) return l.clipVideoHint;
-                    return '$start sec - ${end ?? 'end'} sec';
+                    final from = start ?? 0;
+                    return end == null ? '${l.clipFrom} $from' : '$from - $end sec';
                   }()),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
@@ -779,6 +780,10 @@ class _AccentDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final dotColor = isDark ? accent.dark : accent.deep;
+    final checkColor = ThemeData.estimateBrightnessForColor(dotColor) == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF161311);
     return Semantics(
       button: true,
       selected: selected,
@@ -793,11 +798,11 @@ class _AccentDot extends StatelessWidget {
               width: 34,
               height: 34,
               decoration: BoxDecoration(
-                color: isDark ? accent.dark : accent.deep,
+                color: dotColor,
                 shape: BoxShape.circle,
                 border: Border.all(color: selected ? theme.colorScheme.primary : Colors.transparent, width: 3),
               ),
-              child: selected ? const Icon(Icons.check, size: 16, color: Colors.black87) : null,
+              child: selected ? Icon(Icons.check, size: 16, color: checkColor) : null,
             ),
           ),
         ),
@@ -846,12 +851,19 @@ class _UpdateTileState extends State<_UpdateTile> {
   }
 
   Future<void> _open(String url) async {
+    final l = AppLocalizations.of(context)!;
     try {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      final opened = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
+        await Clipboard.setData(ClipboardData(text: url));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.linkUnavailable)));
+        }
+      }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.updateCheckFailed)),
+        SnackBar(content: Text(l.updateCheckFailed)),
       );
     }
   }

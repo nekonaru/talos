@@ -40,8 +40,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
       setState(() => _error = Exception('empty'));
       return;
     }
+    VideoPlayerController? controller;
     try {
-      VideoPlayerController controller;
       if (path.startsWith('content://')) {
         controller = VideoPlayerController.contentUri(Uri.parse(path));
       } else {
@@ -58,6 +58,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
         _ready = true;
       });
     } catch (error) {
+      // A controller created before an initialize/play failure must be
+      // disposed, otherwise its texture and event listeners leak.
+      await controller?.dispose();
       if (mounted) setState(() => _error = error);
     }
   }
@@ -265,13 +268,13 @@ class _PlayerControlsState extends State<_PlayerControls> {
   bool _wasPlaying = false;
   bool _dragging = false;
   double _dragValue = 0;
-  Timer? _ticker;
 
   @override
   void initState() {
     super.initState();
+    // The controller emits position changes while playing, which is the only
+    // time the labels need to move. A periodic timer would double rebuilds.
     _controller.addListener(_tick);
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
 
   @override
@@ -286,7 +289,6 @@ class _PlayerControlsState extends State<_PlayerControls> {
 
   @override
   void dispose() {
-    _ticker?.cancel();
     _controller.removeListener(_tick);
     super.dispose();
   }
