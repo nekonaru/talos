@@ -116,37 +116,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<(int?, int?)?> _clipRangeDialog(BuildContext context, int? startSec, int? endSec) {
     final startController = TextEditingController(text: startSec?.toString() ?? '');
     final endController = TextEditingController(text: endSec?.toString() ?? '');
+    String? error;
     return showDialog<(int?, int?)?>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.clipVideo),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: startController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.clipFrom),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final l = AppLocalizations.of(context)!;
+          return AlertDialog(
+            title: Text(l.clipVideo),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: startController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(labelText: l.clipFrom),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: endController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(labelText: l.clipTo),
+                ),
+                if (error != null) ...[
+                  const SizedBox(height: 10),
+                  Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                ],
+              ],
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: endController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.clipTo),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(AppLocalizations.of(context)!.cancel)),
-          FilledButton(
-            onPressed: () {
-              final start = int.tryParse(startController.text.trim());
-              final end = int.tryParse(endController.text.trim());
-              Navigator.of(context).pop((start, end));
-            },
-            child: Text(AppLocalizations.of(context)!.save),
-          ),
-        ],
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l.cancel)),
+              FilledButton(
+                onPressed: () {
+                  // Empty fields mean no bound; typed garbage is rejected
+                  // instead of silently clearing the range.
+                  final startText = startController.text.trim();
+                  final endText = endController.text.trim();
+                  if (startText.isNotEmpty && int.tryParse(startText) == null ||
+                      endText.isNotEmpty && int.tryParse(endText) == null) {
+                    setDialogState(() => error = l.clipInvalid);
+                    return;
+                  }
+                  final start = startText.isEmpty ? null : int.parse(startText);
+                  final end = endText.isEmpty ? null : int.parse(endText);
+                  if ((start != null && start < 0) ||
+                      (end != null && end < 0) ||
+                      (start != null && end != null && end <= start)) {
+                    setDialogState(() => error = l.clipInvalid);
+                    return;
+                  }
+                  Navigator.of(context).pop((start, end));
+                },
+                child: Text(l.save),
+              ),
+            ],
+          );
+        },
       ),
     ).whenComplete(() {
       startController.dispose();
@@ -459,6 +484,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (value != null) await manager.settings.mutate((s) => s.copyWith(subtitleFormat: value));
                   },
                 ),
+                // Clip sections need an ffmpeg executable, which only exists
+                // on desktop. Hiding the control avoids a setting that is
+                // silently ignored on Android and iOS.
+                if (desktop)
                 ListTile(
                   leading: const Icon(Icons.content_cut_outlined),
                   title: Text(l.clipVideo),
@@ -467,7 +496,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     final end = settings.clipEndSeconds;
                     if (start == null && end == null) return l.clipVideoHint;
                     final from = start ?? 0;
-                    return end == null ? '${l.clipFrom} $from' : '$from - $end sec';
+                    if (end == null) return '${l.clipFrom} $from ${l.secondsUnit}';
+                    return '$from - $end ${l.secondsUnit}';
                   }()),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
@@ -755,6 +785,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await manager.settings.mutate((_) => TalosSettings());
                 await manager.refreshOutputDirectory();
                 await manager.history.clear();
+                await manager.savedLinks.clear();
+                await manager.presets.clear();
                 await CommandTemplateStore.resetAll();
                 await TalosStorageBridge.clearTree();
                 if (!context.mounted) return;

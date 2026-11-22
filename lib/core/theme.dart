@@ -72,7 +72,7 @@ enum TalosAccent {
   bronze(Color(0xFFD09A5B), Color(0xFF8A5A2B)),
   laurel(Color(0xFF7A9B57), Color(0xFF4C6131)),
   aegean(Color(0xFF5E8FB9), Color(0xFF2F4E6B)),
-  oxblood(Color(0xFFA85454), Color(0xFF6B2C2C)),
+  oxblood(Color(0xFFC46B6B), Color(0xFF6B2C2C)),
   marble(Color(0xFFB9B3A4), Color(0xFF6E675A));
 
   const TalosAccent(this.dark, this.deep);

@@ -9,6 +9,7 @@ import '../app_scope.dart';
 import '../core/engine/models.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
+import '../core/preset_store.dart';
 import '../gen/app_localizations.dart';
 
 const _videoHeights = [0, 2160, 1440, 1080, 720, 480, 360];
@@ -33,6 +34,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
   late bool _embedMetadata;
   late Set<int> _selected;
   String? _formatSelector;
+  String? _selectedPresetId;
   bool? _engineReady;
   late final TextEditingController _fileNameController;
 
@@ -59,6 +61,57 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
   Future<void> _checkEngine() async {
     final status = await TalosScope.of(context).engine.status();
     if (mounted) setState(() => _engineReady = status.ready);
+  }
+
+  Future<void> _savePreset() async {
+    final l = AppLocalizations.of(context)!;
+    final store = TalosScope.read(context).presets;
+    final nameController = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.savePreset),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: InputDecoration(labelText: l.presetName),
+          onSubmitted: (value) => Navigator.of(dialogContext).pop(value.trim()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text(l.cancel)),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(nameController.text.trim()),
+            child: Text(l.save),
+          ),
+        ],
+      ),
+    ).whenComplete(nameController.dispose);
+    if (name == null || name.isEmpty || !mounted) return;
+    final preset = DownloadPreset(
+      id: DateTime.now().microsecondsSinceEpoch.toRadixString(16),
+      name: name,
+      videoMode: _videoMode,
+      maxHeight: _maxHeight,
+      audioFormat: _audioFormat,
+      audioBitrate: _audioBitrate,
+      embedSubtitles: _embedSubtitles,
+      embedMetadata: _embedMetadata,
+      formatSelector: _formatSelector,
+    );
+    await store.add(preset);
+    if (!mounted) return;
+    setState(() => _selectedPresetId = preset.id);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.presetSaved)));
+  }
+
+  Future<void> _deletePreset() async {
+    final l = AppLocalizations.of(context)!;
+    final id = _selectedPresetId;
+    if (id == null) return;
+    await TalosScope.read(context).presets.remove(id);
+    if (!mounted) return;
+    setState(() => _selectedPresetId = null);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.presetDeleted)));
   }
 
   String _autoLabel() {
@@ -103,8 +156,15 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       audioBitrate: _audioBitrate,
       embedSubtitles: _videoMode && _embedSubtitles,
       embedMetadata: _embedMetadata,
-      filenameTemplate: settings.filenameTemplate,
-      outputFilename: requestedName.isEmpty ? null : requestedName,
+      filenameTemplate: widget.probe.isPlaylist && requestedName.isNotEmpty
+          ? '%(playlist_index)s - %(title)s.%(ext)s'
+          : settings.filenameTemplate,
+      // A fixed filename cannot be used for a playlist: yt-dlp would write
+      // every entry to the same path, leaving only the last one. Use an
+      // indexed template instead when the probe is a playlist.
+      outputFilename: requestedName.isNotEmpty && !widget.probe.isPlaylist
+          ? requestedName
+          : null,
       proxy: settings.proxy,
       rateLimit: settings.rateLimit,
       useAria2: settings.useAria2,
@@ -157,6 +217,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
 
     final downloadCount = probe.isPlaylist && entries.isNotEmpty ? _selected.length : 1;
     final canDownload = _engineReady == true && downloadCount > 0;
+    final presets = TalosScope.of(context).presets;
 
     return Scaffold(
       appBar: AppBar(title: Text(l.configureTitle)),
@@ -167,6 +228,60 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
               children: [
                 _MediaCard(probe: probe),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.bookmarks_outlined, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            underline: const SizedBox(),
+                            hint: Text(l.presets),
+                            value: _selectedPresetId,
+                            items: [
+                              for (final preset in presets.entries)
+                                DropdownMenuItem<String>(
+                                  value: preset.id,
+                                  child: Text(preset.name, overflow: TextOverflow.ellipsis),
+                                ),
+                            ],
+                            onChanged: (id) {
+                              if (id == null) return;
+                              final matches = presets.entries.where((p) => p.id == id).toList();
+                              if (matches.isEmpty) return;
+                              final preset = matches.first;
+                              setState(() {
+                                _videoMode = preset.videoMode;
+                                _maxHeight = preset.maxHeight;
+                                _audioFormat = preset.audioFormat;
+                                _audioBitrate = preset.audioBitrate;
+                                _embedSubtitles = preset.embedSubtitles;
+                                _embedMetadata = preset.embedMetadata;
+                                _formatSelector = preset.formatSelector;
+                                _selectedPresetId = id;
+                              });
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: l.savePreset,
+                          icon: const Icon(Icons.add),
+                          onPressed: _savePreset,
+                        ),
+                        if (_selectedPresetId != null)
+                          IconButton(
+                            tooltip: l.deletePreset,
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: _deletePreset,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _fileNameController,
@@ -271,25 +386,33 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                       ),
                     ],
                   ),
-                  for (final entry in entries)
-                    CheckboxListTile(
-                      value: _selected.contains(entry.index),
-                      onChanged: (checked) {
-                        setState(() {
-                          if (checked == true) {
-                            _selected.add(entry.index);
-                          } else {
-                            _selected.remove(entry.index);
-                          }
-                        });
-                      },
-                      title: Text(entry.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(formatDuration(entry.duration), style: theme.textTheme.bodySmall),
-                      secondary: Text('${entry.index}', style: theme.textTheme.bodySmall),
-                      controlAffinity: ListTileControlAffinity.leading,
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: entries.length,
+                    itemBuilder: (context, index) {
+                      final entry = entries[index];
+                      return CheckboxListTile(
+                        key: ValueKey(entry.index),
+                        value: _selected.contains(entry.index),
+                        onChanged: (checked) {
+                          setState(() {
+                            if (checked == true) {
+                              _selected.add(entry.index);
+                            } else {
+                              _selected.remove(entry.index);
+                            }
+                          });
+                        },
+                        title: Text(entry.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+                        subtitle: Text(formatDuration(entry.duration), style: theme.textTheme.bodySmall),
+                        secondary: Text('${entry.index}', style: theme.textTheme.bodySmall),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      );
+                    },
+                  ),
                 ],
               ],
             ),
