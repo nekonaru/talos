@@ -5,6 +5,36 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.16.0
+
+A large update adding saved links and fixing download-command correctness, platform targets and data-accuracy issues found in a fresh deep audit.
+
+### New features
+
+- **Saved links.** Bookmark the current URL from the Home field with the new bookmark button. Saved links persist locally, show in a "Saved links" section, and can be opened in a browser, fetched directly, or removed. Whole pasted batches are saved, not just the first URL, and duplicates are ignored.
+
+### Bug fixes
+
+- **Clip download sections.** A start-only or end-only clip now produces a valid yt-dlp `*start-end` section instead of a malformed selector that always failed. The flag is only emitted when ffmpeg is available, so mobile downloads are not failed by unsupported post-processing.
+- **ffmpeg gating.** Subtitle conversion and SponsorBlock chapter removal are now gated by ffmpeg availability, matching the existing embed-subtitle and metadata guards.
+- **Player time labels.** Durations over one hour no longer show values such as `1:62:05`.
+- **Insights type bar.** The audio proportion is now computed from actual audio bytes instead of `1 - video share`, so libraries with no size data no longer show a full audio bar.
+- **Activity dates.** Day bucketing uses UTC-normalized calendar days, so daylight-saving transitions cannot shift a download into the wrong bar.
+- **macOS minimum.** Deployment target restored to the documented macOS 10.15.
+- **ARM Linux.** Downloads now use the correct yt-dlp binary for arm64 and armv7 Linux instead of the x86_64 one.
+- **Format selection.** Muxed formats are no longer offered as video-only streams, and an unknown initial format id is no longer forced into an invalid selector.
+- **Cookie generator.** Saving cookies now validates the URL the same way as reloading, instead of silently falling back to a default site.
+- **Android merge.** Recognizes yt-dlp format ids containing letters, so streams from more sites merge correctly.
+- **Saved-links UI.** Adding or removing a link now rebuilds the Home screen immediately.
+
+### Improvements
+
+- **76 tests passing**, including new coverage for clip sections, saved-link persistence and zero-size Insights shares.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.16.0-windows-x64.zip`. Linux: `Talos-v0.16.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.15.0
 
 A large update led by a new Insights tab, backed by the widest platform and concurrency audit yet. Fixes span native macOS, Android lifecycle, the sequential queue and cross-platform file handling.

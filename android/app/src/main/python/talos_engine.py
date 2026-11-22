@@ -26,7 +26,7 @@ _cancel_requested = set()
 _tasks_lock = threading.Lock()
 
 _DEST_RE = re.compile(r'^\[download\]\s+Destination:\s*(.+)$', re.IGNORECASE)
-_F_PART = re.compile(r'^(.*?)\.f\d+\.([A-Za-z0-9]+)$')
+_F_PART = re.compile(r'^(.*?)\.f(?:[^.]+)\.([A-Za-z0-9]+)$')
 
 
 def init(task_id):

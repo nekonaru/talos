@@ -69,9 +69,16 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
     if (controller == null) return;
     final manager = TalosScope.of(context);
 
+    final text = _urlController.text.trim();
+    final uri = Uri.tryParse(text);
+    if (uri == null || !uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.invalidUrl)),
+      );
+      return;
+    }
     setState(() => _saving = true);
     try {
-      final uri = Uri.tryParse(_urlController.text.trim()) ?? Uri.parse('https://www.youtube.com');
       final cookies = await WebViewCookieManager().getCookies(domain: uri);
 
       if (!mounted) return;

@@ -3,8 +3,8 @@ class TalosInfo {
   const TalosInfo._();
 
   static const String appName = 'Talos';
-  static const String appVersion = '0.15.0';
-  static const String buildNumber = '16';
+  static const String appVersion = '0.16.0';
+  static const String buildNumber = '17';
   static const String tagline = 'Video and audio downloader';
   static const String sourceUrl = 'https://github.com/nekonaru/talos';
   static const String issuesUrl = 'https://github.com/nekonaru/talos/issues';

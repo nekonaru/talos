@@ -5,6 +5,36 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.16.0
+
+Update besar yang menambahkan tautan tersimpan dan memperbaiki kebenaran perintah unduhan, target platform, serta akurasi data dari audit mendalam baru.
+
+### Fitur baru
+
+- **Tautan tersimpan.** Tandai URL saat ini dari kolom Home dengan tombol bookmark baru. Tautan tersimpan secara lokal, tampil di bagian "Tautan tersimpan", dan bisa dibuka di browser, diunduh langsung, atau dihapus. Seluruh batch yang ditempel ikut tersimpan, bukan hanya URL pertama, dan duplikat diabaikan.
+
+### Perbaikan bug
+
+- **Bagian unduhan clip.** Clip yang hanya punya awal atau akhir sekarang menghasilkan bagian yt-dlp `*start-awal-akhir` yang valid, bukan selector rusak yang selalu gagal. Flag hanya dikeluarkan saat ffmpeg tersedia, sehingga unduhan mobile tidak gagal karena pasca-pemrosesan yang tidak didukung.
+- **Gating ffmpeg.** Konversi subtitle dan penghapusan bab SponsorBlock sekarang mengikuti ketersediaan ffmpeg, selaras dengan perlindungan embed subtitle dan metadata yang sudah ada.
+- **Label waktu pemutar.** Durasi lebih dari satu jam tidak lagi menampilkan nilai seperti `1:62:05`.
+- **Bar jenis Wawasan.** Proporsi audio sekarang dihitung dari ukuran audio sebenarnya, bukan `1 - proporsi video`, sehingga pustaka tanpa data ukuran tidak menampilkan bar audio penuh.
+- **Tanggal aktivitas.** Pengelompokan hari memakai tanggal kalender UTC sehingga perubahan waktu musim panas tidak menggeser unduhan ke bar yang salah.
+- **Minimum macOS.** Target deployment dikembalikan ke macOS 10.15 sesuai dokumentasi.
+- **Linux ARM.** Unduhan sekarang memakai biner yt-dlp yang benar untuk Linux arm64 dan armv7, bukan yang x86_64.
+- **Pemilihan format.** Format muxed tidak lagi ditawarkan sebagai stream video-murni, dan id format awal yang tidak dikenal tidak lagi dipaksa menjadi selector yang invalid.
+- **Pembuat cookie.** Menyimpan cookie sekarang memvalidasi URL seperti saat memuat ulang, alih-alih diam-diam memakai situs bawaan.
+- **Gabung Android.** Mengenali id format yt-dlp yang mengandung huruf, sehingga stream dari lebih banyak situs berhasil digabung.
+- **UI tautan tersimpan.** Menambah atau menghapus tautan sekarang langsung membangun ulang layar Home.
+
+### Peningkatan
+
+- **76 test lulus**, termasuk cakupan baru untuk bagian clip, penyimpanan tautan, dan share Wawasan tanpa ukuran.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.16.0-windows-x64.zip`. Linux: `Talos-v0.16.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.15.0
 
 Update besar yang dipimpin oleh tab Wawasan baru, dibarengi audit platform dan konkurensi terluas sejauh ini. Perbaikan mencakup native macOS, siklus hidup Android, antrean berurutan, dan penanganan file lintas platform.

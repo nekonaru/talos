@@ -315,9 +315,9 @@ class _PlayerControlsState extends State<_PlayerControls> {
 
   static String _label(Duration d) {
     final total = d.inSeconds;
-    final mm = (total ~/ 60).toString().padLeft(2, '0');
-    final ss = (total % 60).toString().padLeft(2, '0');
     final hh = total ~/ 3600;
+    final mm = ((total % 3600) ~/ 60).toString().padLeft(2, '0');
+    final ss = (total % 60).toString().padLeft(2, '0');
     return hh > 0 ? '$hh:$mm:$ss' : '$mm:$ss';
   }
 
