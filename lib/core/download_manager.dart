@@ -60,7 +60,7 @@ class DownloadManager extends ChangeNotifier {
   final TalosEngine _engine;
   final HistoryStore _history;
   final SettingsStore _settings;
-  final String _outputDir;
+  String _outputDir;
 
   static Future<DownloadManager> create({TalosEngine? engine}) async {
     final settings = await SettingsStore.load();
@@ -75,11 +75,15 @@ class DownloadManager extends ChangeNotifier {
     // bridge no longer finds it (folder deleted, grant revoked), clear it so
     // downloads fall back to app-private storage instead of silently failing.
     if (Platform.isAndroid) {
-      final bridgeUri = await TalosStorageBridge.treeUri();
-      if ((bridgeUri ?? '').isEmpty && settings.value.downloadFolderSAF.isNotEmpty) {
-        await settings.mutate(
-          (s) => s.copyWith(downloadFolderSAF: ''),
-        );
+      try {
+        final bridgeUri = await TalosStorageBridge.treeUri();
+        if ((bridgeUri ?? '').isEmpty && settings.value.downloadFolderSAF.isNotEmpty) {
+          await settings.mutate(
+            (s) => s.copyWith(downloadFolderSAF: ''),
+          );
+        }
+      } catch (_) {
+        // A transient channel error must not discard the user's folder choice.
       }
     }
     final manager = DownloadManager._(engine ?? createEngine(), await HistoryStore.load(), settings, outputDir);
@@ -122,14 +126,24 @@ class DownloadManager extends ChangeNotifier {
     if (task.status == TaskStatus.queued) {
       task.status = TaskStatus.cancelled;
       notifyListeners();
+      // Cancelling the last queued task can leave no work for the pump, so
+      // stop the foreground service here as well.
+      await _maybeStopForeground();
       return;
     }
     // Only a running task maps to the active session. Cancelling a failed,
     // cancelled or completed task must not kill an unrelated download.
     if (task.status != TaskStatus.running) return;
-    // Record the intent immediately. The session may not exist yet while
-    // permissions and ffmpeg probing are still in flight.
+    // Record the intent immediately. The session may be null during setup or
+    // already cleared during post-processing, so the flag is the reliable
+    // signal in both windows.
     task.cancelRequested = true;
+    if (_activeSession == null) {
+      // No live process to stop; finalize synchronously so the UI reflects it
+      // and no history row is written later.
+      task.status = TaskStatus.cancelled;
+      notifyListeners();
+    }
     await _activeSession?.cancel();
   }
 
@@ -193,6 +207,13 @@ class DownloadManager extends ChangeNotifier {
   /// Cancels active work and removes every task. Used by "Reset all data";
   /// the generation bump makes any in-flight [_run] skip writing history
   /// after the reset, so a cancelled download cannot repopulate the list.
+  /// Restores the default download directory after settings are reset.
+  Future<void> refreshOutputDirectory() async {
+    final sdk = await TalosStorageBridge.androidSdkInt();
+    _outputDir = await defaultDownloadDirectory(androidSdkInt: sdk);
+    notifyListeners();
+  }
+
   Future<void> resetAll() async {
     _resetGeneration++;
     for (final task in _tasks) {
@@ -345,10 +366,15 @@ class DownloadManager extends ChangeNotifier {
     final outcome = await session.outcome;
     await subscription.cancel();
     await rawSubscription?.cancel();
-    _activeSession = null;
+    // A stale run resuming after a reset+re-enqueue must not clear the newer
+    // session's reference.
+    if (identical(_activeSession, session)) _activeSession = null;
 
-    // A reset while this download was in flight invalidates all post-processing.
-    if (generation != _resetGeneration) {
+    // A reset or a cancel that arrived while the engine was finishing (there
+    // are several awaits below) invalidates all post-processing.
+    if (generation != _resetGeneration || task.cancelRequested) {
+      task.status = TaskStatus.cancelled;
+      notifyListeners();
       await _maybeStopForeground();
       return;
     }

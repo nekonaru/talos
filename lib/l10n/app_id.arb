@@ -105,6 +105,45 @@
   "linkUnavailable": "Tidak ada aplikasi yang bisa membuka tautan ini. URL disalin ke clipboard.",
   "recommended": "Direkomendasikan",
   "tapToSkip": "Ketuk untuk melewati",
+  "engineUnsupportedIos": "Mesin unduhan belum tersedia di iOS. Bangun Talos dari source di platform lain atau gunakan perangkat lain.",
+  "insights": "Wawasan",
+  "insightsHint": "Ringkasan pustaka kamu",
+  "totalDownloads": "Unduhan",
+  "totalSize": "Total ukuran",
+  "thisMonth": "30 hari terakhir",
+  "downloadedToday": "Hari ini",
+  "downloadedWeek": "Minggu ini",
+  "activity": "Aktivitas",
+  "activityHint": "Unduhan 7 hari terakhir",
+  "breakdown": "Menurut jenis",
+  "largestDownloads": "Unduhan terbesar",
+  "noInsightsYet": "Selesaikan satu unduhan untuk melihat wawasan pustaka di sini.",
+  "cleanup": "Bersihkan penyimpanan",
+  "cleanupOlderThan": "Hapus unduhan yang lebih tua dari {days} hari",
+  "@cleanupOlderThan": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanupConfirm": "Hapus {count} file unduhan lama dan keluarkan dari daftar?",
+  "@cleanupConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanupDone": "Menghapus {count} unduhan lama",
+  "@cleanupDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanupNone": "Tidak ada unduhan yang lebih tua dari ini.",
   "qualityNone": "Tidak ada",
   "safFolder": "(folder SAF)",
   "skipBack": "Mundur 10 detik",

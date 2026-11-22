@@ -317,9 +317,36 @@ class DesktopEngine implements TalosEngine {
       return;
     }
     final process = await Process.start(binary, args, workingDirectory: workingDir);
-    final stdout = process.stdout.transform(utf8.decoder).transform(const LineSplitter());
-    final stderr = process.stderr.transform(utf8.decoder).transform(const LineSplitter());
-    yield* StreamGroup.merge([stdout, stderr]);
+    var killed = false;
+    void killProcess() {
+      if (killed) return;
+      killed = true;
+      process.kill();
+    }
+    // StreamController.onCancel fires when the UI cancels its subscription,
+    // which is the only signal available through the Stream<String> interface.
+    // Use it to kill the OS process so Cancel actually stops the command.
+    final controller = StreamController<String>();
+    final merged = StreamGroup.merge([
+      process.stdout.transform(utf8.decoder).transform(const LineSplitter()),
+      process.stderr.transform(utf8.decoder).transform(const LineSplitter()),
+    ]);
+    final subscription = merged.listen(
+      controller.add,
+      onError: controller.addError,
+      onDone: () async {
+        final code = await process.exitCode;
+        if (code != 0 && !controller.isClosed) {
+          controller.add('Command exited with code $code');
+        }
+        if (!controller.isClosed) await controller.close();
+      },
+    );
+    controller.onCancel = () {
+      killProcess();
+      unawaited(subscription.cancel());
+    };
+    yield* controller.stream;
   }
 }
 

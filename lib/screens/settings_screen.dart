@@ -753,6 +753,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // cannot add a fresh history row after the reset.
                 await manager.resetAll();
                 await manager.settings.mutate((_) => TalosSettings());
+                await manager.refreshOutputDirectory();
                 await manager.history.clear();
                 await CommandTemplateStore.resetAll();
                 await TalosStorageBridge.clearTree();

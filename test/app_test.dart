@@ -13,6 +13,7 @@ import 'package:talos/core/engine/engine.dart';
 import 'package:talos/core/engine/models.dart';
 import 'package:talos/core/engine/progress_parser.dart';
 import 'package:talos/core/history_store.dart';
+import 'package:talos/core/insights.dart';
 import 'package:talos/core/settings_store.dart';
 
 class FakeSession implements TalosDownloadSession {
@@ -454,6 +455,28 @@ void main() {
     expect(store.value.concurrentFragments, 4);
     expect(store.value.remuxContainer, '');
     expect(store.value.engineChannel, 'stable');
+  });
+
+  test('insights aggregates counts, sizes and activity', () {
+    final now = DateTime(2026, 11, 22, 12);
+    final entries = [
+      entry('a', dateMs: now.millisecondsSinceEpoch, sizeBytes: 100, favorite: true),
+      entry('b', dateMs: now.subtract(const Duration(days: 1)).millisecondsSinceEpoch, sizeBytes: 300, kind: HistoryKind.audio),
+      entry('c', dateMs: now.subtract(const Duration(days: 10)).millisecondsSinceEpoch, sizeBytes: 600),
+      entry('d', dateMs: 0, sizeBytes: null),
+    ];
+    final stats = buildInsights(entries, now: now);
+    expect(stats.totalCount, 4);
+    expect(stats.videoCount, 3);
+    expect(stats.audioCount, 1);
+    expect(stats.favoriteCount, 1);
+    expect(stats.totalBytes, 1000);
+    expect(stats.todayCount, 1);
+    expect(stats.weekCount, 2);
+    expect(stats.monthCount, 3);
+    expect(stats.last7Days.reduce((a, b) => a + b), 2);
+    expect(stats.largest.first.id, 'c');
+    expect(stats.oldestDayMs, entries[2].dateMs);
   });
 
   testWidgets('queue starts the first visible task after one finishes', (tester) async {

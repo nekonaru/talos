@@ -107,6 +107,45 @@
   "linkUnavailable": "No app can open this link. The URL was copied to the clipboard.",
   "recommended": "Recommended",
   "tapToSkip": "Tap to skip",
+  "engineUnsupportedIos": "The download engine is not available on iOS yet. Build Talos from source on another platform or use a different device.",
+  "insights": "Insights",
+  "insightsHint": "Your library at a glance",
+  "totalDownloads": "Downloads",
+  "totalSize": "Total size",
+  "thisMonth": "Last 30 days",
+  "downloadedToday": "Today",
+  "downloadedWeek": "This week",
+  "activity": "Activity",
+  "activityHint": "Downloads in the last 7 days",
+  "breakdown": "By type",
+  "largestDownloads": "Largest downloads",
+  "noInsightsYet": "Finish a download to see your library insights here.",
+  "cleanup": "Storage cleanup",
+  "cleanupOlderThan": "Delete downloads older than {days} days",
+  "@cleanupOlderThan": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanupConfirm": "Delete {count} old download file(s) and remove them from the list?",
+  "@cleanupConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanupDone": "Removed {count} old download(s)",
+  "@cleanupDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanupNone": "No downloads are older than this.",
   "qualityNone": "None",
   "safFolder": "(SAF folder)",
   "skipBack": "Back 10 seconds",
