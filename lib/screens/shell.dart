@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'downloads_screen.dart';
 import 'home_screen.dart';
+import 'insights_screen.dart';
 import 'settings_screen.dart';
 import '../gen/app_localizations.dart';
 
@@ -22,12 +23,14 @@ class _TalosShellState extends State<TalosShell> {
     final pages = [
       const HomeScreen(),
       DownloadsScreen(onGoHome: () => setState(() => _index = 0)),
+      const InsightsScreen(),
       const SettingsScreen(),
     ];
 
     final destinations = [
       NavigationDestination(icon: const Icon(Icons.travel_explore_outlined), selectedIcon: const Icon(Icons.travel_explore), label: l.home),
       NavigationDestination(icon: const Icon(Icons.download_outlined), selectedIcon: const Icon(Icons.download), label: l.downloads),
+      NavigationDestination(icon: const Icon(Icons.insights_outlined), selectedIcon: const Icon(Icons.insights), label: l.insights),
       NavigationDestination(icon: const Icon(Icons.tune_outlined), selectedIcon: const Icon(Icons.tune), label: l.settings),
     ];
 
@@ -42,6 +45,7 @@ class _TalosShellState extends State<TalosShell> {
               destinations: [
                 NavigationRailDestination(icon: const Icon(Icons.travel_explore_outlined), selectedIcon: const Icon(Icons.travel_explore), label: Text(l.home)),
                 NavigationRailDestination(icon: const Icon(Icons.download_outlined), selectedIcon: const Icon(Icons.download), label: Text(l.downloads)),
+                NavigationRailDestination(icon: const Icon(Icons.insights_outlined), selectedIcon: const Icon(Icons.insights), label: Text(l.insights)),
                 NavigationRailDestination(icon: const Icon(Icons.tune_outlined), selectedIcon: const Icon(Icons.tune), label: Text(l.settings)),
               ],
             ),

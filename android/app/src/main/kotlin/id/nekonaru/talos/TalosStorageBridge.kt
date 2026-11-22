@@ -95,6 +95,9 @@ class TalosStorageBridge(private val context: Context) {
         MethodChannel(messenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "pickTree" -> {
+                    // A second pick before the first result arrives would leave
+                    // the first Dart future unresolved forever.
+                    pendingResult?.success(null)
                     pendingResult = result
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
                         addFlags(
@@ -241,7 +244,7 @@ class TalosStorageBridge(private val context: Context) {
         val uniqueName = uniqueTreeFileName(target, displayName)
         val created = target.createFile(
             mimeFor(uniqueName),
-            uniqueName.substringBeforeLast('.', uniqueName),
+            uniqueName,
         ) ?: return null
         val source = File(localPath)
         if (!source.exists()) return null
@@ -268,7 +271,7 @@ class TalosStorageBridge(private val context: Context) {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             saveViaMediaStore(file, displayName)
         } else {
-            saveViaLegacyPath(file, displayName)?.let { target -> "file://${target.absolutePath}" }
+            saveViaLegacyPath(file, displayName)?.absolutePath
         }
     }
 
@@ -361,7 +364,6 @@ class TalosStorageBridge(private val context: Context) {
     private fun requestFirstLaunchPermissions(): String {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         if (prefs.getBoolean(KEY_PROMPTED, false)) return "skipped"
-        prefs.edit().putBoolean(KEY_PROMPTED, true).apply()
         val sdk = Build.VERSION.SDK_INT
         val needed = mutableListOf<String>()
         if (sdk >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -375,6 +377,7 @@ class TalosStorageBridge(private val context: Context) {
             mainHandler.post {
                 try {
                     activity.requestPermissions(needed.toTypedArray(), REQUEST_FIRST_LAUNCH)
+                    prefs.edit().putBoolean(KEY_PROMPTED, true).apply()
                 } catch (_: Exception) {
                     // The system dialog is best effort; downloads keep working.
                 }

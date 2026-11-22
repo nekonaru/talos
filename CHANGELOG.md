@@ -5,6 +5,43 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.15.0
+
+A large update led by a new Insights tab, backed by the widest platform and concurrency audit yet. Fixes span native macOS, Android lifecycle, the sequential queue and cross-platform file handling.
+
+### New features
+
+- **Insights tab.** A fourth tab summarizes the finished library: total downloads, total size and last-30-days count, a seven-day activity chart, a video/audio breakdown with favorites, the five largest downloads, and a guarded cleanup action that deletes downloads older than 30 days after confirmation. All metrics come from a pure, tested helper.
+
+### Bug fixes
+
+- **macOS networking and storage.** The sandbox now declares network-client and Downloads read-write entitlements, so engine setup, update checks and media downloads work in signed macOS builds.
+- **Engine install errors.** The Home engine banner now catches setup failures and shows one friendly message instead of an unhandled async error. iOS shows a clear "not available yet" message with no impossible Install button.
+- **Cancellation windows.** Cancel now stops a download after the engine finishes but before file copying and history writing. A cancel during post-processing writes no history row, and the foreground service stops when the last queued task is cancelled.
+- **Stale session clobber.** A finished run can no longer clear the session reference of a newer download after a reset and re-enqueue.
+- **Custom command cancel.** Cancelling a custom command now kills the underlying OS process and reports non-zero exit codes, instead of leaving yt-dlp running.
+- **Chaquopy startup race.** Python runtime initialization is synchronized, so concurrent method handlers cannot both start it.
+- **Terminal engine events.** Android buffers events emitted between Dart subscriptions and replays them, so a fast download cannot hang the queue.
+- **SAF setting resilience.** A transient native error no longer wipes the user's chosen download folder.
+- **Windows atomic writes.** Settings and history saves now replace existing files atomically on Windows instead of silently falling back to a plain write.
+- **Reset completeness.** Reset all data now restores the default download directory.
+- **Intent subscription.** A disposed Home screen no longer leaks a share-intent subscription, and live shares keep working if the initial-link lookup fails.
+- **Legacy Android paths.** API 24-28 downloads now return a plain absolute path, so files can be opened, shared and deleted through the UI.
+- **SAF file extension.** Copied files keep their full name instead of risking a missing extension.
+- **Folder picker.** A repeated pick no longer leaves the first request unresolved.
+- **Permission prompt.** The "already prompted" flag is now persisted only after the request is posted.
+- **Update check timeout.** A stalled release-body read can no longer hang the update check.
+- **Localization.** Added the iOS engine message and updated remaining Indonesian strings.
+
+### Improvements
+
+- **73 tests passing**, including new coverage for insights aggregation.
+- **Reusable deletion helper** shared between Finished batch delete and Insights cleanup.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.15.0-windows-x64.zip`. Linux: `Talos-v0.15.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.14.0
 
 A large update led by a smooth animated intro, backed by another deep audit that closed defects across the download flow, settings and player.

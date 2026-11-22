@@ -24,14 +24,10 @@ class TalosStorageBridge {
   }
 
   /// Read the currently persisted tree URI, if any. Empty string means unset.
+  /// Platform errors are rethrown so a transient channel failure is never
+  /// mistaken for a revoked grant.
   static Future<String?> treeUri() async {
-    try {
-      return await _channel.invokeMethod<String>('getTreeUri');
-    } on PlatformException {
-      return null;
-    } on MissingPluginException {
-      return null;
-    }
+    return await _channel.invokeMethod<String>('getTreeUri');
   }
 
   /// Forget the persisted tree, so downloads fall back to app-private storage.
@@ -152,6 +148,20 @@ class TalosStorageBridge {
     } on PlatformException {
       return false;
     } on MissingPluginException {
+      return false;
+    }
+  }
+
+  /// Deletes a finished download by either a content URI or a plain file path.
+  /// Returns true when the file is gone (deleted or already missing).
+  static Future<bool> deleteDownloadedFile(String path) async {
+    if (path.startsWith('content://')) return await deleteUri(path);
+    try {
+      final file = File(path);
+      if (!await file.exists()) return true;
+      await file.delete();
+      return true;
+    } catch (_) {
       return false;
     }
   }

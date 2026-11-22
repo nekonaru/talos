@@ -24,6 +24,10 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class TalosEngineBridge(private val application: Application) {
     private var eventSink: EventChannel.EventSink? = null
+    // Events emitted while Dart is between subscriptions (e.g. a fast task
+    // finishing during the gap between two sequential downloads) are buffered
+    // and replayed on the next onListen, so the queue cannot hang forever.
+    private val pendingEvents = java.util.concurrent.ConcurrentLinkedQueue<Map<String, Any?>>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
     fun attach(flutterEngine: FlutterEngine) {
@@ -34,6 +38,13 @@ class TalosEngineBridge(private val application: Application) {
         events.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                 eventSink = events
+                if (events != null) {
+                    var buffered: Map<String, Any?>?
+                    while (true) {
+                        buffered = pendingEvents.poll() ?: break
+                        events.success(buffered)
+                    }
+                }
             }
 
             override fun onCancel(arguments: Any?) {
@@ -206,9 +217,19 @@ class TalosEngineBridge(private val application: Application) {
 
     private fun sendEvent(taskId: String, event: Map<String, Any?>) {
         val full = if (event.containsKey("taskId")) event else event + ("taskId" to taskId)
-        mainHandler.post { eventSink?.success(full) }
+        mainHandler.post {
+            if (eventSink != null) {
+                eventSink?.success(full)
+            } else {
+                // Keep only a small tail so a long unsubscribed period cannot
+                // grow the buffer without bound.
+                if (pendingEvents.size >= 64) pendingEvents.poll()
+                pendingEvents.add(full)
+            }
+        }
     }
 
+    @Synchronized
     internal fun ensureStarted() {
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(application))

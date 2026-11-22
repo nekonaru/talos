@@ -224,21 +224,6 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     });
   }
 
-  /// Returns true when the file is gone (deleted or already missing).
-  Future<bool> _deleteFileSilently(String path) async {
-    if (path.startsWith('content://')) {
-      return await TalosStorageBridge.deleteUri(path);
-    }
-    try {
-      final file = File(path);
-      if (!await file.exists()) return true;
-      await file.delete();
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
   Future<void> _deleteSelected(BuildContext context, List<HistoryEntry> entries) async {
     final l = AppLocalizations.of(context)!;
     final manager = TalosScope.of(context);
@@ -258,7 +243,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     if (confirmed != true || !mounted) return;
     final removed = <String>[];
     for (final entry in selected) {
-      if (await _deleteFileSilently(entry.filePath)) {
+      if (await TalosStorageBridge.deleteDownloadedFile(entry.filePath)) {
         removed.add(entry.id);
       }
     }

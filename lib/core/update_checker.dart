@@ -109,7 +109,7 @@ class UpdateChecker {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return null;
       }
-      final body = await utf8.decoder.bind(response).join();
+      final body = await utf8.decoder.bind(response).join().timeout(const Duration(seconds: 15));
       final decoded = jsonDecode(body);
       if (decoded is! Map<String, dynamic>) return null;
       return decoded;

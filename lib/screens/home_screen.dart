@@ -73,28 +73,30 @@ class _HomeScreenState extends State<HomeScreen> {
     // Shared links only arrive on Android.
     if (!Platform.isAndroid) return;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      String? shared;
       try {
-        final shared = await const MethodChannel('id.nekonaru.talos/intent')
+        shared = await const MethodChannel('id.nekonaru.talos/intent')
             .invokeMethod<String>('getInitialPendingUrl');
-        if (shared != null && shared.isNotEmpty && mounted) {
-          _sharedUrlApplied = true;
-          _urlController.text = shared;
-          _urlController.selection = TextSelection.collapsed(offset: shared.length);
-        }
-        _intentSubscription = EventChannel('id.nekonaru.talos/intent/share')
-            .receiveBroadcastStream()
-            .listen((event) {
-          if (event is String && event.isNotEmpty && mounted) {
-            setState(() {
-              _sharedUrlApplied = true;
-              _urlController.text = event;
-              _urlController.selection = TextSelection.collapsed(offset: event.length);
-            });
-          }
-        }, onError: (_) {});
       } catch (_) {
-        // Intent bridging is best effort.
+        // Intent bridging is best effort; still subscribe for live shares.
       }
+      if (!mounted) return;
+      if (shared != null && shared.isNotEmpty) {
+        _sharedUrlApplied = true;
+        _urlController.text = shared;
+        _urlController.selection = TextSelection.collapsed(offset: shared.length);
+      }
+      _intentSubscription = EventChannel('id.nekonaru.talos/intent/share')
+          .receiveBroadcastStream()
+          .listen((event) {
+        if (event is String && event.isNotEmpty && mounted) {
+          setState(() {
+            _sharedUrlApplied = true;
+            _urlController.text = event;
+            _urlController.selection = TextSelection.collapsed(offset: event.length);
+          });
+        }
+      }, onError: (_) {});
     });
   }
 
@@ -115,6 +117,20 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (_) {
       if (mounted) setState(() => _engineReady = false);
+    }
+  }
+
+  /// Wrapper for the banner button. Unlike fetch/batch, the banner has no
+  /// surrounding try/catch, so errors must be surfaced here to avoid an
+  /// unhandled async error (for example on iOS or a failed download).
+  Future<void> _setupEngineFromBanner() async {
+    try {
+      await _setupEngine();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_friendlyError(error))),
+      );
     }
   }
 
@@ -347,7 +363,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   settingUp: _settingUp,
                   fraction: _setupFraction,
                   phase: _setupPhase,
-                  onSetup: _setupEngine,
+                  unsupported: Theme.of(context).platform == TargetPlatform.iOS,
+                  onSetup: () => unawaited(_setupEngineFromBanner()),
                 ),
                 if (!_engineReady) const SizedBox(height: 16),
                 Builder(builder: (context) {
@@ -446,12 +463,14 @@ class _EngineBanner extends StatelessWidget {
     required this.settingUp,
     required this.fraction,
     required this.phase,
+    required this.unsupported,
     required this.onSetup,
   });
 
   final bool settingUp;
   final double fraction;
   final String phase;
+  final bool unsupported;
   final VoidCallback onSetup;
 
   @override
@@ -472,7 +491,7 @@ class _EngineBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.engineMissing, style: theme.textTheme.bodyMedium),
+                Text(unsupported ? l.engineUnsupportedIos : l.engineMissing, style: theme.textTheme.bodyMedium),
                 if (settingUp) ...[
                   const SizedBox(height: 8),
                   LinearProgressIndicator(value: phase == 'download' ? fraction : null),
@@ -480,11 +499,13 @@ class _EngineBanner extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          FilledButton.tonal(
-            onPressed: settingUp ? null : onSetup,
-            child: Text(settingUp ? l.updatingEngine : l.installEngine),
-          ),
+          if (!unsupported) ...[
+            const SizedBox(width: 12),
+            FilledButton.tonal(
+              onPressed: settingUp ? null : onSetup,
+              child: Text(settingUp ? l.updatingEngine : l.installEngine),
+            ),
+          ],
         ],
       ),
     );
