@@ -130,7 +130,6 @@ class InsightsScreen extends StatelessWidget {
   Future<void> _confirmCleanup(BuildContext context, List<HistoryEntry> entries, int days) async {
     final l = AppLocalizations.of(context)!;
     final manager = TalosScope.of(context);
-    final messenger = ScaffoldMessenger.of(context);
     final now = DateTime.now().millisecondsSinceEpoch;
     final cutoff = now - Duration(days: days).inMilliseconds;
     final old = entries.where((e) => e.dateMs > 0 && e.dateMs < cutoff).toList();
@@ -159,7 +158,8 @@ class InsightsScreen extends StatelessWidget {
       }
     }
     await manager.history.removeMany(removed);
-    messenger.showSnackBar(
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l.cleanupDone(removed.length))),
     );
   }
@@ -239,6 +239,10 @@ class _ActivityBars extends StatelessWidget {
       const weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
       return weekdays[date.weekday - 1];
     });
+    final fullLabels = List<String>.generate(7, (i) {
+      final date = now.subtract(Duration(days: 6 - i));
+      return '${date.day}/${date.month}: ${days[i]}';
+    });
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -246,7 +250,7 @@ class _ActivityBars extends StatelessWidget {
         for (var i = 0; i < 7; i++)
           Expanded(
             child: Semantics(
-              label: '${labels[i]}: ${days[i]}',
+              label: fullLabels[i],
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: Column(

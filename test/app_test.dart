@@ -14,6 +14,7 @@ import 'package:talos/core/engine/models.dart';
 import 'package:talos/core/engine/progress_parser.dart';
 import 'package:talos/core/history_store.dart';
 import 'package:talos/core/insights.dart';
+import 'package:talos/core/preset_store.dart';
 import 'package:talos/core/saved_link_store.dart';
 import 'package:talos/core/settings_store.dart';
 
@@ -495,6 +496,37 @@ void main() {
     expect(reloaded.entries, hasLength(2));
     await store.remove(reloaded.entries.first.id);
     expect(store.entries, hasLength(1));
+  });
+
+  test('presets persist, replace by name and skip malformed rows', () async {
+    final support = await getApplicationSupportDirectory();
+    await support.create(recursive: true);
+    final file = File('${support.path}${Platform.pathSeparator}presets.json');
+    await file.writeAsString(jsonEncode([
+      {'id': 'x'},
+      {'name': 'no id', 'videoMode': true},
+    ]));
+    final store = await PresetStore.load();
+    expect(store.entries, isEmpty);
+    const preset = DownloadPreset(
+      id: 'a',
+      name: 'Audio',
+      videoMode: false,
+      maxHeight: 0,
+      audioFormat: 'mp3',
+      audioBitrate: '320',
+      embedSubtitles: false,
+      embedMetadata: true,
+    );
+    await store.add(preset);
+    await store.add(DownloadPreset(id: 'b', name: 'audio', videoMode: false, maxHeight: 0,
+        audioFormat: 'flac', audioBitrate: '192', embedSubtitles: false, embedMetadata: false));
+    expect(store.entries, hasLength(1));
+    final reloaded = await PresetStore.load();
+    expect(reloaded.entries, hasLength(1));
+    expect(reloaded.entries.first.name, 'audio');
+    await store.clear();
+    expect(store.entries, isEmpty);
   });
 
   test('insights audio share is zero when total size is zero', () {

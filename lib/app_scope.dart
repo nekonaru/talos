@@ -10,7 +10,13 @@ import 'core/download_manager.dart';
 class TalosScope extends InheritedNotifier<Listenable> {
   TalosScope({super.key, required DownloadManager manager, required super.child})
       : _manager = manager,
-        super(notifier: Listenable.merge([manager, manager.settings, manager.history]));
+        super(notifier: Listenable.merge([
+          manager,
+          manager.settings,
+          manager.history,
+          manager.savedLinks,
+          manager.presets,
+        ]));
 
   final DownloadManager _manager;
 

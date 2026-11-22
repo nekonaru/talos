@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 
 import 'background_service.dart';
 import 'history_store.dart';
+import 'preset_store.dart';
+import 'saved_link_store.dart';
 import 'settings_store.dart';
 import 'engine/engine.dart';
 import 'engine/engine_factory.dart';
@@ -55,12 +57,16 @@ const String kErrSaveToDownloads = 'talos.err.saveToDownloads';
 /// Sequential download queue. One task runs at a time so engine output is
 /// unambiguous and sites are not hammered with parallel requests.
 class DownloadManager extends ChangeNotifier {
-  DownloadManager._(this._engine, this._history, this._settings, this._outputDir);
+  DownloadManager._(this._engine, this._history, this._settings, this._outputDir, this.savedLinks, this.presets);
 
   final TalosEngine _engine;
   final HistoryStore _history;
   final SettingsStore _settings;
   String _outputDir;
+
+  /// Shared so Home, Configure and Reset all see one source of truth.
+  final SavedLinkStore savedLinks;
+  final PresetStore presets;
 
   static Future<DownloadManager> create({TalosEngine? engine}) async {
     final settings = await SettingsStore.load();
@@ -86,7 +92,14 @@ class DownloadManager extends ChangeNotifier {
         // A transient channel error must not discard the user's folder choice.
       }
     }
-    final manager = DownloadManager._(engine ?? createEngine(), await HistoryStore.load(), settings, outputDir);
+    final manager = DownloadManager._(
+      engine ?? createEngine(),
+      await HistoryStore.load(),
+      settings,
+      outputDir,
+      await SavedLinkStore.load(),
+      await PresetStore.load(),
+    );
     return manager;
   }
 
@@ -101,6 +114,8 @@ class DownloadManager extends ChangeNotifier {
   TalosDownloadSession? _activeSession;
   bool _pumping = false;
   int _resetGeneration = 0;
+  DateTime? _lastProgressNotify;
+  Timer? _progressNotifyTimer;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
   List<DownloadTask> get activeTasks =>
@@ -257,6 +272,31 @@ class DownloadManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Progress events can arrive many times per second. Coalesce them so the
+  /// whole widget tree is not rebuilt on every line of yt-dlp output.
+  void _notifyProgress() {
+    final now = DateTime.now();
+    final elapsed = _lastProgressNotify == null
+        ? 1000
+        : now.difference(_lastProgressNotify!).inMilliseconds;
+    if (elapsed >= 100) {
+      _lastProgressNotify = now;
+      notifyListeners();
+      return;
+    }
+    _progressNotifyTimer ??= Timer(Duration(milliseconds: 100 - elapsed), () {
+      _progressNotifyTimer = null;
+      _lastProgressNotify = DateTime.now();
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _progressNotifyTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _pump() async {
     if (_pumping) return;
     _pumping = true;
@@ -360,7 +400,7 @@ class DownloadManager extends ChangeNotifier {
       if (event.playlistIndex != null) task.playlistIndex = event.playlistIndex;
       if (event.playlistCount != null) task.playlistCount = event.playlistCount;
       if (event.outputPath != null) task.outputPath = event.outputPath;
-      notifyListeners();
+      _notifyProgress();
     });
 
     final outcome = await session.outcome;

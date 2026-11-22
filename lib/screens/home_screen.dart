@@ -11,7 +11,6 @@ import '../core/app_info.dart';
 import '../core/engine/models.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
-import '../core/saved_link_store.dart';
 import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
 import 'player_screen.dart';
@@ -34,15 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _engineVersion;
   bool _engineReady = true;
   bool _sharedUrlApplied = false;
-  SavedLinkStore? _savedLinks;
 
   @override
   void initState() {
     super.initState();
     _urlController.addListener(_onUrlChanged);
-    SavedLinkStore.load().then((store) {
-      if (mounted) setState(() => _savedLinks = store);
-    });
     _checkSharedIntent();
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshEngine());
     WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardUrl());
@@ -73,9 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _saveCurrentLink() async {
     final l = AppLocalizations.of(context)!;
-    final store = _savedLinks;
+    final store = TalosScope.of(context).savedLinks;
     final text = _urlController.text.trim();
-    if (store == null || text.isEmpty || !mounted) return;
+    if (text.isEmpty || !mounted) return;
     if (store.contains(text)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.linkAlreadySaved)));
       return;
@@ -175,7 +170,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _paste() async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    ClipboardData? data;
+    try {
+      data = await Clipboard.getData(Clipboard.kTextPlain);
+    } catch (_) {
+      // Clipboard is best effort; a channel failure must not throw from onPressed.
+      return;
+    }
     if (!mounted) return;
     final text = data?.text?.trim();
     if (text != null && text.isNotEmpty) {
@@ -418,15 +419,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: const Icon(Icons.content_paste_rounded),
                                 onPressed: _paste,
                               ),
-                              if (_savedLinks != null)
-                                IconButton(
-                                  tooltip: l.saveLink,
-                                  icon: Icon(
-                                    _savedLinks!.contains(_urlController.text.trim())
+                              IconButton(
+                                tooltip: l.saveLink,
+                                icon: Icon(
+                                    manager.savedLinks.contains(_urlController.text.trim())
                                         ? Icons.bookmark_added_rounded
                                         : Icons.bookmark_add_outlined,
                                   ),
-                                  onPressed: _urlController.text.trim().isEmpty ? null : _saveCurrentLink,
+                                  onPressed: _detectUrls(_urlController.text).isEmpty ? null : _saveCurrentLink,
                                 ),
                             ],
                           ),
@@ -473,11 +473,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                 ],
-                if (_savedLinks != null && _savedLinks!.entries.isNotEmpty) ...[
+                if (manager.savedLinks.entries.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   SectionLabel(l.savedLinks),
-                  for (final link in _savedLinks!.entries)
-                    Card(
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: manager.savedLinks.entries.length,
+                    itemBuilder: (context, index) {
+                    final link = manager.savedLinks.entries[index];
+                    return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
                         leading: const Icon(Icons.bookmark_outlined),
@@ -493,7 +498,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             IconButton(
                               tooltip: l.openSaved,
                               icon: const Icon(Icons.open_in_new, size: 20),
-                              onPressed: () => unawaited(launchUrl(Uri.tryParse(link.text.split(RegExp(r'\s+')).first) ?? Uri.parse(link.text))),
+                              onPressed: () {
+                                final uri = Uri.tryParse(link.text.split(RegExp(r'\s+')).first);
+                                if (uri != null && uri.hasScheme) unawaited(launchUrl(uri));
+                              },
                             ),
                             IconButton(
                               tooltip: l.fetchSaved,
@@ -508,7 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               icon: const Icon(Icons.delete_outline, size: 20),
                               onPressed: () async {
                                 final messenger = ScaffoldMessenger.of(context);
-                                await _savedLinks!.remove(link.id);
+                                await manager.savedLinks.remove(link.id);
                                 if (!mounted) return;
                                 setState(() {});
                                 messenger.showSnackBar(
@@ -519,7 +527,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                    ),
+                    );
+                    },
+                  ),
                 ],
                 if (_engineReady && _engineVersion != null) ...[
                   const SizedBox(height: 24),
