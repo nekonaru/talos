@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
@@ -204,6 +205,11 @@ class DesktopEngine implements TalosEngine {
     final asset = switch (defaultTargetPlatform) {
       TargetPlatform.windows => 'yt-dlp.exe',
       TargetPlatform.macOS => 'yt-dlp_macos',
+      TargetPlatform.linux => switch (Abi.current()) {
+          Abi.linuxArm64 => 'yt-dlp_linux_aarch64',
+          Abi.linuxArm => 'yt-dlp_linux_armv7l',
+          _ => 'yt-dlp',
+        },
       _ => 'yt-dlp',
     };
     final target = File('${dir.path}${Platform.pathSeparator}${Platform.isWindows ? 'yt-dlp.exe' : 'yt-dlp'}');

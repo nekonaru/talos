@@ -14,6 +14,7 @@ import 'package:talos/core/engine/models.dart';
 import 'package:talos/core/engine/progress_parser.dart';
 import 'package:talos/core/history_store.dart';
 import 'package:talos/core/insights.dart';
+import 'package:talos/core/saved_link_store.dart';
 import 'package:talos/core/settings_store.dart';
 
 class FakeSession implements TalosDownloadSession {
@@ -455,6 +456,55 @@ void main() {
     expect(store.value.concurrentFragments, 4);
     expect(store.value.remuxContainer, '');
     expect(store.value.engineChannel, 'stable');
+  });
+
+  test('clip sections are well formed and ffmpeg-gated', () {
+    DownloadRequest clip({int? start, int? end}) => DownloadRequest(
+          url: 'https://example.invalid/a',
+          videoMode: true,
+          outputDir: 'out',
+          clipStartSeconds: start,
+          clipEndSeconds: end,
+        );
+    final startOnly = CommandBuilder.downloadArgs(clip(start: 10), ffmpegAvailable: true);
+    expect(startOnly, contains('--download-sections'));
+    expect(startOnly[startOnly.indexOf('--download-sections') + 1], '*10-inf');
+    final endOnly = CommandBuilder.downloadArgs(clip(end: 30), ffmpegAvailable: true);
+    expect(endOnly[endOnly.indexOf('--download-sections') + 1], '*0-30');
+    final both = CommandBuilder.downloadArgs(clip(start: 10, end: 30), ffmpegAvailable: true);
+    expect(both[both.indexOf('--download-sections') + 1], '*10-30');
+    // Without ffmpeg the section flag is omitted instead of failing at runtime.
+    final noFfmpeg = CommandBuilder.downloadArgs(clip(start: 10), ffmpegAvailable: false);
+    expect(noFfmpeg, isNot(contains('--download-sections')));
+  });
+
+  test('saved links dedupe, persist and skip malformed rows', () async {
+    final support = await getApplicationSupportDirectory();
+    await support.create(recursive: true);
+    final file = File('${support.path}${Platform.pathSeparator}saved_links.json');
+    await file.writeAsString(jsonEncode([
+      {'id': 'x', 'text': 'https://example.invalid/old', 'dateMs': 1},
+      {'text': 'no id'},
+    ]));
+    final store = await SavedLinkStore.load();
+    expect(store.entries, hasLength(1));
+    await store.add('https://example.invalid/new');
+    await store.add('https://example.invalid/new');
+    expect(store.entries, hasLength(2));
+    final reloaded = await SavedLinkStore.load();
+    expect(reloaded.entries, hasLength(2));
+    await store.remove(reloaded.entries.first.id);
+    expect(store.entries, hasLength(1));
+  });
+
+  test('insights audio share is zero when total size is zero', () {
+    final stats = buildInsights([
+      entry('v1', dateMs: 1, sizeBytes: null),
+      entry('v2', dateMs: 2, sizeBytes: 0),
+    ]);
+    expect(stats.totalBytes, 0);
+    expect(stats.videoShare, 0);
+    expect(stats.audioShare, 0);
   });
 
   test('insights aggregates counts, sizes and activity', () {

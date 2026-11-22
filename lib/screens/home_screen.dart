@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../app_scope.dart';
 import '../core/app_info.dart';
 import '../core/engine/models.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
+import '../core/saved_link_store.dart';
 import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
 import 'player_screen.dart';
@@ -32,11 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _engineVersion;
   bool _engineReady = true;
   bool _sharedUrlApplied = false;
+  SavedLinkStore? _savedLinks;
 
   @override
   void initState() {
     super.initState();
     _urlController.addListener(_onUrlChanged);
+    SavedLinkStore.load().then((store) {
+      if (mounted) setState(() => _savedLinks = store);
+    });
     _checkSharedIntent();
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshEngine());
     WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardUrl());
@@ -63,6 +69,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<String> _detectUrls(String text) {
     return RegExp(r'https?://\S+').allMatches(text).map((m) => m.group(0)!).where((u) => u.length > 10).toList();
+  }
+
+  Future<void> _saveCurrentLink() async {
+    final l = AppLocalizations.of(context)!;
+    final store = _savedLinks;
+    final text = _urlController.text.trim();
+    if (store == null || text.isEmpty || !mounted) return;
+    if (store.contains(text)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.linkAlreadySaved)));
+      return;
+    }
+    await store.add(text);
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.linkSaved)));
   }
 
   void _onUrlChanged() {
@@ -397,6 +418,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: const Icon(Icons.content_paste_rounded),
                                 onPressed: _paste,
                               ),
+                              if (_savedLinks != null)
+                                IconButton(
+                                  tooltip: l.saveLink,
+                                  icon: Icon(
+                                    _savedLinks!.contains(_urlController.text.trim())
+                                        ? Icons.bookmark_added_rounded
+                                        : Icons.bookmark_add_outlined,
+                                  ),
+                                  onPressed: _urlController.text.trim().isEmpty ? null : _saveCurrentLink,
+                                ),
                             ],
                           ),
                         ),
@@ -439,6 +470,54 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         trailing: const Icon(Icons.open_in_new, size: 18),
                         onTap: () => _openFile(entry),
+                      ),
+                    ),
+                ],
+                if (_savedLinks != null && _savedLinks!.entries.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  SectionLabel(l.savedLinks),
+                  for (final link in _savedLinks!.entries)
+                    Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: const Icon(Icons.bookmark_outlined),
+                        title: Text(
+                          link.text.split(RegExp(r'\s+')).first,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(formatDate(link.dateMs), style: theme.textTheme.bodySmall),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              tooltip: l.openSaved,
+                              icon: const Icon(Icons.open_in_new, size: 20),
+                              onPressed: () => unawaited(launchUrl(Uri.tryParse(link.text.split(RegExp(r'\s+')).first) ?? Uri.parse(link.text))),
+                            ),
+                            IconButton(
+                              tooltip: l.fetchSaved,
+                              icon: const Icon(Icons.download_outlined, size: 20),
+                              onPressed: () {
+                                _urlController.text = link.text;
+                                _handleFetch();
+                              },
+                            ),
+                            IconButton(
+                              tooltip: l.removeSaved,
+                              icon: const Icon(Icons.delete_outline, size: 20),
+                              onPressed: () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                await _savedLinks!.remove(link.id);
+                                if (!mounted) return;
+                                setState(() {});
+                                messenger.showSnackBar(
+                                  SnackBar(content: Text(l.linkRemoved)),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                 ],

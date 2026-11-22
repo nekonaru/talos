@@ -22,8 +22,10 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
   String? _audioId;
 
   List<YtdlpFormat> get _videoFormats {
+    // Video-only streams pair with an audio-only stream. Muxed formats have
+    // their own audio and must not be combined with a separate audio id.
     final list = widget.probe.formats
-        .where((f) => f.vcodec != 'none' && f.vcodec != 'images' && f.ext.isNotEmpty)
+        .where((f) => f.vcodec != 'none' && f.vcodec != 'images' && f.acodec == 'none' && f.ext.isNotEmpty)
         .toList();
     list.sort((a, b) {
       if (a.recommended != b.recommended) return a.recommended ? -1 : 1;
@@ -68,9 +70,8 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
         if (vFormats.any((f) => f.id == p)) _videoId ??= p;
         if (aFormats.any((f) => f.id == p)) _audioId ??= p;
       }
-      if (parts.length == 1 && _videoId == null && _audioId == null) {
-        _videoId = parts.first;
-      }
+      // An id that matches no known format is left unselected rather than
+      // forced into _videoId, which would build an invalid selector.
     }
   }
 

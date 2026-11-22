@@ -57,7 +57,8 @@ class CommandBuilder {
         if (request.subtitleLanguage.isNotEmpty) {
           args.addAll(['--sub-langs', request.subtitleLanguage]);
         }
-        if (request.subtitleFormat.isNotEmpty) {
+        // Subtitle conversion needs ffmpeg, which is not spawnable on mobile.
+        if (ffmpegAvailable && request.subtitleFormat.isNotEmpty) {
           args.addAll(['--convert-subs', request.subtitleFormat]);
         }
       }
@@ -95,16 +96,20 @@ class CommandBuilder {
     if (request.downloadArchive.isNotEmpty) args.addAll(['--download-archive', request.downloadArchive]);
     if (request.forceIpv4) args.add('-4');
     if (request.remuxContainer.isNotEmpty) args.addAll(['--remux-video', request.remuxContainer]);
-    if (request.clipStartSeconds != null || request.clipEndSeconds != null) {
+    // yt-dlp requires the "*start-end" form. Missing bounds use 0 and inf so
+    // a single-sided clip never produces an invalid selector. Needs ffmpeg.
+    if (ffmpegAvailable && (request.clipStartSeconds != null || request.clipEndSeconds != null)) {
       final start = request.clipStartSeconds ?? 0;
-      final end = request.clipEndSeconds ?? '';
-      args.addAll(['--download-sections', '*$start${end.toString().isEmpty ? '' : '-$end'}']);
+      final end = request.clipEndSeconds;
+      final section = end == null ? '*$start-inf' : '*$start-$end';
+      args.addAll(['--download-sections', section]);
     }
 
     if (request.proxy.isNotEmpty) args.addAll(['--proxy', request.proxy]);
     if (request.rateLimit.isNotEmpty) args.addAll(['--limit-rate', request.rateLimit]);
     if (request.cookiesPath.isNotEmpty) args.addAll(['--cookies', request.cookiesPath]);
-    if (request.sponsorBlockCategories.isNotEmpty) {
+    // SponsorBlock chapter removal re-encodes with ffmpeg on some outputs.
+    if (ffmpegAvailable && request.sponsorBlockCategories.isNotEmpty) {
       args.addAll(['--sponsorblock-remove', request.sponsorBlockCategories]);
     }
     if (request.concurrentFragments > 1) {

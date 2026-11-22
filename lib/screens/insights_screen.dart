@@ -74,7 +74,7 @@ class InsightsScreen extends StatelessWidget {
                           label: l.filterAudio,
                           count: stats.audioCount,
                           bytes: stats.audioBytes,
-                          share: 1 - stats.videoShare,
+                          share: stats.audioShare,
                           color: theme.colorScheme.tertiary,
                         ),
                         const Divider(height: 24),

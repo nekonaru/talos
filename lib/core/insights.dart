@@ -40,12 +40,15 @@ class InsightStats {
   final int? oldestDayMs;
 
   double get videoShare => totalBytes > 0 ? videoBytes / totalBytes : 0;
+  double get audioShare => totalBytes > 0 ? audioBytes / totalBytes : 0;
 }
 
 /// Builds [InsightStats] from [entries]. [now] is injectable for tests.
 InsightStats buildInsights(List<HistoryEntry> entries, {DateTime? now}) {
   final reference = now ?? DateTime.now();
-  final today = DateTime(reference.year, reference.month, reference.day);
+  // Normalize to UTC calendar days so daylight-saving transitions (23/25 hour
+  // local days) cannot shift a download into the wrong bucket.
+  final todayUtc = DateTime.utc(reference.year, reference.month, reference.day);
 
   int videoCount = 0;
   int audioCount = 0;
@@ -73,8 +76,8 @@ InsightStats buildInsights(List<HistoryEntry> entries, {DateTime? now}) {
     if (dateMs > 0) {
       if (oldestDayMs == null || dateMs < oldestDayMs) oldestDayMs = dateMs;
       final date = DateTime.fromMillisecondsSinceEpoch(dateMs);
-      final day = DateTime(date.year, date.month, date.day);
-      final daysAgo = today.difference(day).inDays;
+      final dayUtc = DateTime.utc(date.year, date.month, date.day);
+      final daysAgo = todayUtc.difference(dayUtc).inDays;
       if (daysAgo == 0) todayCount++;
       if (daysAgo >= 0 && daysAgo < 7) weekCount++;
       if (daysAgo >= 0 && daysAgo < 30) monthCount++;
