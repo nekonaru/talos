@@ -5,6 +5,43 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.15.0
+
+Update besar yang dipimpin oleh tab Wawasan baru, dibarengi audit platform dan konkurensi terluas sejauh ini. Perbaikan mencakup native macOS, siklus hidup Android, antrean berurutan, dan penanganan file lintas platform.
+
+### Fitur baru
+
+- **Tab Wawasan.** Tab keempat merangkum pustaka selesai: total unduhan, total ukuran, dan jumlah 30 hari terakhir, grafik aktivitas 7 hari, rincian video/audio beserta favorit, lima unduhan terbesar, serta aksi pembersihan yang menghapus unduhan lebih tua dari 30 hari setelah konfirmasi. Semua angka berasal dari helper murni yang diuji.
+
+### Perbaikan bug
+
+- **Jaringan dan penyimpanan macOS.** Sandbox sekarang mendeklarasikan entanglement network-client dan akses baca-tulis Downloads, sehingga setup engine, pengecekan pembaruan, dan unduhan media berjalan di build macOS bertanda tangan.
+- **Error setup engine.** Banner engine di Home sekarang menangkap kegagalan dan menampilkan satu pesan ramah, bukan error async yang tidak tertangani. iOS menampilkan pesan "belum tersedia" yang jelas tanpa tombol Pasang yang mustahil.
+- **Jendela pembatalan.** Batal sekarang menghentikan unduhan setelah engine selesai tetapi sebelum penyalinan file dan penulisan riwayat. Batal saat pasca-pemrosesan tidak menulis baris riwayat, dan layanan latar depan berhenti saat tugas antre terakhir dibatalkan.
+- **Sesi usang.** Run yang telah selesai tidak lagi menghapus referensi sesi unduhan yang lebih baru setelah reset dan antre ulang.
+- **Batal perintah kustom.** Membatalkan perintah kustom sekarang menghentikan proses OS dan melaporkan kode keluar bukan nol, alih-alih membiarkan yt-dlp tetap berjalan.
+- **Race startup Chaquopy.** Inisialisasi runtime Python kini tersinkronisasi, sehingga handler bersamaan tidak bisa memulainya dua kali.
+- **Event engine terminal.** Android menampung event yang muncul di antara langganan Dart dan memutarnya ulang, sehingga unduhan cepat tidak mengunci antrean.
+- **Ketahanan pengaturan SAF.** Error native sesaat tidak lagi menghapus folder unduhan yang dipilih pengguna.
+- **Tulis atomik Windows.** Penyimpanan pengaturan dan riwayat sekarang mengganti file yang ada secara atomik di Windows, bukan diam-diam jatuh ke tulis biasa.
+- **Reset lengkap.** Reset semua data sekarang mengembalikan folder unduhan bawaan.
+- **Langganan intent.** Layar Home yang dibuang tidak lagi membocorkan langganan share-intent, dan bagikan saat aplikasi berjalan tetap berfungsi jika pencarian tautan awal gagal.
+- **Path Android lama.** API 24-28 sekarang mengembalikan path absolut biasa, sehingga file bisa dibuka, dibagikan, dan dihapus lewat UI.
+- **Ekstensi file SAF.** File yang disalin mempertahankan nama lengkapnya sehingga tidak kehilangan ekstensi.
+- **Pemilih folder.** Pemilihan kedua tidak lagi membiarkan permintaan pertama menggantung.
+- **Prompt izin.** Flag "sudah diminta" kini disimpan hanya setelah permintaan benar-benar dikirim.
+- **Timeout pengecekan update.** Body rilis yang mandek tidak lagi menggantung pengecekan update.
+- **Lokalisasi.** Menambahkan pesan engine iOS dan memperbarui string Bahasa Indonesia yang tersisa.
+
+### Peningkatan
+
+- **73 test lulus**, termasuk cakupan baru untuk agregasi wawasan.
+- **Helper hapus bersama** dipakai oleh hapus banyak di Finished dan pembersihan Wawasan.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.15.0-windows-x64.zip`. Linux: `Talos-v0.15.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.14.0
 
 Update besar yang dipimpin oleh intro beranimasi halus, dibarengi audit mendalam lain yang menutup temuan pada alur unduhan, pengaturan, dan pemutar.
