@@ -5,6 +5,37 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.17.0
+
+Update besar yang menambahkan preset unduhan yang bisa dipakai ulang dan memperbaiki temuan kehilangan data, kebenaran, serta performa dari audit mendalam baru.
+
+### Fitur baru
+
+- **Preset unduhan.** Simpan pilihan Configure saat ini (mode video/audio, kualitas, format, bitrate, opsi subtitle dan metadata, selector format) sebagai preset bernama. Preset tersimpan lokal, bisa diterapkan sekali ketuk, diganti nama dengan menyimpan ulang, dan dihapus. Pengaturan global seperti folder, proxy, dan arsip sengaja tidak ditimpa.
+
+### Perbaikan bug
+
+- **Keamanan nama file playlist.** Nama file yang diketik tidak lagi diterapkan ke playlist, yang sebelumnya menulis semua entri ke path yang sama sehingga hanya file terakhir yang tersisa. Playlist dengan nama ketik sekarang memakai template judul bernomor.
+- **Kejujuran pengaturan clip.** Kontrol rentang clip disembunyikan di Android dan iOS, tempat tidak ada ffmpeg yang bisa dipakai dan pengaturannya diam-diam diabaikan. Di desktop, dialog rentang sekarang menolak nilai bukan angka, negatif, dan terbalik alih-alih menyimpan nilai invalid.
+- **Satuan clip dilokalisasi.** Label detik pada ringkasan clip sekarang memakai kunci terjemahan.
+- **Reset lengkap.** "Reset semua data" sekarang juga menghapus tautan tersimpan dan preset, sesuai teks konfirmasinya.
+- **Performa progres.** Notifikasi progres unduhan digabungkan maksimal 10 kali per detik, menghindari rebuild seluruh pohon widget pada setiap baris yt-dlp.
+- **Tautan dan preset bersama.** Kedua store kini ada di manager aplikasi, sehingga penambahan, penghapusan, atau reset langsung diperbarui di semua layar.
+- **Performa daftar besar.** Tautan tersimpan dan entri playlist sekarang memakai lazy list builder, bukan mengalokasikan semua baris pada setiap rebuild.
+- **Pembersihan Wawasan.** Referensi messenger yang usang setelah penghapusan file tidak lagi melempar error jika layar ditutup.
+- **Kontras oxblood.** Aksen oxblood tema gelap diterangkan agar memenuhi persyaratan kontras teks.
+- **Keamanan tautan tersimpan.** Tombol bookmark sekarang mensyaratkan URL yang valid, dan membuka tautan tidak lagi melempar error pada teks invalid.
+- **Keandalan tempel.** Kegagalan clipboard tidak lagi menghasilkan error async yang tidak tertangani.
+- **Aksesibilitas bar.** Bar aktivitas sekarang mengumumkan tanggal lengkap dan jumlah, bukan huruf tunggal yang ambigu.
+
+### Peningkatan
+
+- **77 test lulus**, termasuk cakupan baru untuk penyimpanan preset dan wiring reset.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.17.0-windows-x64.zip`. Linux: `Talos-v0.17.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.16.0
 
 Update besar yang menambahkan tautan tersimpan dan memperbaiki kebenaran perintah unduhan, target platform, serta akurasi data dari audit mendalam baru.

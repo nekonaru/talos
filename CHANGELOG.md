@@ -5,6 +5,37 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.17.0
+
+A large update adding reusable download presets and fixing data-loss, correctness and performance issues found in a fresh deep audit.
+
+### New features
+
+- **Download presets.** Save the current Configure choices (video/audio mode, quality, format, bitrate, subtitle and metadata options, format selector) as a named preset. Presets persist locally, can be applied with one tap, renamed by saving again, and deleted. Global settings such as folder, proxy and archive are intentionally not overridden.
+
+### Bug fixes
+
+- **Playlist filename safety.** A typed output filename is no longer applied to playlists, which previously wrote every entry to the same path and left only the last file. Playlists with a typed name now use an indexed title template.
+- **Clip setting honesty.** The clip-range control is hidden on Android and iOS, where no ffmpeg executable is available and the setting was silently ignored. On desktop, the range dialog now rejects non-numeric, negative and reversed ranges instead of saving invalid values.
+- **Clip units localized.** The seconds label in the clip summary is now a translation key.
+- **Reset completeness.** "Reset all data" now also clears saved links and presets, matching its confirmation text.
+- **Progress performance.** Download progress notifications are coalesced to at most 10 per second, avoiding full-tree rebuilds of all tabs on every yt-dlp line.
+- **Saved links and presets are shared.** Both stores live on the app manager, so adding, removing or resetting them updates every screen immediately.
+- **Large-list performance.** Saved links and playlist entries now use lazy list builders instead of allocating every row on each rebuild.
+- **Insights cleanup.** A stale messenger reference after file deletion no longer throws if the screen is closed.
+- **Oxblood contrast.** The dark-theme oxblood accent was lightened to meet text contrast requirements.
+- **Saved-link safety.** The bookmark button now requires an actual URL, and opening a saved link no longer throws on invalid text.
+- **Paste reliability.** Clipboard failures no longer produce an unhandled async error.
+- **Bar accessibility.** Activity bars now announce a full date and count instead of ambiguous single letters.
+
+### Improvements
+
+- **77 tests passing**, including new coverage for preset persistence and reset wiring.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.17.0-windows-x64.zip`. Linux: `Talos-v0.17.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.16.0
 
 A large update adding saved links and fixing download-command correctness, platform targets and data-accuracy issues found in a fresh deep audit.
