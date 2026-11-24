@@ -22,6 +22,13 @@
   "outputFileName": "Nama file",
   "outputFileNameHint": "Video Saya.mp4 (kosong: otomatis)",
   "playlistTitle": "Playlist",
+  "@playlistCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "playlistCount": "{count} item",
   "selectAll": "Pilih semua",
   "selectNone": "Hapus pilihan",
@@ -115,6 +122,7 @@
   "clipInvalid": "Gunakan detik yang tidak negatif. Akhir harus lebih besar dari awal.",
   "presetDeleted": "Preset dihapus",
   "savedLinks": "Tautan tersimpan",
+  "downloadAllSaved": "Unduh semua",
   "saveLink": "Simpan tautan",
   "linkSaved": "Tautan disimpan",
   "linkAlreadySaved": "Tautan ini sudah disimpan",
@@ -303,6 +311,13 @@
   "goTo": "Buka",
   "invalidUrl": "Masukkan URL http atau https lengkap",
   "noCookies": "Tidak ada cookies ditemukan. Masuk dulu, lalu simpan.",
+  "@cookiesSaved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "cookiesSaved": "{count} cookies tersimpan dan dipakai untuk yt-dlp mulai sekarang.",
   "copy": "Salin",
   "noVideoFormats": "Tidak ada format video yang dilaporkan.",

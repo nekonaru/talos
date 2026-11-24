@@ -87,7 +87,7 @@ class _TalosAppState extends State<TalosApp> {
             ],
             builder: (context, child) => MediaQuery.withClampedTextScaling(
               minScaleFactor: 0.85,
-              maxScaleFactor: 1.3,
+              maxScaleFactor: 2.0,
               child: child ?? const SizedBox.shrink(),
             ),
             home: !widget.showIntro || _introDone

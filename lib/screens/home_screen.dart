@@ -196,8 +196,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _batchFetch() async {
-    final urls = _detectUrls(_urlController.text);
+  Future<void> _batchFetch({List<String>? sourceUrls}) async {
+    // Saved links can be downloaded in bulk by passing their URLs explicitly;
+    // otherwise use the URLs detected in the input field.
+    final urls = sourceUrls ?? _detectUrls(_urlController.text);
     if (urls.length < 2 || _busy) return;
     final l = AppLocalizations.of(context)!;
     final mode = await showDialog<String>(
@@ -288,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Continue with the rest even if one URL fails.
         }
       }
-      if (mounted) setState(_urlController.clear);
+      if (mounted && sourceUrls == null) setState(_urlController.clear);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l.batchQueued(queued, urls.length))),
@@ -475,7 +477,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
                 if (manager.savedLinks.entries.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  SectionLabel(l.savedLinks),
+                  Row(
+                    children: [
+                      Expanded(child: SectionLabel(l.savedLinks)),
+                      TextButton.icon(
+                        onPressed: _busy ? null : () {
+                          final links = manager.savedLinks.entries
+                              .map((link) => link.text.split(RegExp(r'\s+')).first)
+                              .toList();
+                          if (links.isNotEmpty) unawaited(_batchFetch(sourceUrls: links));
+                        },
+                        icon: const Icon(Icons.download_done_outlined, size: 18),
+                        label: Text(l.downloadAllSaved),
+                      ),
+                    ],
+                  ),
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),

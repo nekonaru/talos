@@ -20,7 +20,10 @@ Future<void> restrictFileToOwner(File file) async {
 /// cannot overwrite an existing file, so copy is used there. Falls back to a
 /// direct write if the atomic path fails, and never throws.
 Future<void> writeFileAtomic(File target, String contents) async {
-  final tmp = File('${target.path}.tmp');
+  // A unique temp path per call prevents two overlapping persists from
+  // truncating each other's file and replacing the target with partial JSON.
+  final nonce = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
+  final tmp = File('${target.path}.$nonce.tmp');
   try {
     await tmp.writeAsString(contents, flush: true);
     if (Platform.isWindows && await target.exists()) {
