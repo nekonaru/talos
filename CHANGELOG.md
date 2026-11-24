@@ -5,6 +5,34 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.19.0
+
+A large update led by bulk download for saved links, plus concurrency and reliability fixes found in a fresh deep audit.
+
+### New features
+
+- **Download all saved links.** The Saved links section has a "Download all" action that opens the same video/audio batch dialog as pasted links. Every saved link is queued with the current settings, and the input field is left untouched.
+
+### Bug fixes
+
+- **Android engine concurrency.** A module-level lock now serializes Python entry points, so starting a probe while a download runs can no longer swap the process-wide stdout/stderr out from under the active task and corrupt progress or probe results.
+- **Desktop cancel.** Cancelling just after a download starts now kills the spawned yt-dlp process instead of letting it write a file with no history row.
+- **Concurrent JSON saves.** Each atomic write now uses a unique temp file, so overlapping settings, history, saved-link or preset mutations cannot truncate each other.
+- **Template deletion.** Seed command templates are now inserted only on a fresh install; deleting all templates stays deleted.
+- **Text scaling.** The upper scale clamp was raised from 1.3 to 2.0, so OS accessibility text sizes are respected.
+- **Playlist filenames.** A typed name is now folded into the indexed playlist template instead of being ignored.
+- **Cookie export.** Cookies are read from the URL actually loaded in the WebView, not from a different URL the user typed without navigating.
+- **Insights performance.** The summary is cached by history revision instead of re-sorting the whole library on every progress rebuild.
+- **Localization.** Added Indonesian placeholder metadata for the playlist-count and cookies-saved messages; the parity test now checks metadata in both languages.
+
+### Improvements
+
+- **78 tests passing**, including a two-language ARB metadata parity check.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.19.0-windows-x64.zip`. Linux: `Talos-v0.19.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.18.0
 
 A reliability and performance release. It addresses the reported Android install failure with CI-level artifact verification, and makes the app lighter and smoother without adding new feature families.

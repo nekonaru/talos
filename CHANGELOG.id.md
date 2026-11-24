@@ -5,6 +5,34 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.19.0
+
+Update besar yang dipimpin oleh unduhan massal untuk tautan tersimpan, plus perbaikan konkurensi dan keandalan dari audit mendalam baru.
+
+### Fitur baru
+
+- **Unduh semua tautan tersimpan.** Bagian Tautan tersimpan punya aksi "Unduh semua" yang membuka dialog batch Video/Audio yang sama seperti tautan yang ditempel. Setiap tautan tersimpan antre dengan pengaturan saat ini, dan kolom input tidak diubah.
+
+### Perbaikan bug
+
+- **Konkurensi engine Android.** Lock di level modul kini menyerialkan entry point Python, sehingga memulai probe saat unduhan berjalan tidak lagi menukar stdout/stderr global dari tugas aktif dan merusak progres atau hasil probe.
+- **Batal di desktop.** Membatalkan unduhan tepat setelah dimulai sekarang menghentikan proses yt-dlp, alih-alih membiarkannya menulis file tanpa baris riwayat.
+- **Penulisan JSON bersamaan.** Setiap tulis atomik memakai file tmp unik, sehingga mutasi pengaturan, riwayat, tautan tersimpan, atau preset yang bersamaan tidak saling memotong.
+- **Penghapusan template.** Template perintah bawaan kini hanya disisipkan saat instalasi baru; menghapus semua template tetap terhapus.
+- **Skala teks.** Batas atas dinaikkan dari 1.3 ke 2.0, sehingga ukuran teks aksesibilitas sistem dihormati.
+- **Nama file playlist.** Nama yang diketik kini dimasukkan ke template bernomor playlist, bukan diabaikan.
+- **Ekspor cookie.** Cookie diambil dari URL yang benar-benar dimuat di WebView, bukan dari URL lain yang diketik tanpa dinavigasi.
+- **Performa Wawasan.** Ringkasan di-cache berdasarkan revisi riwayat, bukan mengurutkan ulang seluruh pustaka pada setiap rebuild progres.
+- **Lokalisasi.** Menambahkan metadata placeholder Bahasa Indonesia untuk pesan jumlah playlist dan cookie tersimpan; tes parity kini memeriksa metadata di kedua bahasa.
+
+### Peningkatan
+
+- **78 test lulus**, termasuk tes parity metadata ARB dua bahasa.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.19.0-windows-x64.zip`. Linux: `Talos-v0.19.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.18.0
 
 Rilis keandalan dan performa. Rilis ini menangani kegagalan instalasi Android yang dilaporkan lewat verifikasi artefak di CI, dan membuat aplikasi lebih ringan serta lebih lancar tanpa menambah keluarga fitur baru.
