@@ -158,8 +158,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.17.0-windows-x64.zip`
-   - Linux: `Talos-v0.17.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.18.0-windows-x64.zip`
+   - Linux: `Talos-v0.18.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]
@@ -167,6 +167,17 @@
 
 > [!IMPORTANT]
 > Izin notifikasi diperlukan untuk foreground download service di Android 13 ke atas. Tanpa itu, unduhan tetap berjalan tapi sistem menyembunyikan notifikasi unduhan.
+
+#### Jika Android berkata "paket tampaknya tidak valid"
+
+Setiap APK rilis dibangun oleh CI, ditandatangani dengan kunci Talos, diverifikasi dengan `apksigner`, dan diterbitkan dengan checksum SHA-256. Jika instalasi gagal di ponsel, hampir selalu salah satu dari ini penyebabnya:
+
+1. **File salah.** Satu-satunya aset Android di rilis Talos adalah `app-release.apk` (sekitar 66 MB). APK lama atau bernama lain di folder Download bukan dari proyek ini.
+2. **Download tidak lengkap.** Unduh ulang dengan koneksi stabil. Bandingkan SHA-256 file di ponsel dengan checksum di catatan rilis jika installer terus menolak.
+3. **Perangkat 32-bit.** Talos membutuhkan perangkat 64-bit ARM64. Cek Pengaturan > Tentang ponsel; jika prosesornya 32-bit, APK tidak bisa dipasang.
+4. **Aplikasi lama bentrok.** Jika ada build Talos dari sumber lain yang terpasang, hapus dulu, lalu pasang APK resmi. Build dengan kunci tanda tangan berbeda tidak bisa dijadikan pembaruan.
+
+Talos tidak ada di Play Store, jadi Play Protect mungkin memberi peringatan sumber tidak dikenal. Ini wajar untuk instalasi APK langsung.
 
 ### Opsi B: Build dari source (untuk pengembangan / membaca atau mengubah kode)
 

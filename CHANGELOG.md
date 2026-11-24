@@ -5,6 +5,29 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.18.0
+
+A reliability and performance release. It addresses the reported Android install failure with CI-level artifact verification, and makes the app lighter and smoother without adding new feature families.
+
+### Bug fixes
+
+- **Android merge.** A user-entered ffmpeg path no longer disables stream merging on Android. FFmpegKit is always used, so downloads cannot end with two orphan stream files. The ffmpeg path field is now desktop-only.
+- **Foreground service.** Removed a 1-second repeating callback that woke the Dart isolate throughout every download without doing any work.
+- **Native Back handling.** The cookie WebView now uses Back for browser history, and device Back exits Finished multi-selection mode before popping the screen.
+- **Accessibility text.** System text scaling is clamped so dense rows do not overflow at very large font sizes.
+
+### Improvements
+
+- **Install reliability.** CI now verifies every release APK with `apksigner` (v2 signature and Talos certificate), checks that no x86_64 libraries leaked into the arm64 artifact, validates 16 KB alignment, and records a SHA-256 checksum. The README explains the common causes of "the package appears to be invalid" and how to verify a download.
+- **Smaller APK.** Enabled R8 minification and resource shrinking with keep rules for the Flutter, Chaquopy and FFmpegKit bridges, plus Dart obfuscation and split debug info. Release size dropped from about 66.8 MB to 62.7 MB.
+- **Faster startup.** Settings, history, saved links, presets, Android SDK level and SAF state now load concurrently instead of one after another.
+- **Smoother downloads.** The Finished list caches its sorted/filtered result by history revision, so progress ticks no longer re-sort up to 300 entries. The shell builds its pages once instead of on every rebuild.
+- **Leaner bundle.** Removed the unused `cupertino_icons` dependency and stopped packaging license text files as app assets.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.18.0-windows-x64.zip`. Linux: `Talos-v0.18.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.17.0
 
 A large update adding reusable download presets and fixing data-loss, correctness and performance issues found in a fresh deep audit.
