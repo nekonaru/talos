@@ -22,6 +22,7 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
   final _urlController = TextEditingController(text: 'https://www.youtube.com');
   bool _saving = false;
   bool _webCanGoBack = false;
+  String? _loadedUrl;
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
         NavigationDelegate(
           onUrlChange: (change) {
             if (change.url != null) {
+              _loadedUrl = change.url;
               _urlController.text = change.url!;
             }
             // Keep the system Back gesture in sync with WebView history.
@@ -76,7 +78,9 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
     if (controller == null) return;
     final manager = TalosScope.of(context);
 
-    final text = _urlController.text.trim();
+    // Export cookies for the page actually loaded, not for a URL the user
+    // may have typed without navigating to it.
+    final text = (_loadedUrl ?? _urlController.text).trim();
     final uri = Uri.tryParse(text);
     if (uri == null || !uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
       ScaffoldMessenger.of(context).showSnackBar(

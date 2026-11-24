@@ -102,18 +102,24 @@ class _LineWriter(io.TextIOBase):
         self._on_line(line)
 
 
+# stdout/stderr are process-global. Serialize every entry point that swaps
+# them so a probe cannot run during a download and steal its progress lines.
+_OUTPUT_LOCK = threading.Lock()
+
+
 def _run(argv, on_line, is_cancelled, on_destination=None):
     import yt_dlp
 
-    writer = _LineWriter(on_line, is_cancelled, on_destination)
-    old_out, old_err = sys.stdout, sys.stderr
-    sys.stdout, sys.stderr = writer, writer
-    try:
-        yt_dlp.main(list(argv))
-        writer.flush()
-        return 0
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
+    with _OUTPUT_LOCK:
+        writer = _LineWriter(on_line, is_cancelled, on_destination)
+        old_out, old_err = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = writer, writer
+        try:
+            yt_dlp.main(list(argv))
+            writer.flush()
+            return 0
+        finally:
+            sys.stdout, sys.stderr = old_out, old_err
 
 
 def version():

@@ -10,8 +10,23 @@ import '../widgets/section_label.dart';
 
 /// Read-only view of the finished-download library plus one guarded cleanup
 /// action. All numbers come from [buildInsights], which is pure and tested.
-class InsightsScreen extends StatelessWidget {
+class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
+
+  @override
+  State<InsightsScreen> createState() => _InsightsScreenState();
+}
+
+class _InsightsScreenState extends State<InsightsScreen> {
+  int? _cacheRevision;
+  InsightStats? _cache;
+
+  InsightStats _buildStats(List<HistoryEntry> entries, int revision) {
+    final stats = buildInsights(entries);
+    _cacheRevision = revision;
+    _cache = stats;
+    return stats;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +34,12 @@ class InsightsScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final manager = TalosScope.of(context);
     final entries = manager.history.entries;
-    final stats = buildInsights(entries);
+    // This tab stays mounted in the shell's IndexedStack and rebuilds on every
+    // progress tick. Re-sorting up to 300 rows each time is wasted work.
+    final revision = manager.history.revision;
+    final stats = _cacheRevision == revision && _cache != null
+        ? _cache!
+        : _buildStats(entries, revision);
 
     return Scaffold(
       appBar: AppBar(title: Text(l.insights)),

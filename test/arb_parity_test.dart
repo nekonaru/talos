@@ -18,6 +18,21 @@ void main() {
     expect(missingInEn, isEmpty, reason: 'keys in app_id.arb but missing in app_en.arb');
   });
 
+  test('EN and ID placeholder metadata are both present for placeholder keys', () {
+    for (final path in ['lib/l10n/app_en.arb', 'lib/l10n/app_id.arb']) {
+      final arb = _readArb(path);
+      for (final entry in arb.entries) {
+        final key = entry.key;
+        if (key.startsWith('@')) continue;
+        final value = entry.value;
+        if (value is! String) continue;
+        final placeholders = RegExp(r'\{([a-zA-Z][a-zA-Z0-9_]*)\}').allMatches(value).map((m) => m.group(1)!).toSet();
+        if (placeholders.isEmpty) continue;
+        expect(arb['@$key'], isNotNull, reason: '$key in $path has placeholders but no @$key metadata');
+      }
+    }
+  });
+
   test('ARB placeholder metadata matches keys that contain a placeholder', () {
     final path = 'lib/l10n/app_en.arb';
     final arb = _readArb(path);

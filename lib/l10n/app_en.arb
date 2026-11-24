@@ -117,6 +117,7 @@
   "clipInvalid": "Use non-negative seconds. The end must be greater than the start.",
   "presetDeleted": "Preset deleted",
   "savedLinks": "Saved links",
+  "downloadAllSaved": "Download all",
   "saveLink": "Save link",
   "linkSaved": "Link saved",
   "linkAlreadySaved": "This link is already saved",

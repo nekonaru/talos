@@ -40,8 +40,10 @@ class CommandTemplateStore extends ChangeNotifier {
     final support = await getApplicationSupportDirectory();
     final file = File('${support.path}${Platform.pathSeparator}commands.json');
     List<CommandTemplate> templates = [];
+    var existingFile = false;
     try {
-      if (await file.exists()) {
+      existingFile = await file.exists();
+      if (existingFile) {
         final decoded = jsonDecode(await file.readAsString());
         if (decoded is List) {
           templates = [
@@ -53,7 +55,9 @@ class CommandTemplateStore extends ChangeNotifier {
     } catch (_) {
       templates = [];
     }
-    if (templates.isEmpty) {
+    // Seed defaults only on a fresh install. A persisted empty list means the
+    // user deliberately deleted every template and must stay empty.
+    if (!existingFile) {
       templates = [
         CommandTemplate(id: 'audio-mp3', name: 'Audio MP3 192k', args: '-x --audio-format mp3 --audio-quality 192K {url}'),
         CommandTemplate(id: 'video-720', name: 'Video max 720p', args: '-f "bv*[height<=720]+ba/b[height<=720]" {url}'),

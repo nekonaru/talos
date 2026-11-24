@@ -396,6 +396,13 @@ class _DesktopDownloadSession implements TalosDownloadSession {
       _finish(SessionOutcome(error: 'Failed to start yt-dlp: $error'));
       return;
     }
+    // A cancel can arrive while Process.start was pending. Kill immediately
+    // before the process can write a file with no history row.
+    if (_cancelled) {
+      _process!.kill();
+      _finish(SessionOutcome(error: 'cancelled'));
+      return;
+    }
 
     final outDone = _process!.stdout
         .transform(utf8.decoder)

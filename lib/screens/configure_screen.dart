@@ -156,12 +156,12 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       audioBitrate: _audioBitrate,
       embedSubtitles: _videoMode && _embedSubtitles,
       embedMetadata: _embedMetadata,
+      // A single fixed name cannot be used for a playlist: yt-dlp would write
+      // every entry to the same path. Fold the typed name into an indexed
+      // template so it still takes effect, or fall back to the global template.
       filenameTemplate: widget.probe.isPlaylist && requestedName.isNotEmpty
-          ? '%(playlist_index)s - %(title)s.%(ext)s'
+          ? '$requestedName %(playlist_index)s.%(ext)s'
           : settings.filenameTemplate,
-      // A fixed filename cannot be used for a playlist: yt-dlp would write
-      // every entry to the same path, leaving only the last one. Use an
-      // indexed template instead when the probe is a playlist.
       outputFilename: requestedName.isNotEmpty && !widget.probe.isPlaylist
           ? requestedName
           : null,
