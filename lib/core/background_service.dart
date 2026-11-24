@@ -37,7 +37,9 @@ void initForegroundTask() {
       playSound: false,
     ),
     foregroundTaskOptions: ForegroundTaskOptions(
-      eventAction: ForegroundTaskEventAction.repeat(1000),
+      // No periodic callback is needed: progress is driven by the download
+      // engine. Repeating every second only woke the Dart isolate for nothing.
+      eventAction: ForegroundTaskEventAction.nothing(),
       autoRunOnBoot: false,
       allowWakeLock: true,
       allowWifiLock: true,

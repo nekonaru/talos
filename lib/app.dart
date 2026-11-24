@@ -85,6 +85,11 @@ class _TalosAppState extends State<TalosApp> {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
+            builder: (context, child) => MediaQuery.withClampedTextScaling(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.3,
+              child: child ?? const SizedBox.shrink(),
+            ),
             home: !widget.showIntro || _introDone
                 ? const TalosShell()
                 : IntroScreen(onDone: _onIntroDone),

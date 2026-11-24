@@ -58,7 +58,10 @@ class AndroidEngine implements TalosEngine {
     // The embedded Android runtime merges separate streams with the bundled
     // FFmpegKit instead of a spawnable ffmpeg binary.
     final args = CommandBuilder.downloadArgs(request, ffmpegAvailable: false);
-    final session = _AndroidDownloadSession(this, args, merge: !ffmpegAvailable && request.videoMode);
+    // Always merge with the bundled FFmpegKit on Android. A user-entered
+    // ffmpeg path is not a spawnable binary here, so it must not disable the
+    // merge and leave two orphan stream files.
+    final session = _AndroidDownloadSession(this, args, merge: request.videoMode);
     session.start();
     return session;
   }

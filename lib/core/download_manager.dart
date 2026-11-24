@@ -69,11 +69,23 @@ class DownloadManager extends ChangeNotifier {
   final PresetStore presets;
 
   static Future<DownloadManager> create({TalosEngine? engine}) async {
-    final settings = await SettingsStore.load();
+    // Start all independent loads at once. Each store reads a JSON file and
+    // resolves the support directory; awaiting them sequentially delayed the
+    // first frame by the sum of those round trips.
+    final settingsFuture = SettingsStore.load();
+    final historyFuture = HistoryStore.load();
+    final savedFuture = SavedLinkStore.load();
+    final presetFuture = PresetStore.load();
+    final sdkFuture = TalosStorageBridge.androidSdkInt();
+    final treeFuture = Platform.isAndroid
+        ? TalosStorageBridge.treeUri()
+        : Future<String?>.value(null);
+
+    final settings = await settingsFuture;
+    final androidSdkInt = await sdkFuture;
     // The public Downloads folder is the default on Android: API 28 and
     // older writes it directly; API 29+ copies through MediaStore after
     // the download. SAF or a custom path overrides either.
-    final androidSdkInt = await TalosStorageBridge.androidSdkInt();
     final outputDir = settings.value.downloadFolder?.trim().isNotEmpty == true
         ? settings.value.downloadFolder!.trim()
         : await defaultDownloadDirectory(androidSdkInt: androidSdkInt);
@@ -82,7 +94,7 @@ class DownloadManager extends ChangeNotifier {
     // downloads fall back to app-private storage instead of silently failing.
     if (Platform.isAndroid) {
       try {
-        final bridgeUri = await TalosStorageBridge.treeUri();
+        final bridgeUri = await treeFuture;
         if ((bridgeUri ?? '').isEmpty && settings.value.downloadFolderSAF.isNotEmpty) {
           await settings.mutate(
             (s) => s.copyWith(downloadFolderSAF: ''),
@@ -94,11 +106,11 @@ class DownloadManager extends ChangeNotifier {
     }
     final manager = DownloadManager._(
       engine ?? createEngine(),
-      await HistoryStore.load(),
+      await historyFuture,
       settings,
       outputDir,
-      await SavedLinkStore.load(),
-      await PresetStore.load(),
+      await savedFuture,
+      await presetFuture,
     );
     return manager;
   }
