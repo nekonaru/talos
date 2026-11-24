@@ -108,6 +108,9 @@ class HistoryStore extends ChangeNotifier {
   List<HistoryEntry> _entries;
   final File _file;
 
+  /// Bumped on every mutation so screens can cache derived lists cheaply.
+  int revision = 0;
+
   List<HistoryEntry> get entries => List.unmodifiable(_entries);
 
   static Future<HistoryStore> load() async {
@@ -137,6 +140,7 @@ class HistoryStore extends ChangeNotifier {
     if (_entries.length > _maxEntries) {
       _entries = _entries.sublist(0, _maxEntries);
     }
+    revision++;
     notifyListeners();
     await _persist();
   }
@@ -148,12 +152,14 @@ class HistoryStore extends ChangeNotifier {
         break;
       }
     }
+    revision++;
     notifyListeners();
     await _persist();
   }
 
   Future<void> remove(String id) async {
     _entries.removeWhere((e) => e.id == id);
+    revision++;
     notifyListeners();
     await _persist();
   }
@@ -163,12 +169,14 @@ class HistoryStore extends ChangeNotifier {
     final set = ids.toSet();
     if (set.isEmpty) return;
     _entries.removeWhere((e) => set.contains(e.id));
+    revision++;
     notifyListeners();
     await _persist();
   }
 
   Future<void> clear() async {
     _entries.clear();
+    revision++;
     notifyListeners();
     await _persist();
   }

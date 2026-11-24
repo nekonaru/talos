@@ -5,6 +5,29 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.18.0
+
+Rilis keandalan dan performa. Rilis ini menangani kegagalan instalasi Android yang dilaporkan lewat verifikasi artefak di CI, dan membuat aplikasi lebih ringan serta lebih lancar tanpa menambah keluarga fitur baru.
+
+### Perbaikan bug
+
+- **Gabung Android.** Path ffmpeg yang diketik pengguna tidak lagi menonaktifkan penggabungan stream di Android. FFmpegKit selalu dipakai, sehingga unduhan tidak berakhir dengan dua file stream terpisah. Kolom path ffmpeg kini hanya ada di desktop.
+- **Layanan latar depan.** Menghapus callback berulang 1 detik yang membangunkan isolate Dart selama setiap unduhan tanpa melakukan kerja.
+- **Tombol Back native.** WebView cookie sekarang memakai Back untuk riwayat browser, dan Back perangkat keluar dari mode multi-seleksi Finished sebelum menutup layar.
+- **Teks aksesibilitas.** Skala teks sistem dibatasi agar baris padat tidak meluap pada ukuran font sangat besar.
+
+### Peningkatan
+
+- **Keandalan instalasi.** CI sekarang memverifikasi setiap APK rilis dengan `apksigner` (tanda tangan v2 dan sertifikat Talos), memeriksa tidak ada library x86_64 yang masuk ke artefak arm64, memvalidasi alignment 16 KB, dan mencatat checksum SHA-256. README menjelaskan penyebab umum "paket tampaknya tidak valid" dan cara memverifikasi unduhan.
+- **APK lebih kecil.** Mengaktifkan R8 dan resource shrinking dengan aturan keep untuk bridge Flutter, Chaquopy, dan FFmpegKit, serta obfuscation Dart dan split debug info. Ukuran rilis turun dari sekitar 66,8 MB menjadi 62,7 MB.
+- **Startup lebih cepat.** Pengaturan, riwayat, tautan tersimpan, preset, level SDK Android, dan status SAF sekarang dimuat bersamaan, bukan berurutan.
+- **Unduhan lebih lancar.** Daftar Finished menyimpan hasil urut/filter berdasarkan revisi riwayat, sehingga tick progres tidak lagi mengurutkan ulang hingga 300 entri. Shell membangun halaman sekali saja, bukan pada setiap rebuild.
+- **Bundle lebih ringan.** Menghapus dependensi `cupertino_icons` yang tidak dipakai dan berhenti mengemas file teks lisensi sebagai aset aplikasi.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.18.0-windows-x64.zip`. Linux: `Talos-v0.18.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.17.0
 
 Update besar yang menambahkan preset unduhan yang bisa dipakai ulang dan memperbaiki temuan kehilangan data, kebenaran, serta performa dari audit mendalam baru.

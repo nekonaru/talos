@@ -21,6 +21,7 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
   WebViewController? _controller;
   final _urlController = TextEditingController(text: 'https://www.youtube.com');
   bool _saving = false;
+  bool _webCanGoBack = false;
 
   @override
   void initState() {
@@ -39,6 +40,12 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
             if (change.url != null) {
               _urlController.text = change.url!;
             }
+            // Keep the system Back gesture in sync with WebView history.
+            _controller?.canGoBack().then((can) {
+              if (mounted && can != _webCanGoBack) {
+                setState(() => _webCanGoBack = can);
+              }
+            });
           },
         ),
       )
@@ -130,7 +137,16 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
     final l = AppLocalizations.of(context)!;
     final controller = _controller;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_webCanGoBack,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final web = _controller;
+        if (web != null && await web.canGoBack()) {
+          await web.goBack();
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(l.cookieGenerator),
         actions: [
@@ -195,6 +211,7 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 }

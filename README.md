@@ -158,8 +158,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.17.0-windows-x64.zip`
-   - Linux: `Talos-v0.17.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.18.0-windows-x64.zip`
+   - Linux: `Talos-v0.18.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]
@@ -167,6 +167,17 @@
 
 > [!IMPORTANT]
 > Notification permission is required for the foreground download service on Android 13 and newer. Without it, downloads still run but the system hides the download notification.
+
+#### If Android says "the package appears to be invalid"
+
+Every release APK is built by CI, signed with the Talos key, verified with `apksigner`, and published with a SHA-256 checksum. When an install fails on a phone, one of these is almost always the cause:
+
+1. **Wrong file.** The only Android asset on a Talos release is `app-release.apk` (about 66 MB). Older or differently named APKs in the Downloads folder are not from this project.
+2. **Incomplete download.** Redownload over a stable connection. Compare the SHA-256 of the file on the phone with the checksum in the release notes if the installer keeps rejecting it.
+3. **32-bit device.** Talos requires a 64-bit ARM64 device. Check Settings > About phone; if the processor is 32-bit, the APK cannot install.
+4. **Conflicting existing app.** If a Talos build from another source is already installed, uninstall it first, then install the official APK. Builds signed with a different key cannot be installed as updates.
+
+Talos is not on the Play Store, so Play Protect may warn about an unknown source. This is expected for a direct APK install.
 
 ### Option B: Build from source (for development / to read or change the code)
 

@@ -212,6 +212,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ? TextButton(onPressed: _updateEngine, child: Text(l.updateEngine))
                           : null,
                 ),
+                // On mobile FFmpegKit is bundled; a user path is not a
+                // spawnable binary and would only mislead.
+                if (desktop)
                 ListTile(
                   leading: const Icon(Icons.movie_filter_outlined),
                   title: Text(l.ffmpegPath),

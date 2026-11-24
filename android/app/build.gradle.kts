@@ -63,12 +63,24 @@ android {
                 storePassword = keystoreProperties.getProperty("storePassword")
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
+                // minSdk 24 and targetSdk 36 make APK Signature Scheme v2 the
+                // correct choice. CI verifies the signature and ABI contents.
+                enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }
 
     buildTypes {
         release {
+            // Drop unused plugin resources and Dart symbols. Keep rules above
+            // protect the reflection-based native bridges.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             signingConfig = if (hasKeystore) {
                 signingConfigs.getByName("release")
             } else {

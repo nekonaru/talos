@@ -46,6 +46,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
 
   bool _showFavorites = false;
   String _finishedSort = 'newest';
+  String? _finishedCacheKey;
+  List<HistoryEntry>? _finishedCache;
   String _kindFilter = 'all';
   final Set<String> _selectedIds = <String>{};
   bool _selectionMode = false;
@@ -289,12 +291,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final manager = TalosScope.of(context);
-    final tasks = manager.tasks.where((t) => t.status != TaskStatus.completed).toList();
-    final history = manager.history.entries;
+  List<HistoryEntry> _buildFinished(List<HistoryEntry> history, String cacheKey) {
     final favoritesOnly = _showFavorites
         ? history.where((e) => e.favorite).toList()
         : history.toList();
@@ -302,7 +299,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     final typeFiltered = _kindFilter == 'all'
         ? sorted
         : sorted.where((e) => e.kind.name == _kindFilter).toList();
-    final finished = _query.isEmpty
+    final result = _query.isEmpty
         ? typeFiltered
         : typeFiltered
             .where((e) =>
@@ -310,9 +307,32 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 e.url.toLowerCase().contains(_query) ||
                 (e.uploader ?? '').toLowerCase().contains(_query))
             .toList();
+    _finishedCacheKey = cacheKey;
+    _finishedCache = result;
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.of(context);
+    final tasks = manager.tasks.where((t) => t.status != TaskStatus.completed).toList();
+    final history = manager.history.entries;
+    // This screen rebuilds on every throttled progress tick. Sorting up to 300
+    // history rows each time is wasted work, so cache by store revision and
+    // the active filter values.
+    final cacheKey = '${manager.history.revision}|$_query|$_finishedSort|$_kindFilter|$_showFavorites';
+    final finished = _finishedCacheKey == cacheKey && _finishedCache != null
+        ? _finishedCache!
+        : _buildFinished(history, cacheKey);
     final selectedCount = finished.where((e) => _selectedIds.contains(e.id)).length;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_selectionMode,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _selectionMode) _exitSelection();
+      },
+      child: Scaffold(
       appBar: _selectionMode && _tabController.index == 1
           ? AppBar(
               leading: IconButton(
@@ -505,6 +525,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
             ),
           ),
         ],
+      ),
       ),
     );
   }

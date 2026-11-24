@@ -62,14 +62,37 @@ jobs:
         run: |
           flutter pub get
           flutter gen-l10n
-          flutter build apk --release
+          flutter build apk --release --obfuscate --split-debug-info=build/symbols
+
+      - name: Normalize and verify release signature
+        if: github.event_name == 'push'
+        run: |
+          set -e
+          BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)
+          APK=build/app/outputs/flutter-apk/app-release.apk
+          # Verify the signed artifact before it is published. minSdk 24 and
+          # targetSdk 36 mean v2 is the correct scheme here; v1 is neither
+          # required nor accepted by modern Android for this target.
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK" | tee apksigner-verify.txt
+          grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" apksigner-verify.txt
+          grep -q "CN=Talos" apksigner-verify.txt
+          # The release must never contain x86_64 libraries.
+          if unzip -l "$APK" | grep -q 'lib/x86_64/'; then
+            echo "Unexpected x86_64 libraries in release APK"
+            exit 1
+          fi
+          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 "$APK" > /dev/null
+          sha256sum "$APK" | tee release-sha256.txt
 
       - name: Upload release APK (arm64-v8a)
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: talos-release-apk-arm64
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            release-sha256.txt
+            apksigner-verify.txt
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

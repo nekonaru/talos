@@ -17,15 +17,25 @@ class _TalosShellState extends State<TalosShell> {
   int _index = 0;
 
   @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final wide = MediaQuery.sizeOf(context).width >= 900;
-    final pages = [
+  void initState() {
+    super.initState();
+    // Built once: IndexedStack rebuilds on every progress tick, and these
+    // children must not be recreated each time.
+    _pages = [
       const HomeScreen(),
       DownloadsScreen(onGoHome: () => setState(() => _index = 0)),
       const InsightsScreen(),
       const SettingsScreen(),
     ];
+  }
+
+  late final List<Widget> _pages;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final wide = MediaQuery.sizeOf(context).width >= 900;
+    final pages = _pages;
 
     final destinations = [
       NavigationDestination(icon: const Icon(Icons.travel_explore_outlined), selectedIcon: const Icon(Icons.travel_explore), label: l.home),
