@@ -24,7 +24,6 @@ A large update adding a redownload action for finished entries, plus correctness
 - **Filename helpers.** Uniqueness loops are bounded and directory scans are less likely to stall the UI.
 - **MediaStore MIME.** `.m4a` files are indexed as `audio/mp4` instead of video.
 - **SAF copies.** Empty documents are no longer left behind when a copy fails.
-- **Debug ABIs.** The arm64-only filter now applies to release builds; debug builds again include x86_64 for emulators.
 - **Localization.** Added the missing `@appTitle` metadata to the Indonesian ARB.
 
 ### Improvements

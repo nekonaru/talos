@@ -24,7 +24,6 @@ Update besar yang menambahkan aksi unduh ulang untuk entri selesai, plus perbaik
 - **Helper nama file.** Loop keunikan dibatasi dan pemindaian direktori lebih ringan.
 - **MIME MediaStore.** File `.m4a` kini diindeks sebagai `audio/mp4`, bukan video.
 - **Salinan SAF.** Dokumen kosong tidak lagi ditinggalkan saat salinan gagal.
-- **ABI debug.** Filter arm64-only kini hanya untuk build release; build debug menyertakan x86_64 kembali untuk emulator.
 - **Lokalisasi.** Metadata `@appTitle` ditambahkan ke ARB Bahasa Indonesia.
 
 ### Peningkatan
