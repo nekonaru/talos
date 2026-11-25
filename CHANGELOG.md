@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.27.0
+
+A large update adding explicit queue controls and coverage for desktop engine asset selection.
+
+### New features
+
+- **Pause and resume queue.** New downloads can be held without stopping the task already running. The paused state persists across restarts, and resuming starts the queue immediately.
+- **Clear pending downloads.** A confirmation action cancels every task that has not started, leaving the active download untouched.
+
+### Improvements
+
+- **90 tests passing**, including pause/resume and desktop asset selection coverage.
+- **Distinct icons.** Clear finished and clear pending now use different icons to avoid ambiguity.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.27.0-windows-x64.zip`. Linux: `Talos-v0.27.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.26.0
 
 A large update adding custom HTTP headers, plus a native merge ordering fix.

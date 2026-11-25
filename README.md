@@ -61,6 +61,7 @@
 | **Sequential queue** | One download at a time, so sites are not hammered with parallel requests |
 | **Queue persistence** | Pending downloads survive an app restart and resume with their original settings |
 | **Cancel and retry** | Cancel any task, retry failed or cancelled ones with the same options |
+| **Pause and clear queue** | Pause new downloads without stopping the active one, or cancel everything still pending |
 | **Auto retry** | Optionally retry transient failures automatically with a short backoff |
 
 ### Playlists
@@ -165,8 +166,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.26.0-windows-x64.zip`
-   - Linux: `Talos-v0.26.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.27.0-windows-x64.zip`
+   - Linux: `Talos-v0.27.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]

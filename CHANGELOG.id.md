@@ -5,6 +5,24 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.27.0
+
+Update besar yang menambahkan kontrol antrean eksplisit dan cakupan pemilihan aset engine desktop.
+
+### Fitur baru
+
+- **Jeda dan lanjutkan antrean.** Unduhan baru bisa ditahan tanpa menghentikan tugas yang sedang berjalan. State jeda bertahan setelah restart, dan melanjutkan langsung menjalankan antrean.
+- **Hapus unduhan tertunda.** Aksi dengan konfirmasi membatalkan semua tugas yang belum dimulai, tanpa menyentuh unduhan aktif.
+
+### Peningkatan
+
+- **90 test lulus**, termasuk cakupan jeda/lanjut dan pemilihan aset desktop.
+- **Ikon berbeda.** Bersihkan yang selesai dan hapus yang tertunda kini memakai ikon berbeda agar tidak membingungkan.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.27.0-windows-x64.zip`. Linux: `Talos-v0.27.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.26.0
 
 Update besar yang menambahkan header HTTP kustom, plus perbaikan urutan stream penggabungan native.
