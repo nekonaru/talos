@@ -5,6 +5,27 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.28.0
+
+A large update adding CSV history export and a native cancellation fix for FFmpeg merges.
+
+### New features
+
+- **CSV export.** Finished history can be copied or shared as CSV with title, URL, kind, path, size, date and favorite flag. Fields containing commas, quotes or newlines are escaped correctly.
+
+### Bug fixes
+
+- **Cancel during merge.** The Android bridge now cancels the active FFmpegKit session, so tapping Cancel during a stream merge stops the process instead of only setting a flag that a blocking call cannot observe.
+
+### Improvements
+
+- **91 tests passing**, including CSV escaping coverage.
+- **Export notice.** History CSV text can be shared through the system share sheet, the same way backups are shared.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.28.0-windows-x64.zip`. Linux: `Talos-v0.28.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.27.0
 
 A large update adding explicit queue controls and coverage for desktop engine asset selection.
