@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import '../widgets/section_label.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../app_scope.dart';
 import '../core/app_info.dart';
+import '../core/backup.dart';
 import '../core/command_template_store.dart';
 import '../core/settings_store.dart';
 import '../core/storage_bridge.dart';
@@ -37,13 +41,126 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _refreshEngine() async {
-    final status = await TalosScope.of(context).engine.status();
-    if (!mounted) return;
-    setState(() {
-      _engineReady = status.ready;
-      _engineVersion = status.version;
-      _ffmpegDetected = status.ffmpegPath;
-    });
+    try {
+      final status = await TalosScope.of(context).engine.status();
+      if (!mounted) return;
+      setState(() {
+        _engineReady = status.ready;
+        _engineVersion = status.version;
+        _ffmpegDetected = status.ffmpegPath;
+      });
+    } catch (_) {
+      // A channel failure is shown as an unavailable engine, not a crash.
+      if (mounted) setState(() => _engineReady = false);
+    }
+  }
+
+  /// Shows the whole backup as text so it can be copied or shared. No file
+  /// permission is required, and the payload stays readable and portable.
+  Future<void> _exportBackup() async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.of(context);
+    try {
+      final json = await TalosBackup.exportJson(manager);
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l.backupExport),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: TextField(
+              controller: TextEditingController(text: json),
+              maxLines: 8,
+              readOnly: true,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l.close),
+            ),
+            TextButton(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: json));
+                if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l.backupExported)),
+                  );
+                }
+              },
+              child: Text(l.copy),
+            ),
+            FilledButton(
+              onPressed: () {
+                unawaited(SharePlus.instance.share(
+                  ShareParams(text: json, subject: 'Talos backup'),
+                ));
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(l.share),
+            ),
+          ],
+        ),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.backupFailed)),
+        );
+      }
+    }
+  }
+
+  Future<void> _importBackup() async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.of(context);
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.backupImport),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.backupImportConfirmBody),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              maxLines: 6,
+              decoration: InputDecoration(hintText: l.backupPasteHint),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.backupImport),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await TalosBackup.restoreJson(manager, controller.text.trim());
+      await manager.refreshOutputDirectory();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.backupImported)),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.backupInvalid)),
+        );
+      }
+    }
   }
 
   Future<void> _updateEngine() async {
@@ -638,16 +755,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          SectionLabel(l.cookieGenerator),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.cookie_outlined),
-              title: Text(l.cookieGenerator),
-              subtitle: Text(l.cookieGeneratorHint),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CookieGeneratorScreen())),
+          if (!desktop)
+            SectionLabel(l.cookieGenerator),
+          if (!desktop)
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.cookie_outlined),
+                title: Text(l.cookieGenerator),
+                subtitle: Text(l.cookieGeneratorHint),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CookieGeneratorScreen())),
+              ),
             ),
-          ),
           SectionLabel(l.appearance),
           Card(
             child: Column(
@@ -751,6 +870,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailing: const Icon(Icons.open_in_new, size: 18),
                     onTap: () => _openLink(context, sponsor.$2),
                   ),
+              ],
+            ),
+          ),
+          SectionLabel(l.backupRestore),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.backup_outlined),
+                  title: Text(l.backupExport),
+                  subtitle: Text(l.backupExportHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _exportBackup,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.restore_outlined),
+                  title: Text(l.backupImport),
+                  subtitle: Text(l.backupImportHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _importBackup,
+                ),
               ],
             ),
           ),

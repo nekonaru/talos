@@ -96,6 +96,22 @@ class CommandTemplateStore extends ChangeNotifier {
     }
   }
 
+  /// Writes a complete command list in one operation for backup restore.
+  static Future<void> replaceAll(Iterable<CommandTemplate> templates) async {
+    final support = await getApplicationSupportDirectory();
+    final file = File('${support.path}${Platform.pathSeparator}commands.json');
+    try {
+      await file.parent.create(recursive: true);
+      await writeFileAtomic(
+        file,
+        const JsonEncoder.withIndent('  ').convert([for (final t in templates) t.toJson()]),
+      );
+      await restrictFileToOwner(file);
+    } catch (_) {
+      // Non-fatal; the in-memory value still applies until restart.
+    }
+  }
+
   Future<void> _persist() async {
     try {
       await _file.parent.create(recursive: true);

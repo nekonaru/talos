@@ -125,6 +125,16 @@ class PresetStore extends ChangeNotifier {
     await _persist();
   }
 
+  Future<void> replaceAll(Iterable<DownloadPreset> entries) async {
+    _entries = entries.where((preset) => preset.id.isNotEmpty).toList();
+    _entries.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    if (_entries.length > maxEntries) {
+      _entries = _entries.sublist(0, maxEntries);
+    }
+    notifyListeners();
+    await _persist();
+  }
+
   Future<void> _persist() async {
     try {
       await _file.parent.create(recursive: true);

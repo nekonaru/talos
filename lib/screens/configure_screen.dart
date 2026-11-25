@@ -59,8 +59,15 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
   }
 
   Future<void> _checkEngine() async {
-    final status = await TalosScope.of(context).engine.status();
-    if (mounted) setState(() => _engineReady = status.ready);
+    bool ready;
+    try {
+      ready = (await TalosScope.of(context).engine.status()).ready;
+    } catch (_) {
+      // A channel failure must not leave Download disabled forever with no
+      // explanation. Treat it as unavailable and keep the retry path open.
+      ready = false;
+    }
+    if (mounted) setState(() => _engineReady = ready);
   }
 
   Future<void> _savePreset() async {
@@ -421,16 +428,39 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: FilledButton.icon(
-                  onPressed: canDownload ? _startDownload : null,
-                  icon: const Icon(Icons.download_rounded),
-                  label: Text(probe.isPlaylist && entries.isNotEmpty
-                      ? '${l.download} ($downloadCount)'
-                      : l.download),
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_engineReady == false)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l.engineMissing,
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _checkEngine,
+                            child: Text(l.retry),
+                          ),
+                        ],
+                      ),
+                    ),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: FilledButton.icon(
+                      onPressed: canDownload ? _startDownload : null,
+                      icon: const Icon(Icons.download_rounded),
+                      label: Text(probe.isPlaylist && entries.isNotEmpty
+                          ? '${l.download} ($downloadCount)'
+                          : l.download),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

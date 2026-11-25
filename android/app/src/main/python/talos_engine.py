@@ -107,16 +107,21 @@ class _LineWriter(io.TextIOBase):
 _OUTPUT_LOCK = threading.Lock()
 
 
-def _run(argv, on_line, is_cancelled, on_destination=None):
+def _run(argv, on_line, is_cancelled, on_destination=None, stderr_sink=None):
     import yt_dlp
 
     with _OUTPUT_LOCK:
         writer = _LineWriter(on_line, is_cancelled, on_destination)
+        # Probe output must contain only the JSON written to stdout. Any
+        # diagnostic on stderr would otherwise be appended to the payload and
+        # break jsonDecode on the Dart side.
+        err_writer = _LineWriter(stderr_sink or (lambda line: None), is_cancelled)
         old_out, old_err = sys.stdout, sys.stderr
-        sys.stdout, sys.stderr = writer, writer
+        sys.stdout, sys.stderr = writer, err_writer
         try:
             yt_dlp.main(list(argv))
             writer.flush()
+            err_writer.flush()
             return 0
         finally:
             sys.stdout, sys.stderr = old_out, old_err
@@ -135,11 +140,12 @@ def probe(url, proxy):
     argv = ['--dump-single-json', '--flat-playlist', '--skip-download', '--no-warnings']
     if proxy:
         argv += ['--proxy', proxy]
-    argv += [url]
+    argv += ['--', url]
 
     buffer = io.StringIO()
     try:
-        _run(argv, lambda line: buffer.write(line + '\n'), lambda: False)
+        _run(argv, lambda line: buffer.write(line + '\n'), lambda: False,
+             stderr_sink=lambda line: None)
     except SystemExit as exc:
         if exc.code not in (0, None):
             raise RuntimeError('yt-dlp exited with code %s' % exc.code)
@@ -184,23 +190,21 @@ def _dedupe(path):
     return path
 
 
-def _safe_merge(parts, on_line):
+def _safe_merge(parts, on_line, is_cancelled=None):
     """Merge separate video and audio files with the bundled FFmpeg.
 
-    The Android build has no `ffmpeg` executable on PATH, so yt-dlp downloads
-    the streams separately and leaves them there. This merges them with the
-    in-app FFmpegKit (dynamic link, LGPL-3.0) and deletes the parts.
-    Returns the merged path, or None when there is nothing to merge or it is
-    not safe to try.
+    Returns ``(output_path, error)``. Exactly one of the two is non-None.
     """
     if len(parts) != 2:
-        return None
+        return None, None
 
     parsed = [_F_PART.match(p) for p in parts]
     if not all(parsed):
-        return None
+        return None, None
     if parsed[0].group(1) != parsed[1].group(1):
-        return None
+        return None, None
+    if is_cancelled and is_cancelled():
+        raise DownloadCancelled()
 
     base, ext = parsed[0].group(1), parsed[0].group(2).lower()
     # The video stream may come second; the largest file is almost always video.
@@ -219,18 +223,24 @@ def _safe_merge(parts, on_line):
         args.append(out_path)
         session = FFmpegKit.executeWithArguments(args)
         if not ReturnCode.isSuccess(session.getReturnCode()):
-            on_line('[Merger] Merge failed (exit / logs below):\n%s' % session.getAllLogsAsString())
-            return None
+            message = session.getAllLogsAsString() or 'unknown FFmpeg error'
+            on_line('[Merger] Merge failed (exit / logs below):\n%s' % message)
+            return None, 'Merge failed for %s: %s' % (base, message)
+    except DownloadCancelled:
+        raise
     except Exception:
         on_line('[Merger] Merge failed (exception below):\n%s' % traceback.format_exc(limit=3))
-        return None
+        return None, 'Merge failed for %s' % base
+
+    if is_cancelled and is_cancelled():
+        raise DownloadCancelled()
 
     for p in parts:
         try:
             os.remove(p)
         except OSError:
             on_line('[Merger] Could not delete part file %s' % p)
-    return out_path
+    return out_path, None
 
 
 def run(task_id, argv_json, merge=False):
@@ -283,6 +293,7 @@ def run(task_id, argv_json, merge=False):
 
     parts = state.get('files') or []
     if merge and len(parts) >= 2:
+      try:
         # A playlist produces multiple video/audio pairs. Group parts by their
         # base name and merge each pair, otherwise only one raw stream leaks
         # through as the "finished" file and the rest are orphaned.
@@ -293,9 +304,18 @@ def run(task_id, argv_json, merge=False):
                 groups.setdefault(match.group(1), []).append(part)
         outputs = []
         for group in groups.values():
-            merged = _safe_merge(group, on_line)
-            outputs.append(merged if merged is not None else group[0])
+            if is_cancelled():
+                return json.dumps({'status': 'cancelled'})
+            merged, error = _safe_merge(group, on_line, is_cancelled)
+            if error:
+                return json.dumps({'status': 'error', 'message': error})
+            if merged is not None:
+                outputs.append(merged)
+            else:
+                outputs.extend(group)
         if outputs:
             return json.dumps({'status': 'done', 'outputs': outputs})
+      except DownloadCancelled:
+        return json.dumps({'status': 'cancelled'})
 
     return json.dumps({'status': 'done', 'outputs': parts})

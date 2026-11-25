@@ -11,6 +11,7 @@ class CommandBuilder {
       '--skip-download',
       '--no-warnings',
       if (proxy != null && proxy.isNotEmpty) ...['--proxy', proxy],
+      '--',
       url,
     ];
   }
@@ -120,6 +121,9 @@ class CommandBuilder {
     args.addAll(['-P', request.outputDir]);
     final custom = request.outputFilename?.trim();
     args.addAll(['-o', custom != null && custom.isNotEmpty ? custom : request.filenameTemplate]);
+    // Force the rest to be parsed as URLs, never as options. A saved or shared
+    // link beginning with a dash must not inject yt-dlp flags.
+    args.add('--');
     args.add(request.url);
     return args;
   }
@@ -135,10 +139,18 @@ class CommandBuilder {
     for (var i = 0; i < input.length; i++) {
       final ch = input[i];
       if (ch == '\\' && i + 1 < input.length) {
-        current.write(input[i + 1]);
-        hasContent = true;
-        i++;
-        continue;
+        final next = input[i + 1];
+        // Only quote and whitespace characters need escaping. A backslash in a
+        // Windows path such as C:\Users\me must stay literal, otherwise custom
+        // commands silently lose their cookie or config file path.
+        final needsEscape = quote != "'" &&
+            (next == '"' || next == "'" || next == '\\' || next.trim().isEmpty);
+        if (needsEscape) {
+          current.write(next);
+          hasContent = true;
+          i++;
+          continue;
+        }
       }
       if (quote != null) {
         if (ch == quote) {

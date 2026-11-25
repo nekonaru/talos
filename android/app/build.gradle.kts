@@ -82,11 +82,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            signingConfig = if (hasKeystore) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            // Never silently ship a release-looking APK signed with the debug
+            // key. Fail early with an actionable message instead.
+            if (!hasKeystore) error("Release signing key is missing: app/key.properties")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

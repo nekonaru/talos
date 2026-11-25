@@ -22,6 +22,40 @@ import 'progress_parser.dart';
 class DesktopEngine implements TalosEngine {
   static const _managedName = 'yt-dlp';
 
+  /// Pick the right yt-dlp release asset. Standalone builds are preferred so
+  /// the app does not depend on a system Python installation. The generic
+  /// asset is only a last resort for platforms without a standalone build.
+  static String engineAsset() {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.windows:
+        return 'yt-dlp.exe';
+      case TargetPlatform.macOS:
+        return 'yt-dlp_macos';
+      case TargetPlatform.linux:
+        switch (Abi.current()) {
+          case Abi.linuxArm64:
+            return 'yt-dlp_linux_aarch64';
+          case Abi.linuxArm:
+            // The armv7 release only ships a zip containing this binary.
+            return 'yt-dlp_linux_armv7l.zip';
+          default:
+            break;
+        }
+        try {
+          if (File('/etc/alpine-release').existsSync()) return 'yt-dlp_musllinux';
+          final ldd = Process.runSync('ldd', ['--version']);
+          if (ldd.stdout.toString().toLowerCase().contains('musl')) {
+            return 'yt-dlp_musllinux';
+          }
+        } catch (_) {
+          // glibc remains the default when detection is unavailable.
+        }
+        return 'yt-dlp_linux';
+      default:
+        return 'yt-dlp';
+    }
+  }
+
   Future<Directory> get _binDir async {
     final support = await getApplicationSupportDirectory();
     final dir = Directory('${support.path}${Platform.pathSeparator}bin');
@@ -69,10 +103,25 @@ class DesktopEngine implements TalosEngine {
     return candidate.existsSync() ? candidate.path : null;
   }
 
+  /// Runs a short-lived process and kills it on timeout. Plain Future.timeout
+  /// only stops waiting and leaves the child alive, which can hold files open
+  /// or consume CPU for the rest of the session.
+  Future<ProcessResult> _runWithTimeout(String binary, List<String> args, Duration timeout) async {
+    final process = await Process.start(binary, args);
+    final timer = Timer(timeout, () => process.kill());
+    try {
+      final out = await process.stdout.transform(utf8.decoder).join();
+      final err = await process.stderr.transform(utf8.decoder).join();
+      final code = await process.exitCode;
+      return ProcessResult(process.pid, code, out, err);
+    } finally {
+      timer.cancel();
+    }
+  }
+
   Future<String?> _versionOf(String binary) async {
     try {
-      final result = await Process.run(binary, ['--version'])
-          .timeout(const Duration(seconds: 20));
+      final result = await _runWithTimeout(binary, ['--version'], const Duration(seconds: 20));
       if (result.exitCode == 0) {
         final out = result.stdout.toString().trim();
         if (out.isNotEmpty) return out;
@@ -85,14 +134,15 @@ class DesktopEngine implements TalosEngine {
 
   @override
   Future<EngineStatus> status() async {
-    final ytdlp = await ytdlpPath();
+    final managed = await _managedYtdlpPath();
+    final ytdlp = managed ?? await _onPath(_managedName);
     final version = ytdlp == null ? null : await _versionOf(ytdlp);
     final ffmpeg = await ffmpegPath('');
     return EngineStatus(
       ready: version != null,
       version: version,
       ffmpegPath: ffmpeg,
-      managed: ytdlp != null && ytdlp.contains('${Platform.pathSeparator}bin${Platform.pathSeparator}'),
+      managed: managed != null,
     );
   }
 
@@ -163,7 +213,7 @@ class DesktopEngine implements TalosEngine {
   /// Downloads [asset] from [baseUrl] and verifies its SHA-256 against the
   /// release checksums file. Fails closed on any mismatch and never leaves a
   /// partially downloaded binary at [target].
-  Future<void> _downloadVerified(String asset, File target, void Function(double fraction)? onPhase, {String baseUrl = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download'}) async {
+  Future<void> _downloadVerified(String asset, File target, void Function(double fraction)? onPhase, {String baseUrl = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download', String? extractBinaryName}) async {
     final sums = await _fetchString('$baseUrl/SHA2-256SUMS');
     final expected = expectedHashFor(sums, asset);
     if (expected == null) {
@@ -177,10 +227,21 @@ class DesktopEngine implements TalosEngine {
       if (digest != expected) {
         throw StateError('Checksum mismatch for $asset');
       }
-      // File.rename does not overwrite an existing file on Windows, so an
-      // "Update Engine" run would always fail with a FileSystemException.
-      // File.copy replaces the destination on every desktop platform.
-      await tmp.copy(target.path);
+      if (extractBinaryName != null) {
+        // armv7 ships only a zip. Verify the zip itself, then write the
+        // single binary it contains.
+        final archive = ZipDecoder().decodeStream(InputFileStream(tmp.path));
+        final entry = archive.files.firstWhere(
+          (file) => file.isFile && file.name.split('/').last == extractBinaryName,
+          orElse: () => throw StateError('Engine archive missing $extractBinaryName'),
+        );
+        await target.writeAsBytes(entry.content as List<int>);
+      } else {
+        // File.rename does not overwrite an existing file on Windows, so an
+        // "Update Engine" run would always fail with a FileSystemException.
+        // File.copy replaces the destination on every desktop platform.
+        await tmp.copy(target.path);
+      }
     } finally {
       try {
         if (await tmp.exists()) await tmp.delete();
@@ -203,16 +264,7 @@ class DesktopEngine implements TalosEngine {
     }
     final dir = await _binDir;
     final nightly = channel == 'nightly';
-    final asset = switch (defaultTargetPlatform) {
-      TargetPlatform.windows => 'yt-dlp.exe',
-      TargetPlatform.macOS => 'yt-dlp_macos',
-      TargetPlatform.linux => switch (Abi.current()) {
-          Abi.linuxArm64 => 'yt-dlp_linux_aarch64',
-          Abi.linuxArm => 'yt-dlp_linux_armv7l',
-          _ => 'yt-dlp',
-        },
-      _ => 'yt-dlp',
-    };
+    final asset = engineAsset();
     final target = File('${dir.path}${Platform.pathSeparator}${Platform.isWindows ? 'yt-dlp.exe' : 'yt-dlp'}');
 
     final downloadBase = nightly
@@ -220,7 +272,13 @@ class DesktopEngine implements TalosEngine {
         : 'https://github.com/yt-dlp/yt-dlp/releases/latest/download';
 
     onPhase?.call('download', 0);
-    await _downloadVerified(asset, target, (fraction) => onPhase?.call('download', fraction), baseUrl: downloadBase);
+    await _downloadVerified(
+      asset,
+      target,
+      (fraction) => onPhase?.call('download', fraction),
+      baseUrl: downloadBase,
+      extractBinaryName: asset.endsWith('.zip') ? 'yt-dlp_linux_armv7l' : null,
+    );
 
     if (!Platform.isWindows) {
       await Process.run('chmod', ['+x', target.path]);
@@ -280,8 +338,10 @@ class DesktopEngine implements TalosEngine {
       await target.writeAsBytes(entry.content as List<int>);
       extracted++;
     }
-    if (extracted == 0) {
-      throw StateError('FFmpeg archive did not contain the expected binaries');
+    if (extracted != 2 ||
+        !File('${dir.path}${Platform.pathSeparator}ffmpeg.exe').existsSync() ||
+        !File('${dir.path}${Platform.pathSeparator}ffprobe.exe').existsSync()) {
+      throw StateError('FFmpeg archive did not contain both ffmpeg.exe and ffprobe.exe');
     }
     onPhase?.call('ffmpeg-verify', 1);
     final ffmpeg = await _versionOf(candidate.path);
@@ -297,8 +357,7 @@ class DesktopEngine implements TalosEngine {
       throw const FileSystemException('yt-dlp is not available');
     }
     final args = CommandBuilder.probeArgs(url, proxy: proxy.isEmpty ? null : proxy);
-    final result = await Process.run(binary, args)
-        .timeout(const Duration(seconds: 120));
+    final result = await _runWithTimeout(binary, args, const Duration(seconds: 120));
     if (result.exitCode != 0) {
       final stderr = result.stderr.toString().trim();
       throw StateError(stderr.isNotEmpty ? stderr : 'yt-dlp exited with code ${result.exitCode}');
@@ -385,52 +444,59 @@ class _DesktopDownloadSession implements TalosDownloadSession {
   final _rawController = StreamController<String>.broadcast();
 
   Future<void> _start() async {
-    final binary = await _engine.ytdlpPath();
-    if (binary == null) {
-      _finish(SessionOutcome(error: 'yt-dlp is not available'));
-      return;
-    }
-    final args = CommandBuilder.downloadArgs(_request, ffmpegAvailable: ffmpegAvailable);
+    // This runs unawaited from the constructor. Every path, including a
+    // decoder error on non-UTF-8 output, must complete the outcome or the
+    // sequential queue would wait forever on this task.
     try {
+      final binary = await _engine.ytdlpPath();
+      if (binary == null) {
+        _finish(SessionOutcome(error: 'yt-dlp is not available'));
+        return;
+      }
+      final args = CommandBuilder.downloadArgs(_request, ffmpegAvailable: ffmpegAvailable);
       _process = await Process.start(binary, args);
+      // A cancel can arrive while Process.start was pending. Kill immediately
+      // before the process can write a file with no history row.
+      if (_cancelled) {
+        _process!.kill();
+        _finish(SessionOutcome(error: 'cancelled'));
+        return;
+      }
+
+      final outDone = _process!.stdout
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen(_handleLine)
+          .asFuture();
+      final errDone = _process!.stderr
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .listen((line) {
+        if (_rawController.hasListener) _rawController.add(line);
+        _stderrTail.add(line);
+        if (_stderrTail.length > 30) _stderrTail.removeAt(0);
+      })
+          .asFuture();
+
+      final code = await _process!.exitCode;
+      // Streams may still hold buffered lines when the process exits; drain
+      // them before resolving the outcome so nothing is lost.
+      await Future.wait([outDone, errDone]);
+      if (_cancelled) {
+        _finish(SessionOutcome(error: 'cancelled', outputPath: _lastOutputPath));
+      } else if (code == 0) {
+        _finish(SessionOutcome(outputPath: _lastOutputPath));
+      } else {
+        final detail = _stderrTail.isNotEmpty ? _stderrTail.last : 'yt-dlp exited with code $code';
+        _finish(SessionOutcome(error: detail, outputPath: _lastOutputPath));
+      }
     } catch (error) {
-      _finish(SessionOutcome(error: 'Failed to start yt-dlp: $error'));
-      return;
-    }
-    // A cancel can arrive while Process.start was pending. Kill immediately
-    // before the process can write a file with no history row.
-    if (_cancelled) {
-      _process!.kill();
-      _finish(SessionOutcome(error: 'cancelled'));
-      return;
-    }
-
-    final outDone = _process!.stdout
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .listen(_handleLine)
-        .asFuture();
-    final errDone = _process!.stderr
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .listen((line) {
-      if (_rawController.hasListener) _rawController.add(line);
-      _stderrTail.add(line);
-      if (_stderrTail.length > 30) _stderrTail.removeAt(0);
-    })
-        .asFuture();
-
-    final code = await _process!.exitCode;
-    // Streams may still hold buffered lines when the process exits; drain
-    // them before resolving the outcome so nothing is lost.
-    await Future.wait([outDone, errDone]);
-    if (_cancelled) {
-      _finish(SessionOutcome(error: 'cancelled', outputPath: _lastOutputPath));
-    } else if (code == 0) {
-      _finish(SessionOutcome(outputPath: _lastOutputPath));
-    } else {
-      final detail = _stderrTail.isNotEmpty ? _stderrTail.last : 'yt-dlp exited with code $code';
-      _finish(SessionOutcome(error: detail, outputPath: _lastOutputPath));
+      _process?.kill();
+      _finish(SessionOutcome(error: 'Download failed: $error', outputPath: _lastOutputPath));
+    } finally {
+      if (!_outcomeCompleter.isCompleted) {
+        _finish(SessionOutcome(error: 'Download failed unexpectedly', outputPath: _lastOutputPath));
+      }
     }
   }
 

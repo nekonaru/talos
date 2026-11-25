@@ -48,7 +48,7 @@ class AboutScreen extends StatelessWidget {
             style: theme.textTheme.displaySmall?.copyWith(letterSpacing: 10),
           ),
           const SizedBox(height: 4),
-          Text(TalosInfo.tagline.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2)),
+          Text(l.tagline.toUpperCase(), style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2)),
           const SizedBox(height: 16),
           Container(height: 2, width: 56, color: theme.colorScheme.primary),
           const SizedBox(height: 24),

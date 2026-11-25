@@ -66,7 +66,10 @@ class TalosStorageBridge(private val context: Context) {
         private fun mimeFor(fileName: String): String {
             val lower = fileName.lowercase()
             return when {
-                lower.endsWith(".mp4") || lower.endsWith(".3gp") -> "video/mp4"
+                lower.endsWith(".mp4") -> "video/mp4"
+                lower.endsWith(".3gp") -> "video/3gpp"
+                lower.endsWith(".3g2") -> "video/3gpp2"
+                lower.endsWith(".mov") -> "video/quicktime"
                 lower.endsWith(".m4a") -> "audio/mp4"
                 lower.endsWith(".mkv") -> "video/x-matroska"
                 lower.endsWith(".webm") -> "video/webm"
@@ -110,6 +113,19 @@ class TalosStorageBridge(private val context: Context) {
                     activity.startActivityForResult(intent, PICK_TREE)
                 }
                 "clearTree" -> {
+                    val previous = treeUriString
+                    if (!previous.isNullOrEmpty()) {
+                        try {
+                            val uri = Uri.parse(previous)
+                            context.contentResolver.releasePersistableUriPermission(
+                                uri,
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                            )
+                        } catch (_: Exception) {
+                            // The grant may already be gone; forgetting the
+                            // folder must still succeed.
+                        }
+                    }
                     treeUriString = null
                     prefs.edit().remove(KEY_TREE).apply()
                     result.success(null)
@@ -173,7 +189,12 @@ class TalosStorageBridge(private val context: Context) {
     private fun talosDir(tree: DocumentFile): DocumentFile? {
         if (tree.name.equals("Talos", ignoreCase = true)) return tree
         return try {
-            tree.findFile("Talos") ?: tree.createDirectory("Talos")
+            val found = tree.findFile("Talos")
+            when {
+                found == null -> tree.createDirectory("Talos")
+                found.isDirectory -> found
+                else -> null
+            }
         } catch (_: Exception) {
             null
         }
@@ -352,7 +373,7 @@ class TalosStorageBridge(private val context: Context) {
                 MediaStore.Downloads.EXTERNAL_CONTENT_URI,
                 arrayOf(MediaStore.Downloads._ID),
                 "${MediaStore.Downloads.DISPLAY_NAME} = ? AND ${MediaStore.Downloads.RELATIVE_PATH} LIKE ?",
-                arrayOf(displayName, "Download/Talos%"),
+                arrayOf(displayName, "Download/Talos/%"),
                 null,
             ).use { cursor -> cursor != null && cursor.count > 0 }
         } catch (_: Exception) {
@@ -405,7 +426,15 @@ class TalosStorageBridge(private val context: Context) {
 
     private fun deleteUri(uri: Uri): Boolean {
         return try {
-            DocumentsContract.deleteDocument(context.contentResolver, uri) ?: false
+            // MediaStore downloads are not SAF documents. Deleting them with
+            // DocumentsContract silently fails on API 29+, which is the
+            // default save path, so use ContentResolver.delete for that
+            // authority and keep DocumentsContract for real SAF trees.
+            if (uri.authority == MediaStore.AUTHORITY) {
+                context.contentResolver.delete(uri, null, null) > 0
+            } else {
+                DocumentsContract.deleteDocument(context.contentResolver, uri) ?: false
+            }
         } catch (_: Exception) {
             false
         }

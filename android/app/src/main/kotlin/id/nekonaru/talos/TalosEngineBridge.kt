@@ -203,7 +203,20 @@ class TalosEngineBridge(private val application: Application) {
         return try {
             val obj = JSONObject(raw)
             when (obj.optString("status")) {
-                "done" -> mapOf("event" to "done")
+                "done" -> {
+                    // A playlist merge produces one output per entry. Forward
+                    // them all, otherwise only the last file is saved and the
+                    // rest are orphaned in private storage.
+                    val array = obj.optJSONArray("outputs")
+                    val outputs = mutableListOf<String>()
+                    if (array != null) {
+                        for (i in 0 until array.length()) {
+                            val value = array.optString(i)
+                            if (value.isNotEmpty()) outputs.add(value)
+                        }
+                    }
+                    mapOf("event" to "done", "outputs" to outputs)
+                }
                 "cancelled" -> mapOf("event" to "cancelled")
                 else -> mapOf(
                     "event" to "error",

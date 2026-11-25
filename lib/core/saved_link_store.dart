@@ -104,6 +104,18 @@ class SavedLinkStore extends ChangeNotifier {
     await _persist();
   }
 
+  Future<void> replaceAll(Iterable<SavedLink> entries) async {
+    _entries = entries
+        .where((link) => link.id.isNotEmpty && link.text.isNotEmpty)
+        .toList();
+    if (_entries.length > maxEntries) {
+      _entries = _entries.sublist(0, maxEntries);
+    }
+    _entries.sort((a, b) => b.dateMs.compareTo(a.dateMs));
+    notifyListeners();
+    await _persist();
+  }
+
   Future<void> _persist() async {
     try {
       await _file.parent.create(recursive: true);
