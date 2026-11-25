@@ -17,6 +17,7 @@ import 'package:talos/core/engine/progress_parser.dart';
 import 'package:talos/core/history_store.dart';
 import 'package:talos/core/insights.dart';
 import 'package:talos/core/preset_store.dart';
+import 'package:talos/core/queue_store.dart';
 import 'package:talos/core/saved_link_store.dart';
 import 'package:talos/core/settings_store.dart';
 
@@ -692,6 +693,7 @@ void main() {
     expect(decoded['format'], TalosBackup.format);
     expect((decoded['history'] as List).length, 1);
     expect((decoded['savedLinks'] as List).length, 1);
+    expect(decoded['queue'], isA<List>());
 
     await manager.settings.mutate((s) => s.copyWith(accent: 'marble'));
     await manager.history.clear();
@@ -744,6 +746,67 @@ void main() {
     }
     expect(manager.tasks, isEmpty);
     DownloadManager.retryDelayBase = const Duration(seconds: 2);
+  });
+
+  test('download request survives a JSON round trip', () {
+    final original = DownloadRequest(
+      url: 'https://example.invalid/watch?v=q',
+      videoMode: false,
+      outputDir: '/downloads',
+      audioFormat: 'flac',
+      audioBitrate: '320',
+      proxy: 'http://proxy:8080',
+      rateLimit: '5M',
+      subtitleLanguage: 'id',
+      formatSelector: 'bestaudio',
+      downloadSubtitles: false,
+      keepSubtitles: true,
+      clipStartSeconds: 10,
+      clipEndSeconds: 30,
+      outputFilename: 'Song(1).flac',
+    );
+    final restored = DownloadRequest.fromJson(original.toJson());
+    expect(restored.url, original.url);
+    expect(restored.outputDir, original.outputDir);
+    expect(restored.audioFormat, 'flac');
+    expect(restored.proxy, 'http://proxy:8080');
+    expect(restored.formatSelector, 'bestaudio');
+    expect(restored.clipStartSeconds, 10);
+    expect(restored.clipEndSeconds, 30);
+    expect(restored.outputFilename, 'Song(1).flac');
+    expect(restored.keepSubtitles, isTrue);
+  });
+
+  test('queue store restores pending downloads on startup', () async {
+    await QueueStore.save([
+      QueuedDownload(
+        id: 'restored',
+        title: 'Restored item',
+        url: 'https://example.invalid/watch?v=restored',
+        kind: HistoryKind.audio,
+        request: DownloadRequest(
+          url: 'https://example.invalid/watch?v=restored',
+          videoMode: false,
+          outputDir: 'out',
+          audioFormat: 'opus',
+        ),
+        attempts: 1,
+      ),
+    ]);
+    final loaded = await QueueStore.load();
+    expect(loaded, hasLength(1));
+    expect(loaded.first.title, 'Restored item');
+    expect(loaded.first.attempts, 1);
+
+    final manager = await DownloadManager.create(
+      engine: FakeEngine(),
+      restoreQueue: true,
+    );
+    expect(manager.tasks, hasLength(1));
+    expect(manager.tasks.first.title, 'Restored item');
+    expect(manager.tasks.first.request.audioFormat, 'opus');
+    await manager.resetAll();
+    await QueueStore.save([]);
   });
 
   test('backup rejects foreign payloads', () async {

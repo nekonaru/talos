@@ -11,7 +11,7 @@ import 'core/download_manager.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initForegroundTask();
-  final manager = await DownloadManager.create();
+  final manager = await DownloadManager.create(restoreQueue: true);
   unawaited(_maybeAutoUpdateEngine(manager));
   // Permissions are requested by the app after the first frame settles.
   runApp(TalosApp(manager: manager));

@@ -816,7 +816,7 @@ class _HistoryCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                tooltip: l.favorite,
+                tooltip: entry.favorite ? l.favoriteRemove : l.favoriteAdd,
                 icon: Icon(
                   entry.favorite ? Icons.star_rounded : Icons.star_border_rounded,
                   color: entry.favorite ? theme.colorScheme.primary : null,

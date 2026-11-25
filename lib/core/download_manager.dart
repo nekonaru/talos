@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'background_service.dart';
 import 'history_store.dart';
 import 'preset_store.dart';
+import 'queue_store.dart';
 import 'saved_link_store.dart';
 import 'settings_store.dart';
 import 'engine/engine.dart';
@@ -76,7 +77,7 @@ class DownloadManager extends ChangeNotifier {
   final SavedLinkStore savedLinks;
   final PresetStore presets;
 
-  static Future<DownloadManager> create({TalosEngine? engine}) async {
+  static Future<DownloadManager> create({TalosEngine? engine, bool restoreQueue = false}) async {
     // Start all independent loads at once. Each store reads a JSON file and
     // resolves the support directory; awaiting them sequentially delayed the
     // first frame by the sum of those round trips.
@@ -120,6 +121,19 @@ class DownloadManager extends ChangeNotifier {
       await savedFuture,
       await presetFuture,
     );
+    if (restoreQueue) {
+      for (final saved in await QueueStore.load()) {
+        manager._tasks.add(DownloadTask(
+          id: saved.id,
+          title: saved.title,
+          url: saved.url,
+          kind: saved.kind,
+          request: saved.request,
+          thumbnailUrl: saved.thumbnailUrl,
+        )..attempts = saved.attempts);
+      }
+      if (manager._tasks.isNotEmpty) unawaited(manager._pump());
+    }
     return manager;
   }
 
@@ -154,6 +168,7 @@ class DownloadManager extends ChangeNotifier {
     );
     _tasks.add(task);
     notifyListeners();
+    unawaited(_persistQueue());
     unawaited(_pump());
   }
 
@@ -161,6 +176,7 @@ class DownloadManager extends ChangeNotifier {
     if (task.status == TaskStatus.queued) {
       task.status = TaskStatus.cancelled;
       notifyListeners();
+      await _persistQueue();
       // Cancelling the last queued task can leave no work for the pump, so
       // stop the foreground service here as well.
       await _maybeStopForeground();
@@ -232,11 +248,13 @@ class DownloadManager extends ChangeNotifier {
     if (task.status == TaskStatus.running || task.status == TaskStatus.queued) return;
     _tasks.remove(task);
     notifyListeners();
+    unawaited(_persistQueue());
   }
 
   void clearFinished() {
     _tasks.removeWhere((t) => t.status != TaskStatus.running && t.status != TaskStatus.queued);
     notifyListeners();
+    unawaited(_persistQueue());
   }
 
   /// Cancels active work and removes every task. Used by "Reset all data";
@@ -258,6 +276,7 @@ class DownloadManager extends ChangeNotifier {
     _activeSession = null;
     _tasks.clear();
     notifyListeners();
+    await _persistQueue();
     await stopForegroundService();
   }
 
@@ -267,6 +286,7 @@ class DownloadManager extends ChangeNotifier {
     task.status = TaskStatus.cancelled;
     task.stage = 'cancelled';
     notifyListeners();
+    await _persistQueue();
     await _maybeStopForeground();
   }
 
@@ -276,6 +296,7 @@ class DownloadManager extends ChangeNotifier {
     task.status = TaskStatus.cancelled;
     task.stage = 'cancelled';
     notifyListeners();
+    await _persistQueue();
     await _maybeStopForeground();
   }
 
@@ -299,6 +320,7 @@ class DownloadManager extends ChangeNotifier {
       ..addAll(visible)
       ..addAll(completed);
     notifyListeners();
+    unawaited(_persistQueue());
   }
 
   /// Progress events can arrive many times per second. Coalesce them so the
@@ -356,6 +378,7 @@ class DownloadManager extends ChangeNotifier {
           _tasks.remove(next);
           _tasks.insert(0, next);
           notifyListeners();
+          await _persistQueue();
           // Linear backoff keeps the delay predictable: 2s, 4s, 6s.
           await Future.delayed(retryDelayBase * next.attempts);
           if (generation != _resetGeneration) break;
@@ -376,6 +399,7 @@ class DownloadManager extends ChangeNotifier {
     task.status = TaskStatus.running;
     task.stage = 'starting';
     notifyListeners();
+    unawaited(_persistQueue());
 
     if (_settings.value.downloadNotification) {
       await requestTalosNotificationPermission();
@@ -598,7 +622,26 @@ class DownloadManager extends ChangeNotifier {
       task.error = outcome.error;
     }
     notifyListeners();
+    await _persistQueue();
     await _maybeStopForeground();
+  }
+
+  /// Saves pending and running work. Running tasks are restored as queued,
+  /// which resumes them after a process kill with their request intact.
+  Future<void> _persistQueue() async {
+    await QueueStore.save([
+      for (final task in _tasks)
+        if (task.status == TaskStatus.queued || task.status == TaskStatus.running)
+          QueuedDownload(
+            id: task.id,
+            title: task.title,
+            url: task.url,
+            kind: task.kind,
+            request: task.request,
+            thumbnailUrl: task.thumbnailUrl,
+            attempts: task.attempts,
+          ),
+    ]);
   }
 
   static bool _retryable(String? error) {
