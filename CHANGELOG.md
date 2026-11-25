@@ -5,6 +5,36 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.20.0
+
+A large update adding a redownload action for finished entries, plus correctness fixes for Android folders, playlist merging and bulk saved links found in a fresh deep audit.
+
+### New features
+
+- **Download again.** Every finished entry now has a "Download again" action in its menu. It probes the stored URL and opens Configure with fresh media info so settings can be changed before downloading again.
+
+### Bug fixes
+
+- **Android per-type folders.** A user-chosen video or audio folder is now authoritative on API 29+; files are no longer silently relocated into Downloads/Talos and the chosen folder emptied.
+- **Android playlists.** Video/audio parts are now grouped by base name and merged per item, so a playlist no longer finishes with one broken fragment and orphaned streams.
+- **Download all saved links.** All URLs are now flattened through the same detector used by the input field, so multi-link saves keep every URL and a single saved link downloads correctly instead of doing nothing.
+- **Android success detection.** A transient `ERROR:` line no longer marks a successful download as failed; the native status is authoritative.
+- **Error-line parsing.** yt-dlp errors with a `[site] ERROR:` prefix are now detected, while unrelated words are not.
+- **FFmpeg setup memory.** The essentials archive is decoded as a stream instead of fully buffered in memory.
+- **Filename helpers.** Uniqueness loops are bounded and directory scans are less likely to stall the UI.
+- **MediaStore MIME.** `.m4a` files are indexed as `audio/mp4` instead of video.
+- **SAF copies.** Empty documents are no longer left behind when a copy fails.
+- **Debug ABIs.** The arm64-only filter now applies to release builds; debug builds again include x86_64 for emulators.
+- **Localization.** Added the missing `@appTitle` metadata to the Indonesian ARB.
+
+### Improvements
+
+- **78 tests passing**, with stable expectations for the new async filename resolution.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk` (universal, for 64-bit Android devices). Windows: `Talos-v0.20.0-windows-x64.zip`. Linux: `Talos-v0.20.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24) or newer, Windows 10, or a recent GTK3 Linux build.
+
 ## v0.19.0
 
 A large update led by bulk download for saved links, plus concurrency and reliability fixes found in a fresh deep audit.
