@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.29.0
+
+A large update adding saved link management, plus the finishing touches on data export.
+
+### New features
+
+- **Saved link editing.** Each saved link now has Copy and Edit actions. Editing keeps the original id and date, so list order and history references stay intact.
+
+### Improvements
+
+- **92 tests passing**, including saved link edit persistence.
+- **Feedback.** Copying or editing a saved link shows a localized snackbar confirmation.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.29.0-windows-x64.zip`. Linux: `Talos-v0.29.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.28.0
 
 A large update adding CSV history export and a native cancellation fix for FFmpeg merges.

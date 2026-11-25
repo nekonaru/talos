@@ -526,6 +526,19 @@ void main() {
     expect(noFfmpeg, isNot(contains('--download-sections')));
   });
 
+  test('saved links can be edited without changing id or date', () async {
+    final store = await SavedLinkStore.load();
+    await store.clear();
+    await store.add('https://example.invalid/old');
+    final original = store.entries.single;
+    await store.update(original.id, 'https://example.invalid/new extra text');
+    final updated = (await SavedLinkStore.load()).entries.single;
+    expect(updated.id, original.id);
+    expect(updated.dateMs, original.dateMs);
+    expect(updated.text, 'https://example.invalid/new extra text');
+    await store.clear();
+  });
+
   test('saved links dedupe, persist and skip malformed rows', () async {
     final support = await getApplicationSupportDirectory();
     await support.create(recursive: true);

@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.29.0
+
+Update besar yang menambahkan pengelolaan tautan tersimpan, plus penyempurnaan ekspor data.
+
+### Fitur baru
+
+- **Ubah tautan tersimpan.** Setiap tautan tersimpan kini punya aksi Salin dan Ubah. Mengubah tautan mempertahankan id dan tanggal asli, sehingga urutan daftar dan referensi riwayat tetap utuh.
+
+### Peningkatan
+
+- **92 test lulus**, termasuk uji persistensi perubahan tautan tersimpan.
+- **Umpan balik.** Menyalin atau mengubah tautan tersimpan menampilkan konfirmasi snackbar terlokalisasi.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.29.0-windows-x64.zip`. Linux: `Talos-v0.29.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.28.0
 
 Update besar yang menambahkan ekspor riwayat CSV dan perbaikan pembatalan native saat penggabungan FFmpeg.
