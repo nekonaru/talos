@@ -70,6 +70,7 @@
 |---------|-------------|
 | **Full playlist support** | Fetch a playlist URL, see every entry with durations, pick all or a subset |
 | **Per-item progress** | See which playlist item is downloading and how many remain |
+| **Playlist filter** | Select entries automatically by duration range and title text |
 
 ### File Output
 
@@ -168,8 +169,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.29.0-windows-x64.zip`
-   - Linux: `Talos-v0.29.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.30.0-windows-x64.zip`
+   - Linux: `Talos-v0.30.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]
