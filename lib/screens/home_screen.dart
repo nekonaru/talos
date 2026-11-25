@@ -482,10 +482,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(child: SectionLabel(l.savedLinks)),
                       TextButton.icon(
                         onPressed: _busy ? null : () {
-                          final links = manager.savedLinks.entries
-                              .map((link) => link.text.split(RegExp(r'\s+')).first)
+                          // Flatten every saved text through the same detector
+                          // used by the input field, so multi-link saves keep
+                          // all their URLs.
+                          final urls = manager.savedLinks.entries
+                              .expand((link) => _detectUrls(link.text))
                               .toList();
-                          if (links.isNotEmpty) unawaited(_batchFetch(sourceUrls: links));
+                          if (urls.isEmpty) return;
+                          if (urls.length == 1) {
+                            unawaited(_fetch(urls.first));
+                          } else {
+                            unawaited(_batchFetch(sourceUrls: urls));
+                          }
                         },
                         icon: const Icon(Icons.download_done_outlined, size: 18),
                         label: Text(l.downloadAllSaved),

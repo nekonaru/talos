@@ -182,6 +182,11 @@ void main() {
     await tester.tap(find.text('Download'));
     await tester.pumpAndSettle();
 
+    await tester.runAsync(() async {
+      for (var i = 0; i < 100 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+    });
     expect(engine.lastSession, isNotNull);
     await tester.runAsync(() async {
       engine.lastSession!.complete('/tmp/example.mp4');
@@ -213,6 +218,11 @@ void main() {
     await tester.tap(find.text('Download'));
     await tester.pumpAndSettle();
 
+    await tester.runAsync(() async {
+      for (var i = 0; i < 100 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+    });
     expect(engine.lastSession, isNotNull);
     await tester.runAsync(() async {
       engine.lastSession!.complete('/tmp/example.mp4');

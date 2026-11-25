@@ -14,6 +14,7 @@ import '../core/format.dart';
 import '../core/history_store.dart';
 import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
+import 'configure_screen.dart';
 import 'player_screen.dart';
 
 /// Resolves stable error codes from the download engine to localized text.
@@ -516,6 +517,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                         onToggleFavorite: () => unawaited(manager.history.toggleFavorite(entry.id)),
                         onFolder: () => _openFolder(entry.filePath),
                         onShare: Platform.isAndroid || Platform.isIOS ? () => _share(entry.filePath) : null,
+                        onDownloadAgain: () => unawaited(_downloadAgain(context, entry)),
                         onDelete: () => _deleteFile(context, entry),
                         onRemove: () => unawaited(manager.history.remove(entry.id)),
                       );
@@ -528,6 +530,25 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
       ),
       ),
     );
+  }
+
+  /// Probes the stored URL again and opens Configure with fresh media info,
+  /// so the user can change settings before re-downloading a finished item.
+  Future<void> _downloadAgain(BuildContext context, HistoryEntry entry) async {
+    if (entry.url.isEmpty) return;
+    final manager = TalosScope.of(context);
+    try {
+      final probe = await manager.engine.probe(entry.url, proxy: manager.settings.value.proxy);
+      if (!context.mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ConfigureScreen(probe: probe)),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$error')),
+      );
+    }
   }
 
   Future<void> _openEntry(BuildContext context, HistoryEntry entry) async {
@@ -730,6 +751,7 @@ class _HistoryCard extends StatelessWidget {
     required this.onFolder,
     required this.onCopyPath,
     required this.onShare,
+    required this.onDownloadAgain,
     required this.onDelete,
     required this.onRemove,
   });
@@ -745,6 +767,7 @@ class _HistoryCard extends StatelessWidget {
   final VoidCallback onFolder;
   final VoidCallback onCopyPath;
   final VoidCallback? onShare;
+  final VoidCallback onDownloadAgain;
   final VoidCallback onDelete;
   final VoidCallback onRemove;
 
@@ -812,6 +835,8 @@ class _HistoryCard extends StatelessWidget {
                       onCopyPath();
                     case 'share':
                       onShare?.call();
+                    case 'again':
+                      onDownloadAgain();
                     case 'delete':
                       onDelete();
                     case 'remove':
@@ -826,6 +851,7 @@ class _HistoryCard extends StatelessWidget {
                   else
                     PopupMenuItem(value: 'copyPath', child: Text(l.copyPath)),
                   if (onShare != null) PopupMenuItem(value: 'share', child: Text(l.share)),
+                  PopupMenuItem(value: 'again', child: Text(l.downloadAgain)),
                   const PopupMenuDivider(),
                   PopupMenuItem(value: 'remove', child: Text(l.remove)),
                   PopupMenuItem(value: 'delete', child: Text(l.deleteFile)),

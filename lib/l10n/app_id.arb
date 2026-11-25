@@ -1,5 +1,6 @@
 {
   "appTitle": "Talos",
+  "@appTitle": { "description": "Application name" },
   "home": "Beranda",
   "tagline": "Pengunduh video dan audio",
   "urlHint": "Tempel tautan video atau playlist",
@@ -123,6 +124,7 @@
   "presetDeleted": "Preset dihapus",
   "savedLinks": "Tautan tersimpan",
   "downloadAllSaved": "Unduh semua",
+  "downloadAgain": "Unduh lagi",
   "saveLink": "Simpan tautan",
   "linkSaved": "Tautan disimpan",
   "linkAlreadySaved": "Tautan ini sudah disimpan",

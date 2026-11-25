@@ -66,7 +66,8 @@ class TalosStorageBridge(private val context: Context) {
         private fun mimeFor(fileName: String): String {
             val lower = fileName.lowercase()
             return when {
-                lower.endsWith(".mp4") || lower.endsWith(".m4a") || lower.endsWith(".3gp") -> "video/mp4"
+                lower.endsWith(".mp4") || lower.endsWith(".3gp") -> "video/mp4"
+                lower.endsWith(".m4a") -> "audio/mp4"
                 lower.endsWith(".mkv") -> "video/x-matroska"
                 lower.endsWith(".webm") -> "video/webm"
                 lower.endsWith(".mp3") -> "audio/mpeg"
@@ -238,6 +239,8 @@ class TalosStorageBridge(private val context: Context) {
     }
 
     private fun copyToTree(localPath: String, displayName: String): String? {
+        val source = File(localPath)
+        if (!source.exists()) return null
         val tree = treeUriString?.let { Uri.parse(it) }?.let { DocumentFile.fromTreeUri(context, it) } ?: return null
         val target = talosDir(tree) ?: return null
         if (!target.canWrite()) return null
@@ -246,12 +249,15 @@ class TalosStorageBridge(private val context: Context) {
             mimeFor(uniqueName),
             uniqueName,
         ) ?: return null
-        val source = File(localPath)
-        if (!source.exists()) return null
-        source.inputStream().use { input ->
-            context.contentResolver.openOutputStream(created.uri)?.use { output ->
-                input.copyTo(output)
-            } ?: return null
+        try {
+            source.inputStream().use { input ->
+                val output = context.contentResolver.openOutputStream(created.uri)
+                    ?: throw java.io.IOException("Cannot open output stream")
+                output.use { input.copyTo(it) }
+            }
+        } catch (e: Exception) {
+            created.delete()
+            return null
         }
         return created.uri.toString()
     }

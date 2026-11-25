@@ -44,10 +44,6 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        // Python 3.14 is 64-bit only. v0.1.1 ships arm64-v8a to cover 90% of devices with a smaller APK.
-        ndk {
-            abiFilters.addAll(listOf("arm64-v8a"))
-        }
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
         // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
@@ -73,6 +69,11 @@ android {
 
     buildTypes {
         release {
+            // Python 3.14 is 64-bit only. Release ships arm64-v8a for a
+            // smaller APK; debug keeps all ABIs so emulators still work.
+            ndk {
+                abiFilters.addAll(listOf("arm64-v8a"))
+            }
             // Drop unused plugin resources and Dart symbols. Keep rules above
             // protect the reflection-based native bridges.
             isMinifyEnabled = true

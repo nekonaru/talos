@@ -363,7 +363,7 @@ class DownloadManager extends ChangeNotifier {
         final base = _uniqueOutputTemplate(dir, _sanitizeFilenameComponent(task.title));
         return task.request.copyWith(outputFilename: '$base.%(ext)s');
       } catch (_) {
-        // existsSync can fail on unusual paths (for example SAF content
+        // Directory access can fail on unusual paths (for example SAF content
         // URIs); fall back to the requested name unchanged.
         return task.request;
       }
@@ -439,20 +439,25 @@ class DownloadManager extends ChangeNotifier {
       // there. A failed copy fails the task instead of hiding the file in
       // private storage.
       final saf = _settings.value.downloadFolderSAF.trim();
-      final plainSet = _settings.value.downloadFolder?.trim().isNotEmpty ?? false;
+      // A plain per-type folder (video/audio) the user chose is authoritative:
+      // the file is already there and must not be relocated to Downloads/Talos.
+      final requestedDir = task.request.outputDir.trim();
+      final plainSet = requestedDir.isNotEmpty &&
+          !requestedDir.startsWith('content://') &&
+          requestedDir != _outputDir;
       final localPath = task.outputPath ?? '';
       int? deletedSize;
-      if (Platform.isAndroid && localPath.isNotEmpty && !localPath.startsWith('content://')) {
+      if (Platform.isAndroid && localPath.isNotEmpty && !localPath.startsWith('content://') && !plainSet) {
         final displayName = localPath.split(Platform.pathSeparator).last;
         final localSize = await _fileSize(localPath);
         final directWrite = _outputDir == '/storage/emulated/0/Download/Talos';
         String? saved;
         if (saf.isNotEmpty) {
           saved = await TalosStorageBridge.copyToTree(localPath, displayName);
-        } else if (!plainSet && !directWrite) {
+        } else if (!directWrite) {
           saved = await TalosStorageBridge.saveToDownloads(localPath, displayName);
         } else {
-          saved = localPath; // Custom plain path or API 24-28 direct write.
+          saved = localPath; // API 24-28 direct write.
         }
         if (saved == null) {
           task.status = TaskStatus.failed;
@@ -519,7 +524,7 @@ class DownloadManager extends ChangeNotifier {
     final dot = name.lastIndexOf('.');
     final base = dot >= 0 ? name.substring(0, dot) : name;
     final ext = dot >= 0 ? name.substring(dot) : '';
-    for (var i = 1; i < 10000; i++) {
+    for (var i = 1; i < 1000; i++) {
       final candidate = '$base($i)$ext';
       if (!File('${dir.path}$sep$candidate').existsSync()) return candidate;
     }
@@ -556,7 +561,7 @@ class DownloadManager extends ChangeNotifier {
         .toSet();
     bool used(String candidate) => taken.any((name) => name.startsWith('$candidate.'));
     if (!used(base)) return base;
-    for (var i = 1; i < 10000; i++) {
+    for (var i = 1; i < 1000; i++) {
       final candidate = '$base($i)';
       if (!used(candidate)) return candidate;
     }
