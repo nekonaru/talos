@@ -106,6 +106,22 @@ class _LineWriter(io.TextIOBase):
 # them so a probe cannot run during a download and steal its progress lines.
 _OUTPUT_LOCK = threading.Lock()
 
+# FFmpegKit runs synchronously on the Python thread, so a cancel flag cannot
+# interrupt it. Keep the active session id so the Kotlin bridge can cancel it.
+_active_ffmpeg_session = None
+
+
+def cancel_merge():
+    global _active_ffmpeg_session
+    session = _active_ffmpeg_session
+    if session is None:
+        return
+    try:
+        from com.arthenica.ffmpegkit import FFmpegKit
+        FFmpegKit.cancel(session.getSessionId())
+    except Exception:
+        pass
+
 
 def _run(argv, on_line, is_cancelled, on_destination=None, stderr_sink=None):
     import yt_dlp
@@ -191,6 +207,7 @@ def _dedupe(path):
 
 
 def _safe_merge(parts, on_line, is_cancelled=None):
+    global _active_ffmpeg_session
     """Merge separate video and audio files with the bundled FFmpeg.
 
     Returns ``(output_path, error)``. Exactly one of the two is non-None.
@@ -230,10 +247,14 @@ def _safe_merge(parts, on_line, is_cancelled=None):
             args += ['-movflags', '+faststart']
         args.append(out_path)
         session = FFmpegKit.executeWithArguments(args)
-        if not ReturnCode.isSuccess(session.getReturnCode()):
-            message = session.getAllLogsAsString() or 'unknown FFmpeg error'
-            on_line('[Merger] Merge failed (exit / logs below):\n%s' % message)
-            return None, 'Merge failed for %s: %s' % (base, message)
+        _active_ffmpeg_session = session
+        try:
+            if not ReturnCode.isSuccess(session.getReturnCode()):
+                message = session.getAllLogsAsString() or 'unknown FFmpeg error'
+                on_line('[Merger] Merge failed (exit / logs below):\n%s' % message)
+                return None, 'Merge failed for %s: %s' % (base, message)
+        finally:
+            _active_ffmpeg_session = None
     except DownloadCancelled:
         raise
     except Exception:

@@ -898,6 +898,27 @@ void main() {
     }
   });
 
+  test('history CSV export escapes special characters', () async {
+    final store = await HistoryStore.load();
+    await store.clear();
+    await store.add(HistoryEntry(
+      id: 'csv',
+      title: 'A, "quoted" title',
+      url: 'https://example.invalid/watch?v=csv',
+      filePath: '/tmp/a,b.mp4',
+      kind: HistoryKind.video,
+      dateMs: 123,
+      sizeBytes: 42,
+      favorite: true,
+    ));
+    final csv = store.exportCsv();
+    expect(csv, contains('title,url,kind,filePath,sizeBytes,dateMs,favorite'));
+    expect(csv, contains('"A, ""quoted"" title"'));
+    expect(csv, contains('"/tmp/a,b.mp4"'));
+    expect(csv.trim().split('\n'), hasLength(2));
+    await store.clear();
+  });
+
   test('history retention drops only old rows', () async {
     final store = await HistoryStore.load();
     await store.clear();
