@@ -89,6 +89,14 @@ android {
             }
         }
     }
+    // Fail a release build that has no signing key, but only when a release
+    // task is actually requested. A configuration-time check would also break
+    // debug builds on pull requests, where the signing secret is unavailable.
+    gradle.taskGraph.whenReady {
+        if (!hasKeystore && allTasks.any { it.name.lowercase().contains("release") }) {
+            error("Release signing key is missing: app/key.properties")
+        }
+    }
 }
 
 kotlin {

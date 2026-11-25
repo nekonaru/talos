@@ -155,16 +155,15 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
       ),
     );
     if (confirmed != true) return;
-    final path = entry.filePath;
-    if (path.startsWith('content://')) {
-      await TalosStorageBridge.deleteUri(path);
-    } else {
-      try {
-        final file = File(path);
-        if (await file.exists()) await file.delete();
-      } catch (_) {
-        // Missing file is fine: we still clean up the history row.
+    final deleted = await TalosStorageBridge.deleteDownloadedFile(entry.filePath);
+    if (!deleted) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.deleteSelectedFailed)),
+        );
       }
+      // Keep the history row so the user can retry and the file is not orphaned.
+      return;
     }
     await manager.history.remove(entry.id);
   }

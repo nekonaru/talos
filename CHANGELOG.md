@@ -5,6 +5,45 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.21.0
+
+A large update adding portable backup and restore, plus deep audit fixes for cancellation, Android storage, playlist merges and engine bootstrap.
+
+### New features
+
+- **Backup and restore.** Settings, history, saved links, presets and command templates can be exported as portable JSON and restored on the same device or a new one. Downloaded files are left untouched.
+
+### Bug fixes
+
+- **Cancel during post-processing.** A cancel arriving after the engine finished no longer writes a history row or leaves a copied file behind.
+- **Playlist outputs.** Android playlist merges now report every output, so all items are saved and added to history instead of only the last one.
+- **Failed merges.** A failed FFmpeg merge is reported as an error instead of saving a raw partial stream as the finished file.
+- **Probe JSON.** yt-dlp diagnostics on stderr no longer corrupt the JSON payload returned by the Android probe.
+- **MediaStore delete.** Files saved through MediaStore are deleted with ContentResolver, so the delete action works on API 29 and later.
+- **Delete failure.** A failed file delete keeps its history row and shows a message instead of silently orphaning the file.
+- **Engine status failure.** Configure shows a retry action instead of leaving Download disabled forever with no explanation.
+- **Windows paths.** Custom commands keep backslashes in paths such as `C:\Users\me\cookies.txt`.
+- **URL option injection.** An end-of-options marker now precedes URLs so a saved link starting with a dash cannot inject yt-dlp flags.
+- **Desktop engine bootstrap.** Linux selects standalone glibc or musl builds, and armv7 extracts the binary from its zip asset. FFmpeg setup requires both ffmpeg.exe and ffprobe.exe.
+- **Engine deadlocks.** Process startup and stream decode failures always complete the session outcome, so the sequential queue cannot hang.
+- **Unique filenames.** After many collisions Talos uses a time-based suffix instead of falling back to an occupied name.
+- **MIME types.** `.3gp`, `.3g2` and `.mov` are indexed with the correct MediaStore MIME type.
+- **Folder unlink.** Clearing a SAF folder now releases the persisted URI permission.
+- **Release signing.** A release build fails clearly when the signing key is missing instead of silently using the debug key.
+- **Localization.** The Indonesian UI now uses the translated tagline on Home, Intro and About.
+- **Fetch feedback.** Text without a valid URL now shows a localized hint instead of doing nothing.
+
+### Improvements
+
+- **82 tests passing**, including backup round trip and command builder regressions.
+- **CI gating.** Build jobs now wait for the verify job so artifacts are not produced from failing code.
+- **Engine detection.** The managed engine is identified by its real path instead of a path substring, so system installs are reported correctly.
+- **Process timeouts.** Version and probe processes are killed on timeout instead of being left running.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.21.0-windows-x64.zip`. Linux: `Talos-v0.21.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.20.0
 
 A large update adding a redownload action for finished entries, plus correctness fixes for Android folders, playlist merging and bulk saved links found in a fresh deep audit.

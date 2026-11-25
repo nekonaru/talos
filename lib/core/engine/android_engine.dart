@@ -35,18 +35,28 @@ class AndroidEngine implements TalosEngine {
       );
     } on PlatformException {
       return EngineStatus(ready: false, version: null, ffmpegPath: null, managed: true);
+    } on MissingPluginException {
+      return EngineStatus(ready: false, version: null, ffmpegPath: null, managed: true);
     }
   }
 
   @override
   Future<void> ensureReady({void Function(String phase, double fraction)? onPhase, bool force = false, String channel = 'stable'}) async {
     onPhase?.call('verify', 1);
-    await _method.invokeMethod<bool>('setup');
+    final ready = await _method.invokeMethod<bool>('setup') ?? false;
+    if (!ready) {
+      throw PlatformException(code: 'engine_setup_failed', message: 'Engine failed to initialize');
+    }
   }
 
   @override
   Future<MediaProbe> probe(String url, {String proxy = ''}) async {
-    final raw = await _method.invokeMethod<String>('probe', {'url': url, 'proxy': proxy});
+    final String? raw;
+    try {
+      raw = await _method.invokeMethod<String>('probe', {'url': url, 'proxy': proxy});
+    } on MissingPluginException {
+      throw const FormatException('Engine is unavailable');
+    }
     if (raw == null || raw.isEmpty) {
       throw const FormatException('Engine returned no data');
     }
@@ -100,8 +110,11 @@ class _AndroidDownloadSession implements TalosDownloadSession {
   Stream<String>? get rawLog => _rawController.stream;
 
   Future<void> start() async {
-    _subscription = _engine._events.listen(_handleEvent);
     try {
+      // The subscription itself can fail (for example when the EventChannel
+      // is not registered). Keep it inside the try so the outcome always
+      // completes and the sequential queue can never hang on this task.
+      _subscription = _engine._events.listen(_handleEvent);
       await AndroidEngine._method.invokeMethod<void>('start', {
         'taskId': _taskId,
         'args': _args,
@@ -132,6 +145,15 @@ class _AndroidDownloadSession implements TalosDownloadSession {
       case 'done':
         // The native status is authoritative. Transient ERROR lines from a
         // recovered item must not turn a successful download into a failure.
+        final outputs = event['outputs'];
+        if (outputs is List) {
+          for (final value in outputs) {
+            if (value is String && value.isNotEmpty) {
+              _lastOutputPath = value;
+              _controller.add(EngineProgress(outputPath: value));
+            }
+          }
+        }
         final message = event['message'] as String?;
         if (message != null && message.isNotEmpty) {
           _finish(SessionOutcome(error: message, outputPath: _lastOutputPath));

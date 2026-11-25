@@ -183,7 +183,7 @@ class _IntroScreenState extends State<IntroScreen> with TickerProviderStateMixin
                         Opacity(
                           opacity: _reducedMotion ? 1 : _taglineFade.value,
                           child: Text(
-                            TalosInfo.tagline.toUpperCase(),
+                            l.tagline.toUpperCase(),
                             style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2),
                           ),
                         ),

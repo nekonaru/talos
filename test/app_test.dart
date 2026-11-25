@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:talos/app.dart';
+import 'package:talos/core/backup.dart';
+import 'package:talos/core/command_template_store.dart';
 import 'package:talos/core/download_manager.dart';
 import 'package:talos/core/engine/command_builder.dart';
 import 'package:talos/core/engine/engine.dart';
@@ -603,5 +605,84 @@ void main() {
     final running = manager.tasks.where((t) => t.status == TaskStatus.running).toList();
     expect(running, hasLength(1));
     expect(running.first.title, 'B');
+  });
+
+  test('download args place an end-of-options marker before the URL', () {
+    final request = DownloadRequest(
+      url: '-dangerous-option',
+      videoMode: true,
+      outputDir: '/downloads',
+    );
+    final args = CommandBuilder.downloadArgs(request, ffmpegAvailable: false);
+    expect(args[args.length - 2], '--');
+    expect(args.last, '-dangerous-option');
+    expect(CommandBuilder.probeArgs('-evil', proxy: ''), contains('--'));
+  });
+
+  test('tokenizeArgs keeps Windows path backslashes literal', () {
+    expect(
+      CommandBuilder.tokenizeArgs(r'--cookies C:\Users\me\cookies.txt {url}'),
+      ['--cookies', r'C:\Users\me\cookies.txt', '{url}'],
+    );
+    expect(CommandBuilder.tokenizeArgs(r'a\ b'), ['a b']);
+  });
+
+  test('backup export and restore round trip all local data', () async {
+    final manager = await DownloadManager.create(engine: FakeEngine());
+    await manager.settings.mutate((s) => s.copyWith(accent: 'aegean'));
+    await manager.savedLinks.add('https://example.invalid/saved');
+    await manager.presets.add(const DownloadPreset(
+      id: 'p1',
+      name: 'Preset',
+      videoMode: true,
+      maxHeight: 720,
+      audioFormat: 'mp3',
+      audioBitrate: '192',
+      embedSubtitles: false,
+      embedMetadata: true,
+    ));
+    await manager.history.add(HistoryEntry(
+      id: 'h1',
+      title: 'Backup item',
+      url: 'https://example.invalid/watch?v=1',
+      filePath: '/tmp/item.mp4',
+      kind: HistoryKind.video,
+      dateMs: 1234,
+      sizeBytes: 99,
+    ));
+    // Establish an explicit empty command file so load() does not seed defaults.
+    await CommandTemplateStore.replaceAll([]);
+    final commandStore = await CommandTemplateStore.load();
+    await commandStore.add(CommandTemplate(id: 'c1', name: 'Cmd', args: '{url}'));
+
+    final json = await TalosBackup.exportJson(manager);
+    final decoded = jsonDecode(json) as Map<String, dynamic>;
+    expect(decoded['format'], TalosBackup.format);
+    expect((decoded['history'] as List).length, 1);
+    expect((decoded['savedLinks'] as List).length, 1);
+
+    await manager.settings.mutate((s) => s.copyWith(accent: 'marble'));
+    await manager.history.clear();
+    await manager.savedLinks.clear();
+    await manager.presets.clear();
+    await CommandTemplateStore.replaceAll([]);
+
+    await TalosBackup.restoreJson(manager, json);
+    expect(manager.settings.value.accent, 'aegean');
+    expect(manager.history.entries, hasLength(1));
+    expect(manager.history.entries.first.title, 'Backup item');
+    expect(manager.savedLinks.entries, hasLength(1));
+    expect(manager.presets.entries, hasLength(1));
+    final commands = await CommandTemplateStore.load();
+    expect(commands.templates, hasLength(1));
+    expect(commands.templates.first.name, 'Cmd');
+  });
+
+  test('backup rejects foreign payloads', () async {
+    final manager = await DownloadManager.create(engine: FakeEngine());
+    expect(
+      () => TalosBackup.restoreJson(manager, '{"format":"other"}'),
+      throwsA(isA<FormatException>()),
+    );
   });
 }

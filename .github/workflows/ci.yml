@@ -29,6 +29,7 @@ jobs:
         run: flutter test
 
   android:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +61,6 @@ jobs:
       - name: Build signed release APK (arm64-v8a)
         if: github.event_name == 'push'
         run: |
-          flutter pub get
           flutter gen-l10n
           flutter build apk --release --obfuscate --split-debug-info=build/symbols
 
@@ -101,6 +101,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-debug.apk
 
   windows:
+    needs: verify
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -123,6 +124,7 @@ jobs:
           path: build/windows/x64/runner/Release/
 
   linux:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -150,6 +152,7 @@ jobs:
           path: build/linux/x64/release/bundle/
 
   macos:
+    needs: verify
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4

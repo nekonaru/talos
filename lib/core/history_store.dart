@@ -181,6 +181,19 @@ class HistoryStore extends ChangeNotifier {
     await _persist();
   }
 
+  /// Replaces the whole history in one write. Used by backup restore so a
+  /// large library does not trigger one disk write per entry.
+  Future<void> replaceAll(Iterable<HistoryEntry> entries) async {
+    _entries = entries.toList();
+    if (_entries.length > _maxEntries) {
+      _entries = _entries.sublist(0, _maxEntries);
+    }
+    _entries.sort((a, b) => b.dateMs.compareTo(a.dateMs));
+    revision++;
+    notifyListeners();
+    await _persist();
+  }
+
   Future<void> _persist() async {
     try {
       await _file.parent.create(recursive: true);

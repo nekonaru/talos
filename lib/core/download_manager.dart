@@ -40,6 +40,10 @@ class DownloadTask {
   int? playlistIndex;
   int? playlistCount;
   String? outputPath;
+
+  /// All files reported by the engine. A playlist merge produces one output
+  /// per entry, so saving only [outputPath] would orphan the other items.
+  final List<String> outputPaths = [];
   String? error;
   final List<String> log = [];
 
@@ -262,6 +266,15 @@ class DownloadManager extends ChangeNotifier {
     await _maybeStopForeground();
   }
 
+  /// Finalize a task cancelled after the engine reported success but before
+  /// post-processing finished. No history row is written in this case.
+  Future<void> _cancelAfterOutcome(DownloadTask task) async {
+    task.status = TaskStatus.cancelled;
+    task.stage = 'cancelled';
+    notifyListeners();
+    await _maybeStopForeground();
+  }
+
   /// Move a task to a new position in the queue. Indices refer to the
   /// queued/running order shown by the Active tab, i.e. only tasks whose
   /// status is not completed. [newIndex] is the final insertion index
@@ -333,6 +346,11 @@ class DownloadManager extends ChangeNotifier {
 
   Future<void> _run(DownloadTask task) async {
     final generation = _resetGeneration;
+    // Progress coalescing state belongs to one task only. A timer left over
+    // from the previous download must not fire after this task starts.
+    _progressNotifyTimer?.cancel();
+    _progressNotifyTimer = null;
+    _lastProgressNotify = null;
     task.status = TaskStatus.running;
     task.stage = 'starting';
     notifyListeners();
@@ -411,7 +429,12 @@ class DownloadManager extends ChangeNotifier {
       if (event.etaSeconds != null) task.etaSeconds = event.etaSeconds;
       if (event.playlistIndex != null) task.playlistIndex = event.playlistIndex;
       if (event.playlistCount != null) task.playlistCount = event.playlistCount;
-      if (event.outputPath != null) task.outputPath = event.outputPath;
+      if (event.outputPath != null) {
+        task.outputPath = event.outputPath;
+        if (!task.outputPaths.contains(event.outputPath)) {
+          task.outputPaths.add(event.outputPath!);
+        }
+      }
       _notifyProgress();
     });
 
@@ -432,71 +455,117 @@ class DownloadManager extends ChangeNotifier {
     }
 
     if (outcome.error == null) {
-      task.outputPath = outcome.outputPath ?? task.outputPath;
+      // A transient ERROR line from a recovered playlist item must not leave
+      // a stale error on a successful task.
+      task.error = null;
+      if (outcome.outputPath != null && !task.outputPaths.contains(outcome.outputPath)) {
+        task.outputPaths.add(outcome.outputPath!);
+      }
+      if (task.outputPaths.isEmpty && task.outputPath != null) {
+        task.outputPaths.add(task.outputPath!);
+      }
 
-      // On Android, when the user picked a SAF folder, or nothing at all
-      // (public Downloads/Talos is the default), copy the finished file
-      // there. A failed copy fails the task instead of hiding the file in
-      // private storage.
       final saf = _settings.value.downloadFolderSAF.trim();
-      // A plain per-type folder (video/audio) the user chose is authoritative:
-      // the file is already there and must not be relocated to Downloads/Talos.
+      // A plain per-type folder the user chose is authoritative: the file is
+      // already there and must not be relocated into Downloads/Talos.
       final requestedDir = task.request.outputDir.trim();
       final plainSet = requestedDir.isNotEmpty &&
           !requestedDir.startsWith('content://') &&
           requestedDir != _outputDir;
-      final localPath = task.outputPath ?? '';
-      int? deletedSize;
-      if (Platform.isAndroid && localPath.isNotEmpty && !localPath.startsWith('content://') && !plainSet) {
-        final displayName = localPath.split(Platform.pathSeparator).last;
-        final localSize = await _fileSize(localPath);
-        final directWrite = _outputDir == '/storage/emulated/0/Download/Talos';
-        String? saved;
-        if (saf.isNotEmpty) {
-          saved = await TalosStorageBridge.copyToTree(localPath, displayName);
-        } else if (!directWrite) {
-          saved = await TalosStorageBridge.saveToDownloads(localPath, displayName);
-        } else {
-          saved = localPath; // API 24-28 direct write.
-        }
-        if (saved == null) {
-          task.status = TaskStatus.failed;
-          // Store a stable code; the UI resolves it to the active locale.
-          task.error = saf.isNotEmpty
-              ? kErrSafNotWritable
-              : kErrSaveToDownloads;
-          notifyListeners();
-          await _maybeStopForeground();
+      final directWrite = _outputDir == '/storage/emulated/0/Download/Talos';
+      final savedPaths = <String>[];
+      final copiedPaths = <String>[];
+      final sizes = <int?>[];
+
+      for (final localPath in task.outputPaths) {
+        // A cancel can arrive while the engine is finishing or while a file
+        // is being copied. Never write history for a cancelled task.
+        if (task.cancelRequested || generation != _resetGeneration) {
+          for (final copied in copiedPaths) {
+            await TalosStorageBridge.deleteDownloadedFile(copied);
+          }
+          await _cancelAfterOutcome(task);
           return;
         }
-        if (saved != localPath) {
-          try {
-            await File(localPath).delete();
-          } catch (_) {
-            // Best effort; the file stays behind in the app sandbox.
+        var workingPath = localPath;
+        if (Platform.isAndroid && localPath.isNotEmpty && !localPath.startsWith('content://') && !plainSet) {
+          final displayName = localPath.split(Platform.pathSeparator).last;
+          final localSize = await _fileSize(localPath);
+          if (task.cancelRequested || generation != _resetGeneration) {
+            for (final copied in copiedPaths) {
+              await TalosStorageBridge.deleteDownloadedFile(copied);
+            }
+            await _cancelAfterOutcome(task);
+            return;
           }
-          task.outputPath = saved;
-          deletedSize = localSize;
+          String? saved;
+          if (saf.isNotEmpty) {
+            saved = await TalosStorageBridge.copyToTree(localPath, displayName);
+          } else if (!directWrite) {
+            saved = await TalosStorageBridge.saveToDownloads(localPath, displayName);
+          } else {
+            saved = localPath; // API 24-28 direct write.
+          }
+          if (task.cancelRequested || generation != _resetGeneration) {
+            if (saved != null && saved != localPath) {
+              await TalosStorageBridge.deleteDownloadedFile(saved);
+            }
+            for (final copied in copiedPaths) {
+              await TalosStorageBridge.deleteDownloadedFile(copied);
+            }
+            await _cancelAfterOutcome(task);
+            return;
+          }
+          if (saved == null) {
+            task.status = TaskStatus.failed;
+            task.error = saf.isNotEmpty ? kErrSafNotWritable : kErrSaveToDownloads;
+            notifyListeners();
+            await _maybeStopForeground();
+            return;
+          }
+          if (saved != localPath) {
+            try {
+              await File(localPath).delete();
+            } catch (_) {
+              // Best effort; the file stays behind in the app sandbox.
+            }
+            workingPath = saved;
+            copiedPaths.add(saved);
+            sizes.add(localSize);
+          } else {
+            sizes.add(localSize);
+          }
+        } else {
+          sizes.add(await _fileSize(workingPath));
         }
+        savedPaths.add(workingPath);
       }
 
-      final size = deletedSize ?? await _fileSize(task.outputPath);
-      if (generation != _resetGeneration) {
-        await _maybeStopForeground();
+      if (generation != _resetGeneration || task.cancelRequested) {
+        for (final copied in copiedPaths) {
+          await TalosStorageBridge.deleteDownloadedFile(copied);
+        }
+        await _cancelAfterOutcome(task);
         return;
       }
       if (!_settings.value.privateMode) {
-        await _history.add(HistoryEntry(
-          id: task.id,
-          title: task.title,
-          url: task.url,
-          filePath: task.outputPath ?? '',
-          kind: task.kind,
-          dateMs: DateTime.now().millisecondsSinceEpoch,
-          sizeBytes: size,
-          thumbnailUrl: task.thumbnailUrl,
-        ));
+        for (var i = 0; i < savedPaths.length; i++) {
+          await _history.add(HistoryEntry(
+            id: savedPaths.length == 1 ? task.id : '${task.id}-$i',
+            title: task.title,
+            url: task.url,
+            filePath: savedPaths[i],
+            kind: task.kind,
+            dateMs: DateTime.now().millisecondsSinceEpoch,
+            sizeBytes: i < sizes.length ? sizes[i] : null,
+            thumbnailUrl: task.thumbnailUrl,
+          ));
+        }
       }
+      task.outputPath = savedPaths.isNotEmpty ? savedPaths.last : null;
+      task.outputPaths
+        ..clear()
+        ..addAll(savedPaths);
       // Completed work moves to the Finished tab via history.
       _tasks.remove(task);
     } else if (outcome.error == 'cancelled') {
@@ -528,7 +597,9 @@ class DownloadManager extends ChangeNotifier {
       final candidate = '$base($i)$ext';
       if (!File('${dir.path}$sep$candidate').existsSync()) return candidate;
     }
-    return name;
+    // Never fall back to an occupied name. A time-based suffix keeps repeated
+    // saves working even after hundreds of collisions.
+    return '$base(${DateTime.now().microsecondsSinceEpoch})$ext';
   }
 
   /// Make a raw title safe for a file name, loosely matching yt-dlp's rules:
@@ -565,7 +636,7 @@ class DownloadManager extends ChangeNotifier {
       final candidate = '$base($i)';
       if (!used(candidate)) return candidate;
     }
-    return base;
+    return '$base(${DateTime.now().microsecondsSinceEpoch})';
   }
 
   Future<bool> _ffmpegAvailable(String configured) async {

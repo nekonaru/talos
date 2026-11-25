@@ -193,6 +193,13 @@ class _HomeScreenState extends State<HomeScreen> {
       // Pass the extracted URL so surrounding text or trailing punctuation
       // does not break the probe, matching the batch path.
       unawaited(_fetch(urls.first));
+    } else {
+      // The button is enabled for any non-empty text. Without feedback a
+      // typed link without a scheme looks like a dead app.
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      messenger?.showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.invalidUrl)),
+      );
     }
   }
 
@@ -377,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  TalosInfo.tagline.toUpperCase(),
+                  l.tagline.toUpperCase(),
                   style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2),
                 ),
                 const SizedBox(height: 16),

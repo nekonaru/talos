@@ -5,6 +5,45 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.21.0
+
+Update besar yang menambahkan cadangan dan pemulihan portabel, plus perbaikan audit mendalam untuk pembatalan, penyimpanan Android, penggabungan playlist, dan bootstrap engine.
+
+### Fitur baru
+
+- **Cadangkan dan pulihkan.** Pengaturan, riwayat, tautan tersimpan, preset, dan template perintah bisa diekspor sebagai JSON portabel lalu dipulihkan di perangkat yang sama atau yang baru. File yang sudah diunduh tidak diubah.
+
+### Perbaikan bug
+
+- **Batal saat pasca-proses.** Pembatalan yang datang setelah engine selesai tidak lagi menulis baris riwayat atau meninggalkan salinan file.
+- **Hasil playlist.** Penggabungan playlist Android kini melaporkan semua hasil, sehingga semua entri tersimpan dan masuk riwayat, bukan hanya yang terakhir.
+- **Gabungan gagal.** Kegagalan gabungan FFmpeg dilaporkan sebagai error, bukan menyimpan stream parsial sebagai file selesai.
+- **JSON probe.** Diagnostik yt-dlp di stderr tidak lagi merusak payload JSON dari probe Android.
+- **Hapus MediaStore.** File yang disimpan lewat MediaStore kini dihapus dengan ContentResolver, sehingga aksi hapus berjalan di API 29 ke atas.
+- **Gagal hapus.** File yang gagal dihapus mempertahankan baris riwayatnya dan menampilkan pesan, bukan meninggalkan file tanpa jejak.
+- **Gagal status engine.** Configure menampilkan aksi coba lagi alih-alih membiarkan tombol Unduh mati tanpa penjelasan.
+- **Path Windows.** Perintah kustom mempertahankan backslash pada path seperti `C:\Users\me\cookies.txt`.
+- **Injeksi opsi URL.** Penanda akhir opsi kini mendahului URL, sehingga tautan tersimpan yang diawali tanda dash tidak bisa menyuntikkan flag yt-dlp.
+- **Bootstrap engine desktop.** Linux memilih build glibc atau musl yang mandiri, dan armv7 mengekstrak binary dari aset zip. Setup FFmpeg mewajibkan ffmpeg.exe dan ffprobe.exe.
+- **Antrean macet.** Kegagalan start proses atau dekode stream selalu menyelesaikan outcome sesi, sehingga antrean berurutan tidak bisa menggantung.
+- **Nama file unik.** Setelah banyak tabrakan, Talos memakai akhiran waktu alih-alih jatuh kembali ke nama yang sudah terpakai.
+- **MIME.** File `.3gp`, `.3g2`, dan `.mov` kini diindeks dengan tipe MediaStore yang benar.
+- **Putus folder.** Menghapus folder SAF kini melepaskan izin URI yang tersimpan.
+- **Tanda tangan rilis.** Build rilis gagal jelas saat kunci tanda tangan tidak ada, alih-alih diam-diam memakai kunci debug.
+- **Lokalisasi.** UI Bahasa Indonesia kini memakai tagline terjemahan di Beranda, Intro, dan Tentang.
+- **Umpan balik Fetch.** Teks tanpa URL valid kini menampilkan petunjuk lokal alih-alih tidak melakukan apa pun.
+
+### Peningkatan
+
+- **82 test lulus**, termasuk uji cadangan pulih pergi-balik dan regresi command builder.
+- **Gerbang CI.** Job build kini menunggu job verify sehingga artifact tidak dibuat dari kode yang gagal.
+- **Deteksi engine.** Engine terkelola dikenali dari path aslinya, bukan dari substring path, sehingga instalasi sistem dilaporkan benar.
+- **Timeout proses.** Proses versi dan probe dihentikan saat timeout, alih-alih dibiarkan berjalan.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.21.0-windows-x64.zip`. Linux: `Talos-v0.21.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.20.0
 
 Update besar yang menambahkan aksi unduh ulang untuk entri selesai, plus perbaikan folder Android, penggabungan playlist, dan unduhan massal tautan tersimpan dari audit mendalam baru.
