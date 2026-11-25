@@ -68,6 +68,15 @@
   "exportHistory": "Ekspor riwayat sebagai CSV",
   "exportHistoryHint": "Salin atau bagikan daftar unduhan selesai dalam format tabel",
   "historyCsvCopied": "CSV riwayat disalin ke papan klip",
+  "cleanTemp": "Bersihkan file sementara",
+  "cleanTempHint": "Hapus sisa unduhan parsial dan file tmp penulisan atomik yang lebih tua dari satu jam",
+  "cleanTempBody": "Menghapus file .tmp, .part, .ytdl, dan .download lama dari data aplikasi serta folder output. File baru dan unduhan selesai tetap disimpan.",
+  "cleanTempDone": "Menghapus {count} file sementara",
+  "@cleanTempDone": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "resetAllData": "Reset semua data",
   "resetAllDataHint": "Menghapus pengaturan, riwayat unduhan, template perintah, dan folder shortcut SAF. Tidak bisa dibatalkan.",
   "resetAllDataTitle": "Reset semua data?",
