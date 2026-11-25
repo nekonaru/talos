@@ -5,6 +5,29 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.23.0
+
+Update besar yang menambahkan antrean bertahan, plus perbaikan kecil dari audit mendalam yang berkelanjutan.
+
+### Fitur baru
+
+- **Antrean bertahan.** Unduhan tertunda disimpan secara atomik dan dilanjutkan setelah aplikasi dimulai ulang dengan request dan jumlah coba ulang yang utuh. Tugas yang terhenti saat berjalan kembali ke antrean alih-alih hilang.
+- **Antrean dalam cadangan.** Cadangan portabel kini mencakup antrean tertunda di samping pengaturan, riwayat, tautan tersimpan, preset, dan perintah.
+
+### Perbaikan bug
+
+- **Hari terlokalisasi.** Label aktivitas Wawasan mengikuti bahasa aktif alih-alih inisial Inggris yang ditulis tetap.
+- **Tooltip favorit.** Tombol bintang kini mengatakan Tambahkan ke favorit atau Hapus dari favorit, bukan label umum.
+
+### Peningkatan
+
+- **85 test lulus**, termasuk cakupan serialisasi request lengkap dan pemulihan antrean.
+- **Dependensi intl eksplisit.** Formatter tanggal kini mendeklarasikan paket yang dipakainya.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.23.0-windows-x64.zip`. Linux: `Talos-v0.23.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.22.0
 
 Update besar yang menambahkan coba ulang otomatis, plus audit mendalam putaran kedua pada navigasi, pesan error, startup native, dan performa UI.
