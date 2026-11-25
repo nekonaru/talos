@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,6 +11,7 @@ import 'package:talos/app.dart';
 import 'package:talos/core/backup.dart';
 import 'package:talos/core/command_template_store.dart';
 import 'package:talos/core/download_manager.dart';
+import 'package:talos/core/engine/desktop_engine.dart';
 import 'package:talos/core/engine/command_builder.dart';
 import 'package:talos/core/engine/engine.dart';
 import 'package:talos/core/engine/models.dart';
@@ -822,6 +824,45 @@ void main() {
     expect(manager.tasks.first.request.audioFormat, 'opus');
     await manager.resetAll();
     await QueueStore.save([]);
+  });
+
+  test('desktop engine selects standalone release assets', () {
+    final original = debugDefaultTargetPlatformOverride;
+    try {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      expect(DesktopEngine.engineAsset(), 'yt-dlp_linux');
+      debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+      expect(DesktopEngine.engineAsset(), 'yt-dlp.exe');
+      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+      expect(DesktopEngine.engineAsset(), 'yt-dlp_macos');
+    } finally {
+      debugDefaultTargetPlatformOverride = original;
+    }
+  });
+
+  test('pause holds the queue and resume starts it again', () async {
+    final engine = FakeEngine();
+    final manager = await DownloadManager.create(engine: engine);
+    await manager.setQueuePaused(true);
+    await manager.enqueue(
+      DownloadRequest(
+        url: 'https://example.invalid/watch?v=pause',
+        videoMode: true,
+        outputDir: 'out',
+      ),
+      title: 'Paused item',
+      kind: HistoryKind.video,
+    );
+    await Future.delayed(const Duration(milliseconds: 50));
+    expect(engine.lastSession, isNull);
+    expect(manager.tasks.single.stage, 'queuePaused');
+
+    await manager.setQueuePaused(false);
+    for (var i = 0; i < 200 && engine.lastSession == null; i++) {
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+    expect(engine.lastSession, isNotNull);
+    await manager.resetAll();
   });
 
   test('wifi only pauses the queue until WiFi returns', () async {

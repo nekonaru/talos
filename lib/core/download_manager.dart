@@ -354,6 +354,27 @@ class DownloadManager extends ChangeNotifier {
     });
   }
 
+  /// Pauses starting new downloads. The task already running is allowed to
+  /// finish; only the head of the queue is held back.
+  Future<void> setQueuePaused(bool paused) async {
+    await _settings.mutate((s) => s.copyWith(queuePaused: paused));
+    if (!paused) kickQueue();
+  }
+
+  /// Cancels every task that has not started yet. Running tasks are untouched.
+  Future<void> clearQueued() async {
+    final pending = _tasks.where((t) => t.status == TaskStatus.queued).toSet();
+    if (pending.isEmpty) return;
+    for (final task in pending) {
+      task.status = TaskStatus.cancelled;
+      task.stage = 'cancelled';
+    }
+    _tasks.removeWhere(pending.contains);
+    notifyListeners();
+    await _persistQueue();
+    await _maybeStopForeground();
+  }
+
   /// Called when a setting that affects the queue changes, for example when
   /// WiFi-only is turned off while downloads are waiting for a network.
   void kickQueue() {
@@ -384,6 +405,11 @@ class DownloadManager extends ChangeNotifier {
           }
         }
         if (next == null) break;
+        if (_settings.value.queuePaused) {
+          next.stage = 'queuePaused';
+          notifyListeners();
+          break;
+        }
         if (_settings.value.wifiOnly) {
           final onWifi = wifiProbeOverride != null
               ? await wifiProbeOverride!()

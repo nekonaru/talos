@@ -170,6 +170,29 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     await manager.history.remove(entry.id);
   }
 
+  Future<void> _confirmClearQueued(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.clearQueued),
+        content: Text(l.clearQueuedBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.clearQueued),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await manager.clearQueued();
+  }
+
   Future<void> _confirmClearHistory(BuildContext context) async {
     final l = AppLocalizations.of(context)!;
     final manager = TalosScope.of(context);
@@ -364,10 +387,25 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 tabs: [Tab(text: l.active), Tab(text: l.finished)],
               ),
               actions: [
+                IconButton(
+                  tooltip: manager.settings.value.queuePaused ? l.resumeQueue : l.pauseQueue,
+                  icon: Icon(manager.settings.value.queuePaused
+                      ? Icons.play_arrow_rounded
+                      : Icons.pause_rounded),
+                  onPressed: () => unawaited(
+                    manager.setQueuePaused(!manager.settings.value.queuePaused),
+                  ),
+                ),
+                if (tasks.any((t) => t.status == TaskStatus.queued))
+                  IconButton(
+                    tooltip: l.clearQueued,
+                    icon: const Icon(Icons.playlist_remove_outlined),
+                    onPressed: () => _confirmClearQueued(context),
+                  ),
                 if (history.isNotEmpty)
                   IconButton(
                     tooltip: l.clearFinished,
-                    icon: const Icon(Icons.playlist_remove_outlined),
+                    icon: const Icon(Icons.delete_sweep_outlined),
                     onPressed: () => _confirmClearHistory(context),
                   ),
               ],
