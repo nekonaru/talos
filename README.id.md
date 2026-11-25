@@ -120,6 +120,7 @@
 |---------|-------------|
 | **Perintah kustom** | Jalankan yt-dlp dengan template argumen buatanmu sendiri, kelola di dalam aplikasi |
 | **Riwayat** | Unduhan selesai dengan pencarian, urutan, filter jenis, favorit, dan hapus banyak, dengan path file, ukuran, dan tanggal |
+| **Cadangkan dan pulihkan** | Ekspor pengaturan, riwayat, tautan tersimpan, preset, dan perintah sebagai JSON portabel, lalu pulihkan di perangkat yang sama atau yang baru |
 | **Mode privat** | Lewati riwayat sama sekali bila diinginkan |
 
 ---
@@ -158,8 +159,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.20.0-windows-x64.zip`
-   - Linux: `Talos-v0.20.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.21.0-windows-x64.zip`
+   - Linux: `Talos-v0.21.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]
