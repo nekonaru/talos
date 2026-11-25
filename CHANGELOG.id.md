@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.30.0
+
+Update besar yang menambahkan filter playlist berdasarkan durasi dan judul.
+
+### Fitur baru
+
+- **Filter playlist.** Configure kini punya dialog filter yang memilih entri playlist otomatis berdasarkan durasi minimal, durasi maksimal, dan teks judul. Filter tanpa hasil membiarkan pilihan saat ini dan menampilkan pesan.
+
+### Peningkatan
+
+- **93 test lulus**, termasuk cakupan filter durasi dan judul.
+- **Durasi tidak diketahui.** Entri tanpa durasi dikecualikan saat batas durasi diatur, agar filter tidak menerima panjang yang tidak terverifikasi.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.30.0-windows-x64.zip`. Linux: `Talos-v0.30.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.29.0
 
 Update besar yang menambahkan pengelolaan tautan tersimpan, plus penyempurnaan ekspor data.
