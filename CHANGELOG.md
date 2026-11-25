@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.33.0
+
+A large update adding a native low-battery gate for the download queue.
+
+### New features
+
+- **Battery saver.** On Android, new downloads wait while the battery is below a chosen threshold (5, 10, 20 or 30 percent) and the device is not charging. Tasks resume automatically once the condition clears.
+
+### Improvements
+
+- **97 tests passing**, including a low-battery gating regression with an injectable probe.
+- **No extra permission.** Battery state is read from the sticky system broadcast, so no runtime prompt is added.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.33.0-windows-x64.zip`. Linux: `Talos-v0.33.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.32.0
 
 A large update adding temporary file cleanup to keep local storage lean.

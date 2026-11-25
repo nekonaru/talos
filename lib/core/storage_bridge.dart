@@ -10,6 +10,22 @@ class TalosStorageBridge {
 
   static const MethodChannel _channel = MethodChannel('id.nekonaru.talos/storage');
 
+  /// True when Android reports battery below [threshold] percent and the
+  /// device is not charging. Null on platforms without the bridge.
+  static Future<bool?> isBatteryLow(int threshold) async {
+    if (!Platform.isAndroid) return null;
+    try {
+      return await _channel.invokeMethod<bool>(
+        'isBatteryLow',
+        {'threshold': threshold},
+      );
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
   /// True when Android reports an active WiFi transport. Null on platforms
   /// without the bridge, so callers can skip the restriction there.
   static Future<bool?> isOnWifi() async {

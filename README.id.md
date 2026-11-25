@@ -88,6 +88,7 @@
 |---------|-------------|
 | **Dukungan proxy** | Lewatkan unduhan lewat proxy HTTP atau SOCKS |
 | **Hanya WiFi** | Di Android, antrean unduhan dijeda sampai koneksi WiFi aktif tersedia |
+| **Hemat baterai** | Di Android, tahan unduhan baru saat baterai rendah dan perangkat tidak diisi |
 | **Batas kecepatan** | Batasi kecepatan unduh, misal 5M atau 512K |
 | **Fragment konkuren** | Percepat unduhan terfragmentasi dengan fragment paralel |
 | **aria2c** | Gunakan aria2c sebagai external downloader di desktop bila terpasang |
@@ -171,8 +172,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.32.0-windows-x64.zip`
-   - Linux: `Talos-v0.32.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.33.0-windows-x64.zip`
+   - Linux: `Talos-v0.33.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]

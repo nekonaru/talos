@@ -544,6 +544,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                   ),
+                if (Theme.of(context).platform == TargetPlatform.android)
+                  SwitchListTile(
+                    secondary: const Icon(Icons.battery_saver_outlined),
+                    title: Text(l.batterySaver),
+                    subtitle: Text(l.batterySaverHint),
+                    value: settings.batterySaverEnabled,
+                    onChanged: (value) async {
+                      await manager.settings.mutate(
+                        (s) => s.copyWith(batterySaverEnabled: value),
+                      );
+                      manager.kickQueue();
+                    },
+                  ),
+                if (Theme.of(context).platform == TargetPlatform.android &&
+                    settings.batterySaverEnabled)
+                  ListTile(
+                    leading: const Icon(Icons.battery_full_outlined),
+                    title: Text(l.batteryThreshold),
+                    trailing: DropdownButton<int>(
+                      value: settings.batteryThreshold,
+                      underline: const SizedBox(),
+                      items: [
+                        for (final percent in const [5, 10, 20, 30])
+                          DropdownMenuItem(
+                            value: percent,
+                            child: Text(l.batteryPercent(percent)),
+                          ),
+                      ],
+                      onChanged: (value) => manager.settings.mutate(
+                        (s) => s.copyWith(batteryThreshold: value ?? 20),
+                      ),
+                    ),
+                  ),
                 SwitchListTile(
                   secondary: const Icon(Icons.notifications_outlined),
                   title: Text(l.downloadNotification),

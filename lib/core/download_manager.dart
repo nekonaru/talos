@@ -161,6 +161,7 @@ class DownloadManager extends ChangeNotifier {
   Timer? _progressNotifyTimer;
   Timer? _wifiRetryTimer;
   Timer? _quietRetryTimer;
+  Timer? _batteryRetryTimer;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
   List<DownloadTask> get activeTasks =>
@@ -290,6 +291,8 @@ class DownloadManager extends ChangeNotifier {
     _wifiRetryTimer = null;
     _quietRetryTimer?.cancel();
     _quietRetryTimer = null;
+    _batteryRetryTimer?.cancel();
+    _batteryRetryTimer = null;
     _tasks.clear();
     notifyListeners();
     await _persistQueue();
@@ -386,6 +389,8 @@ class DownloadManager extends ChangeNotifier {
     _wifiRetryTimer = null;
     _quietRetryTimer?.cancel();
     _quietRetryTimer = null;
+    _batteryRetryTimer?.cancel();
+    _batteryRetryTimer = null;
     if (!_pumping) unawaited(_pump());
   }
 
@@ -394,6 +399,7 @@ class DownloadManager extends ChangeNotifier {
     _progressNotifyTimer?.cancel();
     _wifiRetryTimer?.cancel();
     _quietRetryTimer?.cancel();
+    _batteryRetryTimer?.cancel();
     super.dispose();
   }
 
@@ -430,6 +436,22 @@ class DownloadManager extends ChangeNotifier {
             _quietRetryTimer?.cancel();
             _quietRetryTimer = Timer(quietRetryDelay, () {
               _quietRetryTimer = null;
+              if (!_pumping) unawaited(_pump());
+            });
+            break;
+          }
+        }
+        if (_settings.value.batterySaverEnabled) {
+          final threshold = _settings.value.batteryThreshold;
+          final low = batteryProbeOverride != null
+              ? await batteryProbeOverride!(threshold)
+              : await TalosStorageBridge.isBatteryLow(threshold);
+          if (low == true) {
+            next.stage = 'batteryLow';
+            notifyListeners();
+            _batteryRetryTimer?.cancel();
+            _batteryRetryTimer = Timer(batteryRetryDelay, () {
+              _batteryRetryTimer = null;
               if (!_pumping) unawaited(_pump());
             });
             break;
@@ -762,6 +784,12 @@ class DownloadManager extends ChangeNotifier {
 
   @visibleForTesting
   static Duration quietRetryDelay = const Duration(minutes: 1);
+
+  @visibleForTesting
+  static Future<bool> Function(int threshold)? batteryProbeOverride;
+
+  @visibleForTesting
+  static Duration batteryRetryDelay = const Duration(minutes: 1);
 
   static Future<String> _uniqueFilename(Directory dir, String name) async {
     final sep = dir.path.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;

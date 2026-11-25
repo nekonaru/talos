@@ -286,6 +286,15 @@
   "quietHoursHint": "Hanya mulai unduhan tertunda di dalam jendela jam tertentu. Jendela lintas tengah malam didukung.",
   "quietStart": "Dari",
   "quietEnd": "Sampai",
+  "batterySaver": "Jeda saat baterai rendah",
+  "batterySaverHint": "Di Android, tahan unduhan baru saat baterai rendah dan perangkat tidak sedang diisi",
+  "batteryThreshold": "Batas baterai rendah",
+  "batteryPercent": "{count}%",
+  "@batteryPercent": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "customHeaders": "Header HTTP kustom",
   "customHeadersHint": "Satu header `Nama: nilai` per baris, misalnya Referer: https://example.invalid/",
   "historyRetentionDays": "{count} hari",

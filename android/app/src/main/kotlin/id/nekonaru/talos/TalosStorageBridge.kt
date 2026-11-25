@@ -3,12 +3,14 @@ package id.nekonaru.talos
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.DocumentsContract
+import android.os.BatteryManager
 import android.os.Build
 import android.provider.MediaStore
 import android.content.ContentValues
@@ -134,6 +136,9 @@ class TalosStorageBridge(private val context: Context) {
                 }
                 "getTreeUri" -> result.success(treeUriString ?: "")
                 "isWifi" -> result.success(isOnWifi())
+                "isBatteryLow" -> result.success(
+                    isBatteryLow(call.argument<Int>("threshold") ?: 20),
+                )
                 "copyToTree" -> {
                     val localPath = call.argument<String>("localPath") ?: ""
                     val displayName = call.argument<String>("displayName") ?: ""
@@ -422,6 +427,24 @@ class TalosStorageBridge(private val context: Context) {
         val file = target.findFile(displayName) ?: return false
         return try {
             file.delete()
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun isBatteryLow(threshold: Int): Boolean {
+        return try {
+            // ACTION_BATTERY_CHANGED is a sticky broadcast, so a null receiver
+            // returns the current battery state without a runtime permission.
+            val intent = context.registerReceiver(
+                null,
+                IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+            ) ?: return false
+            val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+            if (level < 0 || scale <= 0) return false
+            if (intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0) return false
+            level * 100 / scale < threshold
         } catch (_: Exception) {
             false
         }
