@@ -784,6 +784,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (value != null) await manager.settings.mutate((s) => s.copyWith(cookiesPath: value));
                   },
                 ),
+                ListTile(
+                  leading: const Icon(Icons.http_outlined),
+                  title: Text(l.customHeaders),
+                  subtitle: Text(
+                    settings.customHeaders.isEmpty
+                        ? l.customHeadersHint
+                        : settings.customHeaders.split(RegExp(r'\r?\n')).first,
+                  ),
+                  onTap: () async {
+                    final value = await _editDialog(
+                      title: l.customHeaders,
+                      initial: settings.customHeaders,
+                      hint: l.customHeadersHint,
+                    );
+                    if (value != null) {
+                      await manager.settings.mutate((s) => s.copyWith(customHeaders: value));
+                    }
+                  },
+                ),
                 if (desktop)
                   ListTile(
                     leading: const Icon(Icons.science_outlined),

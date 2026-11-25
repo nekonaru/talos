@@ -207,7 +207,15 @@ def _safe_merge(parts, on_line, is_cancelled=None):
         raise DownloadCancelled()
 
     base, ext = parsed[0].group(1), parsed[0].group(2).lower()
-    # The video stream may come second; the largest file is almost always video.
+    # yt-dlp may list the audio part first. Put the larger file first so
+    # FFmpeg's default stream selection picks the video stream.
+    def size(path):
+        try:
+            return os.path.getsize(path)
+        except OSError:
+            return 0
+
+    parts = sorted(parts, key=size, reverse=True)
     exts = [parsed[0].group(2).lower(), parsed[1].group(2).lower()]
     mp4_out = all(e in ('mp4', 'm4a', 'mov', '3gp', '3g2') for e in exts)
     out_ext = 'mp4' if mp4_out else 'mkv'

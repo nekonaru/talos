@@ -193,6 +193,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       remuxContainer: settings.remuxContainer,
       maxFilesize: settings.maxFilesize,
       userAgent: settings.userAgent,
+      customHeaders: settings.customHeaders,
       formatSort: settings.formatSort,
       downloadSubtitles: settings.downloadSubtitles,
       autoSubtitle: settings.autoSubtitle,

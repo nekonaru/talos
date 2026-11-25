@@ -90,6 +90,11 @@ class CommandBuilder {
     if (request.userAgent.isNotEmpty) {
       args.addAll(['--user-agent', request.userAgent]);
     }
+    for (final header in request.customHeaders.split(RegExp(r'\r?\n'))) {
+      if (header.trim().isNotEmpty) {
+        args.addAll(['--add-headers', header.trim()]);
+      }
+    }
     if (request.formatSort.isNotEmpty) {
       args.addAll(['-S', request.formatSort]);
     }

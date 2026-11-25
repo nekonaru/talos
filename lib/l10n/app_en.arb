@@ -251,6 +251,8 @@
   "historyRetentionHint": "Drop old history rows on startup. Files on disk are kept.",
   "wifiOnly": "Download on WiFi only",
   "wifiOnlyHint": "Queued downloads wait until Android reports an active WiFi connection",
+  "customHeaders": "Custom HTTP headers",
+  "customHeadersHint": "One `Name: value` header per line, for example Referer: https://example.invalid/",
   "historyRetentionDays": "{count} days",
   "@historyRetentionDays": {
     "placeholders": {

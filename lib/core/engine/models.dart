@@ -125,6 +125,7 @@ class DownloadRequest {
     this.autoSubtitle = false,
     this.keepSubtitles = false,
     this.outputFilename,
+    this.customHeaders = '',
   });
 
   final String url;
@@ -211,6 +212,10 @@ class DownloadRequest {
   /// repeated downloads of the same media.
   final String? outputFilename;
 
+  /// Newline-separated HTTP headers in `Name: value` form, passed to yt-dlp
+  /// with --add-headers. Useful for sites that require a Referer.
+  final String customHeaders;
+
   DownloadRequest copyWith({String? outputFilename}) => DownloadRequest(
         url: url,
         videoMode: videoMode,
@@ -247,6 +252,7 @@ class DownloadRequest {
         autoSubtitle: autoSubtitle,
         keepSubtitles: keepSubtitles,
         outputFilename: outputFilename ?? this.outputFilename,
+        customHeaders: customHeaders,
       );
 
   Map<String, dynamic> toJson() => {
@@ -285,6 +291,7 @@ class DownloadRequest {
         'autoSubtitle': autoSubtitle,
         'keepSubtitles': keepSubtitles,
         'outputFilename': outputFilename,
+        'customHeaders': customHeaders,
       };
 
   /// Decodes a queued request. A persisted value can come from an older build
@@ -334,6 +341,7 @@ class DownloadRequest {
       autoSubtitle: flag('autoSubtitle', false),
       keepSubtitles: flag('keepSubtitles', false),
       outputFilename: json['outputFilename'] as String?,
+      customHeaders: text('customHeaders', ''),
     );
   }
 }
