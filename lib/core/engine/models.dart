@@ -248,6 +248,94 @@ class DownloadRequest {
         keepSubtitles: keepSubtitles,
         outputFilename: outputFilename ?? this.outputFilename,
       );
+
+  Map<String, dynamic> toJson() => {
+        'url': url,
+        'videoMode': videoMode,
+        'outputDir': outputDir,
+        'maxHeight': maxHeight,
+        'audioFormat': audioFormat,
+        'audioBitrate': audioBitrate,
+        'embedSubtitles': embedSubtitles,
+        'embedMetadata': embedMetadata,
+        'filenameTemplate': filenameTemplate,
+        'proxy': proxy,
+        'rateLimit': rateLimit,
+        'useAria2': useAria2,
+        'concurrentFragments': concurrentFragments,
+        'playlistItems': playlistItems,
+        'includePlaylist': includePlaylist,
+        'ffmpegPath': ffmpegPath,
+        'sponsorBlockCategories': sponsorBlockCategories,
+        'cookiesPath': cookiesPath,
+        'subtitleLanguage': subtitleLanguage,
+        'formatSelector': formatSelector,
+        'restrictFilenames': restrictFilenames,
+        'downloadArchive': downloadArchive,
+        'cropArtwork': cropArtwork,
+        'subtitleFormat': subtitleFormat,
+        'clipStartSeconds': clipStartSeconds,
+        'clipEndSeconds': clipEndSeconds,
+        'forceIpv4': forceIpv4,
+        'remuxContainer': remuxContainer,
+        'maxFilesize': maxFilesize,
+        'userAgent': userAgent,
+        'formatSort': formatSort,
+        'downloadSubtitles': downloadSubtitles,
+        'autoSubtitle': autoSubtitle,
+        'keepSubtitles': keepSubtitles,
+        'outputFilename': outputFilename,
+      };
+
+  /// Decodes a queued request. A persisted value can come from an older build
+  /// or a hand-edited file, so every field falls back to a safe default.
+  factory DownloadRequest.fromJson(Map<String, dynamic> json) {
+    final url = json['url'] as String?;
+    final outputDir = json['outputDir'] as String?;
+    if (url == null || url.isEmpty || outputDir == null || outputDir.isEmpty) {
+      throw const FormatException('Queued download has no URL or output directory');
+    }
+    int? integer(String key) => (json[key] as num?)?.toInt();
+    String text(String key, String fallback) => (json[key] as String?) ?? fallback;
+    bool flag(String key, bool fallback) => json[key] as bool? ?? fallback;
+    return DownloadRequest(
+      url: url,
+      videoMode: flag('videoMode', true),
+      outputDir: outputDir,
+      maxHeight: integer('maxHeight'),
+      audioFormat: text('audioFormat', 'mp3'),
+      audioBitrate: text('audioBitrate', '192'),
+      embedSubtitles: flag('embedSubtitles', true),
+      embedMetadata: flag('embedMetadata', true),
+      filenameTemplate: text('filenameTemplate', '%(title)s.%(ext)s'),
+      proxy: text('proxy', ''),
+      rateLimit: text('rateLimit', ''),
+      useAria2: flag('useAria2', false),
+      concurrentFragments: integer('concurrentFragments') ?? 4,
+      playlistItems: json['playlistItems'] as String?,
+      includePlaylist: flag('includePlaylist', true),
+      ffmpegPath: text('ffmpegPath', ''),
+      sponsorBlockCategories: text('sponsorBlockCategories', ''),
+      cookiesPath: text('cookiesPath', ''),
+      subtitleLanguage: text('subtitleLanguage', ''),
+      formatSelector: text('formatSelector', ''),
+      restrictFilenames: flag('restrictFilenames', false),
+      downloadArchive: text('downloadArchive', ''),
+      cropArtwork: flag('cropArtwork', false),
+      subtitleFormat: text('subtitleFormat', ''),
+      clipStartSeconds: integer('clipStartSeconds'),
+      clipEndSeconds: integer('clipEndSeconds'),
+      forceIpv4: flag('forceIpv4', false),
+      remuxContainer: text('remuxContainer', ''),
+      maxFilesize: text('maxFilesize', ''),
+      userAgent: text('userAgent', ''),
+      formatSort: text('formatSort', ''),
+      downloadSubtitles: flag('downloadSubtitles', true),
+      autoSubtitle: flag('autoSubtitle', false),
+      keepSubtitles: flag('keepSubtitles', false),
+      outputFilename: json['outputFilename'] as String?,
+    );
+  }
 }
 
 enum TaskStatus { queued, running, completed, failed, cancelled }

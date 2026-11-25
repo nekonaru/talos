@@ -59,6 +59,7 @@
 | **Format selection** | Video up to 2160p, or audio as MP3, M4A, Opus, FLAC, or the source format |
 | **Progress view** | Percent, speed, ETA, and playlist position, with cancel and retry |
 | **Sequential queue** | One download at a time, so sites are not hammered with parallel requests |
+| **Queue persistence** | Pending downloads survive an app restart and resume with their original settings |
 | **Cancel and retry** | Cancel any task, retry failed or cancelled ones with the same options |
 | **Auto retry** | Optionally retry transient failures automatically with a short backoff |
 
@@ -121,7 +122,7 @@
 |---------|-------------|
 | **Custom commands** | Run yt-dlp with your own argument templates, manage them in the app |
 | **History** | Finished downloads with search, sort, type filter, favorites and batch delete, with file path, size and date |
-| **Backup and restore** | Export settings, history, saved links, presets and commands as portable JSON, then restore them on the same device or a new one |
+| **Backup and restore** | Export settings, history, saved links, presets, commands and the pending queue as portable JSON, then restore them on the same device or a new one |
 | **Private mode** | Optionally skip history entirely |
 
 ---
@@ -160,8 +161,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.22.0-windows-x64.zip`
-   - Linux: `Talos-v0.22.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.23.0-windows-x64.zip`
+   - Linux: `Talos-v0.23.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]

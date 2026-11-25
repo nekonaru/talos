@@ -5,6 +5,29 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.23.0
+
+A large update adding queue persistence, plus smaller polish fixes from the ongoing deep audit.
+
+### New features
+
+- **Queue persistence.** Pending downloads are saved atomically and resumed after an app restart with their full request and retry count. A task killed mid-run returns to the queue instead of being lost.
+- **Queue in backup.** Portable backups now include the pending queue alongside settings, history, saved links, presets and commands.
+
+### Bug fixes
+
+- **Localized weekdays.** Insight activity labels follow the active locale instead of hardcoded English initials.
+- **Favorite tooltips.** The star button now says Add to favorites or Remove from favorites instead of a generic label.
+
+### Improvements
+
+- **85 tests passing**, including full request serialization and queue restore coverage.
+- **Explicit intl dependency.** The date formatter now declares the package it imports.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.23.0-windows-x64.zip`. Linux: `Talos-v0.23.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.22.0
 
 A large update adding automatic retries, plus a second deep audit pass on navigation, error messages, native startup and UI performance.

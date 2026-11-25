@@ -4,6 +4,7 @@ import 'command_template_store.dart';
 import 'download_manager.dart';
 import 'history_store.dart';
 import 'preset_store.dart';
+import 'queue_store.dart';
 import 'saved_link_store.dart';
 import 'settings_store.dart';
 
@@ -16,6 +17,7 @@ class TalosBackup {
 
   static Future<String> exportJson(DownloadManager manager) async {
     final commands = await CommandTemplateStore.load();
+    final queue = await QueueStore.load();
     final data = <String, dynamic>{
       'format': format,
       'version': version,
@@ -25,6 +27,7 @@ class TalosBackup {
       'savedLinks': [for (final link in manager.savedLinks.entries) link.toJson()],
       'presets': [for (final preset in manager.presets.entries) preset.toJson()],
       'commands': [for (final command in commands.templates) command.toJson()],
+      'queue': [for (final item in queue) item.toJson()],
     };
     return const JsonEncoder.withIndent('  ').convert(data);
   }
@@ -100,6 +103,20 @@ class TalosBackup {
         }
       }
       await CommandTemplateStore.replaceAll(entries);
+    }
+
+    final queue = decoded['queue'];
+    if (queue is List) {
+      final entries = <QueuedDownload>[];
+      for (final item in queue) {
+        if (item is! Map<String, dynamic>) continue;
+        try {
+          entries.add(QueuedDownload.fromJson(item));
+        } catch (_) {
+          // Skip one bad row, keep the rest of the queue.
+        }
+      }
+      await QueueStore.save(entries);
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../app_scope.dart';
 import '../core/format.dart';
@@ -261,10 +262,11 @@ class _ActivityBars extends StatelessWidget {
     final theme = Theme.of(context);
     final max = days.isEmpty ? 1 : days.reduce((a, b) => a > b ? a : b);
     final now = DateTime.now();
+    final locale = AppLocalizations.of(context)!.localeName;
+    final weekday = DateFormat.E(locale);
     final labels = List<String>.generate(7, (i) {
       final date = now.subtract(Duration(days: 6 - i));
-      const weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-      return weekdays[date.weekday - 1];
+      return weekday.format(date);
     });
     final fullLabels = List<String>.generate(7, (i) {
       final date = now.subtract(Duration(days: 6 - i));
