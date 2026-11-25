@@ -809,6 +809,39 @@ void main() {
     await QueueStore.save([]);
   });
 
+  test('wifi only pauses the queue until WiFi returns', () async {
+    final engine = FakeEngine();
+    final manager = await DownloadManager.create(engine: engine);
+    await manager.settings.mutate((s) => s.copyWith(wifiOnly: true));
+    DownloadManager.wifiRetryDelay = const Duration(milliseconds: 10);
+    DownloadManager.wifiProbeOverride = () async => false;
+    try {
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=wifi',
+          videoMode: true,
+          outputDir: 'out',
+        ),
+        title: 'WiFi item',
+        kind: HistoryKind.video,
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(engine.lastSession, isNull);
+      expect(manager.tasks.single.stage, 'waitingForWifi');
+
+      DownloadManager.wifiProbeOverride = () async => true;
+      manager.kickQueue();
+      for (var i = 0; i < 200 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      expect(engine.lastSession, isNotNull);
+    } finally {
+      DownloadManager.wifiProbeOverride = null;
+      DownloadManager.wifiRetryDelay = const Duration(seconds: 30);
+      await manager.resetAll();
+    }
+  });
+
   test('history retention drops only old rows', () async {
     final store = await HistoryStore.load();
     await store.clear();

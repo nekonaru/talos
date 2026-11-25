@@ -3,6 +3,8 @@ package id.nekonaru.talos
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -131,6 +133,7 @@ class TalosStorageBridge(private val context: Context) {
                     result.success(null)
                 }
                 "getTreeUri" -> result.success(treeUriString ?: "")
+                "isWifi" -> result.success(isOnWifi())
                 "copyToTree" -> {
                     val localPath = call.argument<String>("localPath") ?: ""
                     val displayName = call.argument<String>("displayName") ?: ""
@@ -419,6 +422,25 @@ class TalosStorageBridge(private val context: Context) {
         val file = target.findFile(displayName) ?: return false
         return try {
             file.delete()
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun isOnWifi(): Boolean {
+        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            ?: return false
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val network = manager.activeNetwork ?: return false
+                val caps = manager.getNetworkCapabilities(network) ?: return false
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+            } else {
+                @Suppress("DEPRECATION")
+                val info = manager.activeNetworkInfo
+                info != null && info.isConnected &&
+                    info.type == ConnectivityManager.TYPE_WIFI
+            }
         } catch (_: Exception) {
             false
         }

@@ -249,6 +249,8 @@
   "autoRetryOff": "Off",
   "historyRetention": "History retention",
   "historyRetentionHint": "Drop old history rows on startup. Files on disk are kept.",
+  "wifiOnly": "Download on WiFi only",
+  "wifiOnlyHint": "Queued downloads wait until Android reports an active WiFi connection",
   "historyRetentionDays": "{count} days",
   "@historyRetentionDays": {
     "placeholders": {

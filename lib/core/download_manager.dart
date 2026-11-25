@@ -158,6 +158,7 @@ class DownloadManager extends ChangeNotifier {
   int _resetGeneration = 0;
   DateTime? _lastProgressNotify;
   Timer? _progressNotifyTimer;
+  Timer? _wifiRetryTimer;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
   List<DownloadTask> get activeTasks =>
@@ -282,6 +283,8 @@ class DownloadManager extends ChangeNotifier {
     }
     await _activeSession?.cancel();
     _activeSession = null;
+    _wifiRetryTimer?.cancel();
+    _wifiRetryTimer = null;
     _tasks.clear();
     notifyListeners();
     await _persistQueue();
@@ -350,9 +353,18 @@ class DownloadManager extends ChangeNotifier {
     });
   }
 
+  /// Called when a setting that affects the queue changes, for example when
+  /// WiFi-only is turned off while downloads are waiting for a network.
+  void kickQueue() {
+    _wifiRetryTimer?.cancel();
+    _wifiRetryTimer = null;
+    if (!_pumping) unawaited(_pump());
+  }
+
   @override
   void dispose() {
     _progressNotifyTimer?.cancel();
+    _wifiRetryTimer?.cancel();
     super.dispose();
   }
 
@@ -371,6 +383,23 @@ class DownloadManager extends ChangeNotifier {
           }
         }
         if (next == null) break;
+        if (_settings.value.wifiOnly) {
+          final onWifi = wifiProbeOverride != null
+              ? await wifiProbeOverride!()
+              : await TalosStorageBridge.isOnWifi();
+          if (onWifi != true) {
+            // Pause the queue instead of failing the task. Downloads resume
+            // automatically when WiFi returns, without losing progress state.
+            next.stage = 'waitingForWifi';
+            notifyListeners();
+            _wifiRetryTimer?.cancel();
+            _wifiRetryTimer = Timer(wifiRetryDelay, () {
+              _wifiRetryTimer = null;
+              if (!_pumping) unawaited(_pump());
+            });
+            break;
+          }
+        }
         await _run(next);
         // Transient failures can be retried automatically. Stable storage
         // errors and explicit cancellation are never retried.
@@ -669,6 +698,12 @@ class DownloadManager extends ChangeNotifier {
 
   @visibleForTesting
   static Duration retryDelayBase = const Duration(seconds: 2);
+
+  @visibleForTesting
+  static Future<bool> Function()? wifiProbeOverride;
+
+  @visibleForTesting
+  static Duration wifiRetryDelay = const Duration(seconds: 30);
 
   static Future<String> _uniqueFilename(Directory dir, String name) async {
     final sep = dir.path.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;

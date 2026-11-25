@@ -10,6 +10,19 @@ class TalosStorageBridge {
 
   static const MethodChannel _channel = MethodChannel('id.nekonaru.talos/storage');
 
+  /// True when Android reports an active WiFi transport. Null on platforms
+  /// without the bridge, so callers can skip the restriction there.
+  static Future<bool?> isOnWifi() async {
+    if (!Platform.isAndroid) return null;
+    try {
+      return await _channel.invokeMethod<bool>('isWifi');
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
   /// Open the system folder picker and persist the URI grant. Returns the
   /// URI string, or null/empty when cancelled or on an unexpected platform.
   static Future<String?> pickDownloadsTree() async {

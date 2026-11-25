@@ -255,6 +255,8 @@
   "autoRetryOff": "Nonaktif",
   "historyRetention": "Retensi riwayat",
   "historyRetentionHint": "Hapus baris riwayat lama saat aplikasi dibuka. File di penyimpanan tetap ada.",
+  "wifiOnly": "Unduh hanya lewat WiFi",
+  "wifiOnlyHint": "Unduhan yang antre menunggu sampai Android melaporkan koneksi WiFi aktif",
   "historyRetentionDays": "{count} hari",
   "@historyRetentionDays": {
     "placeholders": {
