@@ -5,6 +5,27 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.28.0
+
+Update besar yang menambahkan ekspor riwayat CSV dan perbaikan pembatalan native saat penggabungan FFmpeg.
+
+### Fitur baru
+
+- **Ekspor CSV.** Riwayat selesai bisa disalin atau dibagikan sebagai CSV berisi judul, URL, jenis, path, ukuran, tanggal, dan status favorit. Kolom yang mengandung koma, tanda kutip, atau baris baru di-escape dengan benar.
+
+### Perbaikan bug
+
+- **Batal saat gabung.** Bridge Android kini membatalkan sesi FFmpegKit aktif, sehingga tombol Batal saat penggabungan stream menghentikan proses, bukan hanya menandai flag yang tidak bisa dilihat oleh panggilan yang sedang memblokir.
+
+### Peningkatan
+
+- **91 test lulus**, termasuk cakupan escape CSV.
+- **Bagikan ekspor.** Teks CSV riwayat bisa dibagikan lewat share sheet sistem, seperti cadangan.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.28.0-windows-x64.zip`. Linux: `Talos-v0.28.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.27.0
 
 Update besar yang menambahkan kontrol antrean eksplisit dan cakupan pemilihan aset engine desktop.

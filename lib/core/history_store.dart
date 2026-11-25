@@ -174,6 +174,38 @@ class HistoryStore extends ChangeNotifier {
     await _persist();
   }
 
+  /// Exports the current history as CSV with a header row. Values containing
+  /// commas, quotes or newlines are quoted and escaped.
+  String exportCsv() {
+    String cell(String value) {
+      final needsQuotes = value.contains(',') || value.contains('"') ||
+          value.contains('\n') || value.contains('\r');
+      return needsQuotes ? '"${value.replaceAll('"', '""')}"' : value;
+    }
+
+    final buffer = StringBuffer(
+      'title,url,kind,filePath,sizeBytes,dateMs,favorite\n',
+    );
+    for (final entry in _entries) {
+      buffer
+        ..write(cell(entry.title))
+        ..write(',')
+        ..write(cell(entry.url))
+        ..write(',')
+        ..write(cell(entry.kind.name))
+        ..write(',')
+        ..write(cell(entry.filePath))
+        ..write(',')
+        ..write(entry.sizeBytes ?? '')
+        ..write(',')
+        ..write(entry.dateMs)
+        ..write(',')
+        ..write(entry.favorite ? '1' : '0')
+        ..write('\n');
+    }
+    return buffer.toString();
+  }
+
   /// Drops history rows older than [cutoffMs]. Files on disk are never
   /// deleted here; the user can remove them from Insights explicitly.
   Future<void> pruneBefore(int cutoffMs) async {

@@ -114,6 +114,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _exportHistoryCsv() async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.of(context);
+    final csv = manager.history.exportCsv();
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.exportHistory),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: TextField(
+            controller: TextEditingController(text: csv),
+            maxLines: 8,
+            readOnly: true,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l.close),
+          ),
+          TextButton(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: csv));
+              if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l.historyCsvCopied)),
+                );
+              }
+            },
+            child: Text(l.copy),
+          ),
+          FilledButton(
+            onPressed: () {
+              unawaited(SharePlus.instance.share(
+                ShareParams(text: csv, subject: 'Talos history'),
+              ));
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text(l.share),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _importBackup() async {
     final l = AppLocalizations.of(context)!;
     final manager = TalosScope.of(context);
@@ -964,6 +1012,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(l.backupImportHint),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _importBackup,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.table_view_outlined),
+                  title: Text(l.exportHistory),
+                  subtitle: Text(l.exportHistoryHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _exportHistoryCsv,
                 ),
               ],
             ),

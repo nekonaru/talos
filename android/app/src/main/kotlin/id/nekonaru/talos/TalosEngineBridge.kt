@@ -148,7 +148,17 @@ class TalosEngineBridge(private val application: Application) {
                         Thread {
                             try {
                                 ensureStarted()
-                                Python.getInstance().getModule("talos_engine").callAttr("cancel", taskId)
+                                val engine = Python.getInstance().getModule("talos_engine")
+                                // Stop an in-flight FFmpegKit merge as well as
+                                // the yt-dlp line pump. Cancel only marks a
+                                // flag inside Python, which cannot interrupt a
+                                // blocking FFmpegKit call on its own.
+                                try {
+                                    engine.callAttr("cancel_merge")
+                                } catch (_: Exception) {
+                                    // No merge is active for this task.
+                                }
+                                engine.callAttr("cancel", taskId)
                             } catch (_: Exception) {
                                 // Nothing to cancel; the task either never started or is already done.
                             }
