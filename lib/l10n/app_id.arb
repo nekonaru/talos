@@ -22,6 +22,12 @@
   "filenameTemplate": "Template nama file",
   "outputFileName": "Nama file",
   "outputFileNameHint": "Video Saya.mp4 (kosong: otomatis)",
+  "filterPlaylist": "Filter",
+  "filterMinMinutes": "Menit minimal",
+  "filterMaxMinutes": "Menit maksimal",
+  "filterTitleContains": "Judul mengandung",
+  "filterApply": "Terapkan filter",
+  "filterNoMatches": "Tidak ada entri playlist yang cocok",
   "playlistTitle": "Playlist",
   "@playlistCount": {
     "placeholders": {

@@ -18,6 +18,7 @@ import 'package:talos/core/engine/models.dart';
 import 'package:talos/core/engine/progress_parser.dart';
 import 'package:talos/core/history_store.dart';
 import 'package:talos/core/insights.dart';
+import 'package:talos/core/playlist_filter.dart';
 import 'package:talos/core/preset_store.dart';
 import 'package:talos/core/queue_store.dart';
 import 'package:talos/core/saved_link_store.dart';
@@ -524,6 +525,26 @@ void main() {
     // Without ffmpeg the section flag is omitted instead of failing at runtime.
     final noFfmpeg = CommandBuilder.downloadArgs(clip(start: 10), ffmpegAvailable: false);
     expect(noFfmpeg, isNot(contains('--download-sections')));
+  });
+
+  test('playlist filter applies duration and title constraints', () {
+    final entries = [
+      PlaylistEntry(index: 1, id: 'a', title: 'Short Intro', duration: const Duration(seconds: 30)),
+      PlaylistEntry(index: 2, id: 'b', title: 'Long Talk', duration: const Duration(minutes: 12)),
+      PlaylistEntry(index: 3, id: 'c', title: 'Untitled', duration: null),
+    ];
+    final byDuration = filterPlaylistEntries(entries, minSeconds: 60, maxSeconds: 600);
+    expect(byDuration.map((e) => e.index), isEmpty);
+    final byTitle = filterPlaylistEntries(entries, query: 'talk');
+    expect(byTitle.map((e) => e.index), [2]);
+    final combined = filterPlaylistEntries(
+      entries,
+      minSeconds: 10,
+      maxSeconds: 900,
+      query: 'short',
+    );
+    expect(combined.map((e) => e.index), [1]);
+    expect(filterPlaylistEntries(entries), hasLength(3));
   });
 
   test('saved links can be edited without changing id or date', () async {

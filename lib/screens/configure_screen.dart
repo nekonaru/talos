@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'format_selection_screen.dart';
 import '../app_scope.dart';
 import '../core/engine/models.dart';
+import '../core/playlist_filter.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
 import '../core/preset_store.dart';
@@ -68,6 +69,67 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       ready = false;
     }
     if (mounted) setState(() => _engineReady = ready);
+  }
+
+  Future<void> _filterPlaylist(List<PlaylistEntry> entries) async {
+    final l = AppLocalizations.of(context)!;
+    final minController = TextEditingController();
+    final maxController = TextEditingController();
+    final queryController = TextEditingController();
+    final applied = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.filterPlaylist),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: minController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: l.filterMinMinutes),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: maxController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: l.filterMaxMinutes),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: queryController,
+              decoration: InputDecoration(labelText: l.filterTitleContains),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.filterApply),
+          ),
+        ],
+      ),
+    );
+    if (applied != true) return;
+    final min = int.tryParse(minController.text.trim());
+    final max = int.tryParse(maxController.text.trim());
+    final matches = filterPlaylistEntries(
+      entries,
+      minSeconds: min == null ? null : min * 60,
+      maxSeconds: max == null ? null : max * 60,
+      query: queryController.text,
+    );
+    if (!mounted) return;
+    if (matches.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.filterNoMatches)),
+      );
+      return;
+    }
+    setState(() => _selected = {for (final entry in matches) entry.index});
   }
 
   Future<void> _savePreset() async {
@@ -388,6 +450,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          TextButton(onPressed: () => _filterPlaylist(entries), child: Text(l.filterPlaylist)),
                           TextButton(onPressed: () => setState(() => _selected = {for (final e in entries) e.index}), child: Text(l.selectAll)),
                           TextButton(onPressed: () => setState(() => _selected = {}), child: Text(l.selectNone)),
                         ],
