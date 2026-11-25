@@ -90,6 +90,7 @@
 | **aria2c** | Use aria2c as the external downloader on desktop when it is installed |
 | **SponsorBlock** | Remove sponsor, self-promo and other segments from videos by category |
 | **Cookies file** | Download from sites that require a login with a cookies.txt file |
+| **Custom headers** | Send extra HTTP headers, one per line, for sites that require a specific Referer |
 
 ### Android
 
@@ -164,8 +165,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.25.0-windows-x64.zip`
-   - Linux: `Talos-v0.25.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.26.0-windows-x64.zip`
+   - Linux: `Talos-v0.26.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]

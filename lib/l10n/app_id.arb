@@ -257,6 +257,8 @@
   "historyRetentionHint": "Hapus baris riwayat lama saat aplikasi dibuka. File di penyimpanan tetap ada.",
   "wifiOnly": "Unduh hanya lewat WiFi",
   "wifiOnlyHint": "Unduhan yang antre menunggu sampai Android melaporkan koneksi WiFi aktif",
+  "customHeaders": "Header HTTP kustom",
+  "customHeadersHint": "Satu header `Nama: nilai` per baris, misalnya Referer: https://example.invalid/",
   "historyRetentionDays": "{count} hari",
   "@historyRetentionDays": {
     "placeholders": {

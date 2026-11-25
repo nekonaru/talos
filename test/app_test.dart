@@ -652,6 +652,21 @@ void main() {
     expect(CommandBuilder.probeArgs('-evil', proxy: ''), contains('--'));
   });
 
+  test('custom headers are passed one per line', () {
+    final request = DownloadRequest(
+      url: 'https://example.invalid/watch?v=h',
+      videoMode: true,
+      outputDir: '/downloads',
+      customHeaders: 'Referer: https://example.invalid/\r\nX-Test: 1\n\n',
+    );
+    final args = CommandBuilder.downloadArgs(request, ffmpegAvailable: false);
+    expect(args, containsAllInOrder([
+      '--add-headers', 'Referer: https://example.invalid/',
+      '--add-headers', 'X-Test: 1',
+    ]));
+    expect(args.where((a) => a == '--add-headers'), hasLength(2));
+  });
+
   test('tokenizeArgs keeps Windows path backslashes literal', () {
     expect(
       CommandBuilder.tokenizeArgs(r'--cookies C:\Users\me\cookies.txt {url}'),

@@ -243,6 +243,7 @@ class DownloadManager extends ChangeNotifier {
       remuxContainer: task.request.remuxContainer,
       maxFilesize: task.request.maxFilesize,
       userAgent: task.request.userAgent,
+      customHeaders: task.request.customHeaders,
       formatSort: task.request.formatSort,
       downloadSubtitles: task.request.downloadSubtitles,
       autoSubtitle: task.request.autoSubtitle,

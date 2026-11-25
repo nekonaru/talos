@@ -56,6 +56,7 @@ class TalosSettings {
     this.customCommandDirectory,
     this.historyRetentionDays = 0,
     this.wifiOnly = false,
+    this.customHeaders = '',
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -110,6 +111,7 @@ class TalosSettings {
       customCommandDirectory: json['customCommandDirectory'] as String?,
       historyRetentionDays: intChoice((json['historyRetentionDays'] as num?)?.toInt(), const [0, 7, 30, 90], 0),
       wifiOnly: json['wifiOnly'] as bool? ?? false,
+      customHeaders: json['customHeaders'] as String? ?? '',
     );
   }
 
@@ -156,6 +158,7 @@ class TalosSettings {
   String? customCommandDirectory;
   int historyRetentionDays;
   bool wifiOnly;
+  String customHeaders;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -201,6 +204,7 @@ class TalosSettings {
         'customCommandDirectory': customCommandDirectory,
         'historyRetentionDays': historyRetentionDays,
         'wifiOnly': wifiOnly,
+        'customHeaders': customHeaders,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -263,6 +267,7 @@ class TalosSettings {
     String? customCommandDirectory,
     int? historyRetentionDays,
     bool? wifiOnly,
+    String? customHeaders,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -308,6 +313,7 @@ class TalosSettings {
       customCommandDirectory: clearCustomCommandDirectory ? null : (customCommandDirectory ?? this.customCommandDirectory),
       historyRetentionDays: historyRetentionDays ?? this.historyRetentionDays,
       wifiOnly: wifiOnly ?? this.wifiOnly,
+      customHeaders: customHeaders ?? this.customHeaders,
     );
   }
 }
