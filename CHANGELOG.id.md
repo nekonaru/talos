@@ -5,6 +5,30 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.24.0
+
+Update besar yang menambahkan daftar lisensi runtime dan retensi riwayat otomatis, plus perbaikan memori engine dan penyelarasan versi.
+
+### Fitur baru
+
+- **Lisensi runtime.** Tentang kini menautkan daftar eksplisit lisensi yt-dlp, Chaquopy, FFmpegKit, binary engine desktop, FFmpeg terkelola, dan paket Dart.
+- **Retensi riwayat.** Baris riwayat lama bisa dihapus otomatis saat aplikasi dibuka setelah 7, 30, atau 90 hari. File di penyimpanan tidak pernah dihapus oleh pengaturan ini.
+
+### Perbaikan bug
+
+- **Memori ekstraksi FFmpeg.** Binary FFmpeg Windows terkelola ditulis langsung ke disk alih-alih didekompresi penuh di memori.
+- **Selisih versi engine.** Pin yt-dlp Android kini sama dengan versi terkelola desktop.
+- **Label penulis.** Layar Tentang memakai label GitHub terlokalisasi alih-alih teks Inggris tetap.
+
+### Peningkatan
+
+- **86 test lulus**, termasuk cakupan retensi riwayat.
+- **Transparansi lisensi.** Pertanyaan terbuka tentang komponen GPL dan LGPL kini didokumentasikan di dalam aplikasi.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.24.0-windows-x64.zip`. Linux: `Talos-v0.24.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.23.0
 
 Update besar yang menambahkan antrean bertahan, plus perbaikan kecil dari audit mendalam yang berkelanjutan.
