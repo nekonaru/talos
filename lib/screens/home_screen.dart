@@ -505,6 +505,54 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
+                              tooltip: l.copy,
+                              icon: const Icon(Icons.copy_all_outlined, size: 20),
+                              onPressed: () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                await Clipboard.setData(ClipboardData(text: link.text));
+                                if (!mounted) return;
+                                messenger.showSnackBar(
+                                  SnackBar(content: Text(l.linkCopied)),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              tooltip: l.editSaved,
+                              icon: const Icon(Icons.edit_outlined, size: 20),
+                              onPressed: () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final controller = TextEditingController(text: link.text);
+                                final confirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (dialogContext) => AlertDialog(
+                                    title: Text(l.editSaved),
+                                    content: TextField(
+                                      controller: controller,
+                                      maxLines: 3,
+                                      autofocus: true,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(dialogContext).pop(false),
+                                        child: Text(l.cancel),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () => Navigator.of(dialogContext).pop(true),
+                                        child: Text(l.save),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirmed != true || controller.text.trim().isEmpty) return;
+                                await manager.savedLinks.update(link.id, controller.text);
+                                if (!mounted) return;
+                                setState(() {});
+                                messenger.showSnackBar(
+                                  SnackBar(content: Text(l.linkUpdated)),
+                                );
+                              },
+                            ),
+                            IconButton(
                               tooltip: l.openSaved,
                               icon: const Icon(Icons.open_in_new, size: 20),
                               onPressed: () {

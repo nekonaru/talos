@@ -92,6 +92,22 @@ class SavedLinkStore extends ChangeNotifier {
     await _persist();
   }
 
+  Future<void> update(String id, String text) async {
+    final value = text.trim();
+    if (value.isEmpty) return;
+    final index = _entries.indexWhere((link) => link.id == id);
+    if (index < 0) return;
+    // Keep the id and original date. A duplicate of another saved row is not
+    // created here, so editing preserves the user's list order.
+    _entries[index] = SavedLink(
+      id: id,
+      text: value,
+      dateMs: _entries[index].dateMs,
+    );
+    notifyListeners();
+    await _persist();
+  }
+
   Future<void> remove(String id) async {
     _entries.removeWhere((link) => link.id == id);
     notifyListeners();
