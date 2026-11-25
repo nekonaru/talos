@@ -44,8 +44,11 @@ EngineProgress? parseYtdlpLine(String line) {
   final trimmed = line.trim();
   if (trimmed.isEmpty) return null;
 
-  if (trimmed.startsWith('ERROR')) {
-    return EngineProgress(error: trimmed.replaceFirst(RegExp(r'^ERROR:\s*'), ''));
+  // yt-dlp emits both "ERROR: ..." and "[site] ERROR: ...". Match either,
+  // but not unrelated words such as "ERRORS in ...".
+  final errorMatch = RegExp(r'(?:^|\]\s*)ERROR:\s*').firstMatch(trimmed);
+  if (errorMatch != null) {
+    return EngineProgress(error: trimmed.substring(errorMatch.end));
   }
 
   if (trimmed.startsWith('[Merger]')) {

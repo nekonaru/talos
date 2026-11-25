@@ -5,6 +5,35 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.20.0
+
+Update besar yang menambahkan aksi unduh ulang untuk entri selesai, plus perbaikan folder Android, penggabungan playlist, dan unduhan massal tautan tersimpan dari audit mendalam baru.
+
+### Fitur baru
+
+- **Unduh lagi.** Setiap entri selesai sekarang punya aksi "Unduh lagi" di menunya. Aksi ini mem-probe URL tersimpan dan membuka Configure dengan info media terbaru agar pengaturan bisa diubah sebelum mengunduh ulang.
+
+### Perbaikan bug
+
+- **Folder per-jenis Android.** Folder video atau audio yang dipilih pengguna kini menjadi acuan di API 29+; file tidak lagi dipindahkan diam-diam ke Downloads/Talos dan folder pilihan dikosongkan.
+- **Playlist Android.** Bagian video/audio kini dikelompokkan per nama dasar dan digabung per entri, sehingga playlist tidak lagi selesai dengan satu fragmen rusak dan stream lain tercecer.
+- **Unduh semua tautan tersimpan.** Semua URL kini diratakan lewat detektor yang sama dengan kolom input, sehingga tautan multi-URL tetap lengkap dan satu tautan tersimpan berhasil diunduh alih-alih tidak melakukan apa pun.
+- **Deteksi sukses Android.** Baris `ERROR:` sesaat tidak lagi menandai unduhan sukses sebagai gagal; status native yang menjadi acuan.
+- **Parsing baris error.** Error yt-dlp berprefiks `[site] ERROR:` kini terdeteksi, tanpa salah mencocokkan kata lain.
+- **Memori setup FFmpeg.** Arsip essentials didekode sebagai stream, bukan dibuffer penuh di memori.
+- **Helper nama file.** Loop keunikan dibatasi dan pemindaian direktori lebih ringan.
+- **MIME MediaStore.** File `.m4a` kini diindeks sebagai `audio/mp4`, bukan video.
+- **Salinan SAF.** Dokumen kosong tidak lagi ditinggalkan saat salinan gagal.
+- **Lokalisasi.** Metadata `@appTitle` ditambahkan ke ARB Bahasa Indonesia.
+
+### Peningkatan
+
+- **78 test lulus**, dengan ekspektasi stabil untuk resolusi nama file async.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah. Android: `app-release.apk` (universal, untuk perangkat Android 64-bit). Windows: `Talos-v0.20.0-windows-x64.zip`. Linux: `Talos-v0.20.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24) ke atas, Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.19.0
 
 Update besar yang dipimpin oleh unduhan massal untuk tautan tersimpan, plus perbaikan konkurensi dan keandalan dari audit mendalam baru.

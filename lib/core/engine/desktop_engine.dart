@@ -4,6 +4,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -254,14 +255,15 @@ class DesktopEngine implements TalosEngine {
     onPhase?.call('ffmpeg-download', 0);
 
     final tmp = File('${dir.path}${Platform.pathSeparator}ffmpeg-essentials.zip.download');
-    Uint8List bytes;
+    Archive archive;
     try {
       await _downloadToFile(url, tmp, (fraction) => onPhase?.call('ffmpeg-download', fraction));
       final digest = await _fileDigest(tmp);
       if (digest != expectedSha256) {
         throw StateError('Managed FFmpeg failed checksum verification. Install FFmpeg manually and set its path in Settings, or try again later.');
       }
-      bytes = await tmp.readAsBytes();
+      // Streaming decode avoids holding the whole essentials zip in memory.
+      archive = ZipDecoder().decodeStream(InputFileStream(tmp.path));
     } finally {
       try {
         if (await tmp.exists()) await tmp.delete();
@@ -269,7 +271,6 @@ class DesktopEngine implements TalosEngine {
         // A locked temp file left behind is harmless.
       }
     }
-    final archive = ZipDecoder().decodeBytes(bytes);
     var extracted = 0;
     for (final entry in archive.files) {
       if (!entry.isFile) continue;

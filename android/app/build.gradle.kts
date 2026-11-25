@@ -44,7 +44,8 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        // Python 3.14 is 64-bit only. v0.1.1 ships arm64-v8a to cover 90% of devices with a smaller APK.
+        // Python 3.14 is 64-bit only. Ship arm64-v8a to cover most devices with a smaller APK.
+        // Chaquopy requires abiFilters here for every build variant.
         ndk {
             abiFilters.addAll(listOf("arm64-v8a"))
         }

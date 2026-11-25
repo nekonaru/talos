@@ -283,8 +283,19 @@ def run(task_id, argv_json, merge=False):
 
     parts = state.get('files') or []
     if merge and len(parts) >= 2:
-        merged = _safe_merge(parts, on_line)
-        if merged is not None:
-            return json.dumps({'status': 'done', 'outputs': [merged]})
+        # A playlist produces multiple video/audio pairs. Group parts by their
+        # base name and merge each pair, otherwise only one raw stream leaks
+        # through as the "finished" file and the rest are orphaned.
+        groups = {}
+        for part in parts:
+            match = _F_PART.match(part)
+            if match:
+                groups.setdefault(match.group(1), []).append(part)
+        outputs = []
+        for group in groups.values():
+            merged = _safe_merge(group, on_line)
+            outputs.append(merged if merged is not None else group[0])
+        if outputs:
+            return json.dumps({'status': 'done', 'outputs': outputs})
 
     return json.dumps({'status': 'done', 'outputs': parts})

@@ -130,8 +130,11 @@ class _AndroidDownloadSession implements TalosDownloadSession {
         if (parsed.error != null) _lastError = parsed.error;
         _controller.add(parsed);
       case 'done':
-        if (_lastError != null) {
-          _finish(SessionOutcome(error: _lastError, outputPath: _lastOutputPath));
+        // The native status is authoritative. Transient ERROR lines from a
+        // recovered item must not turn a successful download into a failure.
+        final message = event['message'] as String?;
+        if (message != null && message.isNotEmpty) {
+          _finish(SessionOutcome(error: message, outputPath: _lastOutputPath));
         } else {
           _finish(SessionOutcome(outputPath: _lastOutputPath));
         }
