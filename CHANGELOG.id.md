@@ -5,6 +5,27 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.25.0
+
+Update besar yang menambahkan pembatas unduhan WiFi-only di Android dengan pemeriksaan konektivitas native.
+
+### Fitur baru
+
+- **Hanya WiFi.** Saat diaktifkan di Android, unduhan yang antre dijeda dan lanjut otomatis ketika koneksi WiFi aktif terdeteksi. Tugas mempertahankan posisi dan pengaturannya saat menunggu. Mematikan pengaturan langsung menjalankan kembali antrean.
+
+### Perbaikan bug
+
+- **Izin jaringan.** ACCESS_NETWORK_STATE kini dideklarasikan eksplisit sebagai izin normal untuk pemeriksaan konektivitas. Tidak ada prompt runtime baru.
+
+### Peningkatan
+
+- **87 test lulus**, termasuk regresi gating WiFi dengan probe yang bisa disuntik.
+- **Umpan antrean.** Tugas yang menunggu menampilkan tahap khusus alih-alih terlihat macet.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.25.0-windows-x64.zip`. Linux: `Talos-v0.25.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.24.0
 
 Update besar yang menambahkan daftar lisensi runtime dan retensi riwayat otomatis, plus perbaikan memori engine dan penyelarasan versi.

@@ -55,6 +55,7 @@ class TalosSettings {
     this.keepSubtitles = false,
     this.customCommandDirectory,
     this.historyRetentionDays = 0,
+    this.wifiOnly = false,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -108,6 +109,7 @@ class TalosSettings {
       keepSubtitles: json['keepSubtitles'] as bool? ?? false,
       customCommandDirectory: json['customCommandDirectory'] as String?,
       historyRetentionDays: intChoice((json['historyRetentionDays'] as num?)?.toInt(), const [0, 7, 30, 90], 0),
+      wifiOnly: json['wifiOnly'] as bool? ?? false,
     );
   }
 
@@ -153,6 +155,7 @@ class TalosSettings {
   bool keepSubtitles;
   String? customCommandDirectory;
   int historyRetentionDays;
+  bool wifiOnly;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -197,6 +200,7 @@ class TalosSettings {
         'keepSubtitles': keepSubtitles,
         'customCommandDirectory': customCommandDirectory,
         'historyRetentionDays': historyRetentionDays,
+        'wifiOnly': wifiOnly,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -258,6 +262,7 @@ class TalosSettings {
     bool? keepSubtitles,
     String? customCommandDirectory,
     int? historyRetentionDays,
+    bool? wifiOnly,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -302,6 +307,7 @@ class TalosSettings {
       keepSubtitles: keepSubtitles ?? this.keepSubtitles,
       customCommandDirectory: clearCustomCommandDirectory ? null : (customCommandDirectory ?? this.customCommandDirectory),
       historyRetentionDays: historyRetentionDays ?? this.historyRetentionDays,
+      wifiOnly: wifiOnly ?? this.wifiOnly,
     );
   }
 }

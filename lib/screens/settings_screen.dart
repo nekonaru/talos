@@ -463,6 +463,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
+                if (Theme.of(context).platform == TargetPlatform.android)
+                  SwitchListTile(
+                    secondary: const Icon(Icons.wifi_outlined),
+                    title: Text(l.wifiOnly),
+                    subtitle: Text(l.wifiOnlyHint),
+                    value: settings.wifiOnly,
+                    onChanged: (value) async {
+                      await manager.settings.mutate((s) => s.copyWith(wifiOnly: value));
+                      manager.kickQueue();
+                    },
+                  ),
                 SwitchListTile(
                   secondary: const Icon(Icons.visibility_off_outlined),
                   title: Text(l.privateMode),
