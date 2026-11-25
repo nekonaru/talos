@@ -57,6 +57,7 @@ class TalosSettings {
     this.historyRetentionDays = 0,
     this.wifiOnly = false,
     this.customHeaders = '',
+    this.queuePaused = false,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -112,6 +113,7 @@ class TalosSettings {
       historyRetentionDays: intChoice((json['historyRetentionDays'] as num?)?.toInt(), const [0, 7, 30, 90], 0),
       wifiOnly: json['wifiOnly'] as bool? ?? false,
       customHeaders: json['customHeaders'] as String? ?? '',
+      queuePaused: json['queuePaused'] as bool? ?? false,
     );
   }
 
@@ -159,6 +161,7 @@ class TalosSettings {
   int historyRetentionDays;
   bool wifiOnly;
   String customHeaders;
+  bool queuePaused;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -205,6 +208,7 @@ class TalosSettings {
         'historyRetentionDays': historyRetentionDays,
         'wifiOnly': wifiOnly,
         'customHeaders': customHeaders,
+        'queuePaused': queuePaused,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -268,6 +272,7 @@ class TalosSettings {
     int? historyRetentionDays,
     bool? wifiOnly,
     String? customHeaders,
+    bool? queuePaused,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -314,6 +319,7 @@ class TalosSettings {
       historyRetentionDays: historyRetentionDays ?? this.historyRetentionDays,
       wifiOnly: wifiOnly ?? this.wifiOnly,
       customHeaders: customHeaders ?? this.customHeaders,
+      queuePaused: queuePaused ?? this.queuePaused,
     );
   }
 }
