@@ -20,6 +20,7 @@ import 'package:talos/core/history_store.dart';
 import 'package:talos/core/insights.dart';
 import 'package:talos/core/playlist_filter.dart';
 import 'package:talos/core/preset_store.dart';
+import 'package:talos/core/quiet_hours.dart';
 import 'package:talos/core/queue_store.dart';
 import 'package:talos/core/saved_link_store.dart';
 import 'package:talos/core/settings_store.dart';
@@ -871,6 +872,54 @@ void main() {
       expect(DesktopEngine.engineAsset(), 'yt-dlp_macos');
     } finally {
       debugDefaultTargetPlatformOverride = original;
+    }
+  });
+
+  test('quiet hours supports normal and overnight windows', () {
+    expect(isWithinQuietHours(DateTime(2026, 1, 1, 23), 22, 6), isTrue);
+    expect(isWithinQuietHours(DateTime(2026, 1, 1, 3), 22, 6), isTrue);
+    expect(isWithinQuietHours(DateTime(2026, 1, 1, 12), 22, 6), isFalse);
+    expect(isWithinQuietHours(DateTime(2026, 1, 1, 12), 9, 17), isTrue);
+    expect(isWithinQuietHours(DateTime(2026, 1, 1, 18), 9, 17), isFalse);
+    expect(isWithinQuietHours(DateTime(2026, 1, 1, 9), 9, 9), isFalse);
+  });
+
+  test('quiet hours holds the queue until the window opens', () async {
+    final engine = FakeEngine();
+    final manager = await DownloadManager.create(engine: engine);
+    await manager.settings.mutate(
+      (s) => s.copyWith(
+        quietHoursEnabled: true,
+        quietStartHour: 22,
+        quietEndHour: 6,
+      ),
+    );
+    DownloadManager.quietRetryDelay = const Duration(milliseconds: 10);
+    DownloadManager.nowOverride = () => DateTime(2026, 1, 1, 12);
+    try {
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=quiet',
+          videoMode: true,
+          outputDir: 'out',
+        ),
+        title: 'Quiet item',
+        kind: HistoryKind.video,
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(engine.lastSession, isNull);
+      expect(manager.tasks.single.stage, 'quietHours');
+
+      DownloadManager.nowOverride = () => DateTime(2026, 1, 1, 23);
+      manager.kickQueue();
+      for (var i = 0; i < 200 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      expect(engine.lastSession, isNotNull);
+    } finally {
+      DownloadManager.nowOverride = null;
+      DownloadManager.quietRetryDelay = const Duration(minutes: 1);
+      await manager.resetAll();
     }
   });
 
