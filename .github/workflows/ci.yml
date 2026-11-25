@@ -93,6 +93,7 @@ jobs:
             build/app/outputs/flutter-apk/app-release.apk
             release-sha256.txt
             apksigner-verify.txt
+            build/symbols/**
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

@@ -242,10 +242,14 @@ class TalosEngineBridge(private val application: Application) {
         }
     }
 
-    @Synchronized
     internal fun ensureStarted() {
-        if (!Python.isStarted()) {
-            Python.start(AndroidPlatform(application))
+        // @Synchronized locks on this instance, but a new bridge is created on
+        // every FlutterEngine configuration. Two engines could both observe
+        // Python as stopped and both call start(). Use a process-wide lock.
+        synchronized(PYTHON_START_LOCK) {
+            if (!Python.isStarted()) {
+                Python.start(AndroidPlatform(application))
+            }
         }
     }
 
@@ -264,5 +268,9 @@ class TalosEngineBridge(private val application: Application) {
         } catch (e: Exception) {
             mapOf("ready" to false, "version" to null, "managed" to true)
         }
+    }
+
+    companion object {
+        private val PYTHON_START_LOCK = Any()
     }
 }

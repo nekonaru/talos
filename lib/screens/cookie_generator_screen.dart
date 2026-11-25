@@ -159,6 +159,13 @@ class _CookieGeneratorScreenState extends State<CookieGeneratorScreen> {
             icon: const Icon(Icons.refresh),
             onPressed: _reload,
           ),
+          // Back is captured by WebView history. An explicit close action
+          // always leaves the screen without walking the whole history.
+          IconButton(
+            tooltip: l.close,
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ],
       ),
       body: controller == null

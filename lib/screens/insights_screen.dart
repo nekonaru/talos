@@ -179,8 +179,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
     await manager.history.removeMany(removed);
     if (!context.mounted) return;
+    final partial = removed.length != old.length;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l.cleanupDone(removed.length))),
+      SnackBar(
+        content: Text(
+          partial
+              ? l.cleanupPartial(removed.length, old.length)
+              : l.cleanupDone(removed.length),
+        ),
+      ),
     );
   }
 }

@@ -19,6 +19,7 @@ import '../gen/app_localizations.dart';
 import 'about_screen.dart';
 import 'commands_screen.dart';
 import 'cookie_generator_screen.dart';
+import 'error_message.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -182,7 +183,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _refreshEngine();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyError(context, error))),
+        );
       }
     } finally {
       if (mounted) setState(() => _updating = false);
@@ -419,6 +422,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(l.downloadNotificationHint),
                   value: settings.downloadNotification,
                   onChanged: (value) => manager.settings.mutate((s) => s.copyWith(downloadNotification: value)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.replay_outlined),
+                  title: Text(l.autoRetry),
+                  subtitle: Text(l.autoRetryHint),
+                  trailing: DropdownButton<int>(
+                    value: settings.autoRetryAttempts,
+                    underline: const SizedBox(),
+                    items: [
+                      for (var count = 0; count <= 3; count++)
+                        DropdownMenuItem(
+                          value: count,
+                          child: Text(count == 0 ? l.autoRetryOff : '$count'),
+                        ),
+                    ],
+                    onChanged: (value) => manager.settings.mutate(
+                      (s) => s.copyWith(autoRetryAttempts: value ?? 0),
+                    ),
+                  ),
                 ),
                 SwitchListTile(
                   secondary: const Icon(Icons.visibility_off_outlined),
@@ -738,9 +760,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailing: DropdownButton<String>(
                       value: settings.engineChannel,
                       underline: const SizedBox(),
-                      items: const [
-                        DropdownMenuItem(value: 'stable', child: Text('Stable')),
-                        DropdownMenuItem(value: 'nightly', child: Text('Nightly')),
+                      items: [
+                        DropdownMenuItem(value: 'stable', child: Text(l.engineChannelStable)),
+                        DropdownMenuItem(value: 'nightly', child: Text(l.engineChannelNightly)),
                       ],
                       onChanged: (value) => manager.settings.mutate((s) => s.copyWith(engineChannel: value ?? 'stable')),
                     ),
@@ -854,7 +876,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ListTile(
               leading: const Icon(Icons.person_outline),
               title: const Text('Nicolas Dwi Dharma'),
-              subtitle: const Text('@nekonaru on GitHub'),
+              subtitle: Text(l.authorGithub),
               trailing: const Icon(Icons.open_in_new, size: 18),
               onTap: () => _openLink(context, TalosInfo.authorUrl),
             ),

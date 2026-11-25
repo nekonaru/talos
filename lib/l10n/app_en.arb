@@ -174,6 +174,13 @@
       }
     }
   },
+  "cleanupPartial": "Removed {removed} of {total} old downloads. The rest could not be deleted.",
+  "@cleanupPartial": {
+    "placeholders": {
+      "removed": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
   "cleanupNone": "No downloads are older than this.",
   "qualityNone": "None",
   "safFolder": "(SAF folder)",
@@ -184,6 +191,7 @@
   "deleteFile": "Delete file",
   "retry": "Retry",
   "clearFinished": "Clear finished",
+  "clearFinishedBody": "This removes the finished download list only. Files on disk are not deleted.",
   "unknownError": "Something went wrong",
   "engineMissing": "The download engine is not ready yet.",
   "installEngine": "Set up engine",
@@ -214,6 +222,12 @@
   "maxFilesizeHint": "Maximum file size for downloads, for example 50M. 0 disables.",
   "engineChannel": "Engine channel",
   "engineChannelHint": "Choose stable or nightly yt-dlp releases for managed updates",
+  "engineChannelStable": "Stable",
+  "engineChannelNightly": "Nightly",
+  "authorGithub": "@nekonaru on GitHub",
+  "autoRetry": "Auto retry",
+  "autoRetryHint": "Retry failed downloads automatically with a short delay",
+  "autoRetryOff": "Off",
   "downloadNotification": "Show notification while downloading",
   "downloadNotificationHint": "Show a persistent notification during downloads",
   "downloadSubtitles": "Download subtitles",
@@ -268,6 +282,7 @@
   "accent": "Accent",
   "commands": "Custom commands",
   "commandsHint": "Run yt-dlp with your own argument templates",
+  "commandsLoadFailed": "Could not load command templates",
   "addCommand": "Add command",
   "commandName": "Name",
   "commandArgs": "Arguments",
@@ -309,6 +324,7 @@
   "errPrivate": "This video is private. Download it with a cookies.txt from a matching account.",
   "err404": "Not found (HTTP 404). Check the URL.",
   "errFfmpeg": "FFmpeg is not available. On desktop, open Settings and update the engine. On Android, stream merging uses the bundled FFmpegKit; reinstall the app if it is missing.",
+  "errAria2": "aria2c is not installed. Turn off aria2 in Settings.",
   "errSafNotWritable": "The selected storage folder is not writable. Re-pick it in Settings > Downloads, or clear it to use the default Downloads folder.",
   "errSaveToDownloads": "Talos could not save the file into the Downloads folder. Check that storage and notification access are granted, or pick a different folder in Settings > Downloads.",
   "errLive": "The live event is still in progress. Wait for it to end, then try again.",

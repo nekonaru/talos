@@ -5,6 +5,40 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.22.0
+
+Update besar yang menambahkan coba ulang otomatis, plus audit mendalam putaran kedua pada navigasi, pesan error, startup native, dan performa UI.
+
+### Fitur baru
+
+- **Coba ulang otomatis.** Unduhan yang gagal bisa diulang otomatis hingga tiga kali dengan jeda singkat. Error izin penyimpanan dan pembatalan tidak pernah diulang.
+
+### Perbaikan bug
+
+- **Pemilih format.** Membuka kembali pemilih format tidak lagi menghapus selector kustom tersimpan seperti `bv*[height<=720]+ba`.
+- **Error terlokalisasi.** Pengaturan, Unduhan, dan Beranda sekarang memakai satu resolver yang sama, sehingga error engine diterjemahkan alih-alih menampilkan teks Inggris di UI Indonesia.
+- **Template perintah.** Gagal memuat menampilkan tombol coba lagi, bukan spinner tanpa akhir.
+- **Bersihkan selesai.** Konfirmasi kini menjelaskan bahwa hanya daftar yang dihapus dan file di penyimpanan tetap ada.
+- **Pembersihan Wawasan.** Pembersihan sebagian melaporkan berapa file yang gagal dihapus alih-alih mengklaim sukses penuh.
+- **Pembuat cookie.** Tombol Tutup yang jelas keluar dari layar tanpa menelusuri seluruh riwayat WebView.
+- **Rebuild tab.** Berpindah tab tidak lagi membangun ulang daftar pada notifikasi TabController yang duplikat.
+- **Teks hardcoded.** Nama kanal engine dan label penulis GitHub kini terlokalisasi.
+- **aria2c.** Mengaktifkan aria2 tanpa binary yang terpasang menghasilkan pesan jelas alih-alih menggagalkan setiap unduhan tanpa sebab.
+- **Startup Python.** Lock di level proses mencegah dua Flutter engine memulai Python Chaquopy bersamaan.
+- **FileProvider.** Berbagi penyimpanan eksternal dibatasi pada direktori Download/Talos milik aplikasi.
+- **Memori Gradle.** Heap daemon diturunkan untuk mengurangi kegagalan out-of-memory native pada build Chaquopy.
+- **Simbol.** Build rilis ter-obfuscate kini mengunggah file simbol bersama artifact APK.
+
+### Peningkatan
+
+- **Resolusi nama file async.** Pemindaian direktori tidak lagi memblokir UI isolate saat unduhan antre.
+- **83 test lulus**, termasuk uji coba ulang kegagalan sementara.
+- **Kode mati dihapus.** Field Activity yang tidak dipakai tidak lagi menyimpan referensi Activity.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.22.0-windows-x64.zip`. Linux: `Talos-v0.22.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.21.0
 
 Update besar yang menambahkan cadangan dan pemulihan portabel, plus perbaikan audit mendalam untuk pembatalan, penyimpanan Android, penggabungan playlist, dan bootstrap engine.
