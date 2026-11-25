@@ -82,11 +82,21 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            // Never silently ship a release-looking APK signed with the debug
-            // key. Fail early with an actionable message instead.
-            if (!hasKeystore) error("Release signing key is missing: app/key.properties")
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (hasKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
+    }
+}
+
+// Fail a release build that has no signing key, but only when a release task
+// is actually requested. Checking at configuration time would also break
+// debug builds on pull requests, where the signing secret is unavailable.
+gradle.taskGraph.whenReady {
+    if (!hasKeystore && allTasks.any { it.name.lowercase().contains("release") }) {
+        error("Release signing key is missing: app/key.properties")
     }
 }
 
