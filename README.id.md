@@ -60,6 +60,7 @@
 | **Tampilan progres** | Persen, kecepatan, ETA, dan posisi playlist, dengan batal dan coba lagi |
 | **Antrean berurutan** | Satu unduhan pada satu waktu, agar situs tidak dihajar request paralel |
 | **Batal dan coba lagi** | Batalkan tugas mana pun, coba lagi yang gagal atau dibatalkan dengan opsi sama |
+| **Coba ulang otomatis** | Opsional mengulang kegagalan sementara otomatis dengan jeda singkat |
 
 ### Playlist
 
@@ -159,8 +160,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.21.0-windows-x64.zip`
-   - Linux: `Talos-v0.21.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.22.0-windows-x64.zip`
+   - Linux: `Talos-v0.22.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]

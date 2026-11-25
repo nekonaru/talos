@@ -5,6 +5,40 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.22.0
+
+A large update adding automatic retries, plus a second deep audit pass on navigation, error messages, native startup and UI performance.
+
+### New features
+
+- **Auto retry.** Failed downloads can be retried automatically up to three times with a short linear backoff. Storage permission and cancellation errors are never retried.
+
+### Bug fixes
+
+- **Format selector.** Reopening the format picker no longer clears a stored custom selector such as `bv*[height<=720]+ba`.
+- **Localized errors.** Settings, Downloads and Home now share one resolver, so engine errors are translated instead of leaking English text in the Indonesian UI.
+- **Command templates.** A failed load shows a retry button instead of an endless spinner.
+- **Clear finished.** The confirmation now explains that only the list is cleared and files on disk remain.
+- **Insights cleanup.** A partial cleanup reports how many files could not be deleted instead of claiming full success.
+- **Cookie generator.** An explicit Close button leaves the screen without walking the whole WebView history.
+- **Tab rebuilds.** Switching tabs no longer rebuilds the list on duplicate TabController notifications.
+- **Hardcoded strings.** Engine channel names and the GitHub author label are now localized.
+- **aria2c.** Enabling aria2 without the binary installed fails with a clear message instead of failing every download cryptically.
+- **Python startup.** A process-wide lock prevents two Flutter engines from starting Chaquopy's Python runtime at the same time.
+- **FileProvider.** External storage sharing is limited to the app's Download/Talos directory.
+- **Gradle memory.** The daemon heap was lowered to reduce native out-of-memory failures on Chaquopy builds.
+- **Symbols.** Obfuscated release builds now upload their symbol files with the APK artifact.
+
+### Improvements
+
+- **Async filename resolution.** Directory scans no longer block the UI isolate when a download is enqueued.
+- **83 tests passing**, including a transient-failure retry test.
+- **Dead code removed.** An unused Activity field no longer retains an Activity reference.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.22.0-windows-x64.zip`. Linux: `Talos-v0.22.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.21.0
 
 A large update adding portable backup and restore, plus deep audit fixes for cancellation, Android storage, playlist merges and engine bootstrap.
