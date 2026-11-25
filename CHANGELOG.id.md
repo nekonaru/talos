@@ -5,6 +5,27 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.26.0
+
+Update besar yang menambahkan header HTTP kustom, plus perbaikan urutan stream penggabungan native.
+
+### Fitur baru
+
+- **Header kustom.** Pengaturan menerima header `Nama: nilai` satu per baris. Setiap baris diteruskan ke yt-dlp lewat `--add-headers`, sehingga situs yang membutuhkan Referer tertentu bekerja tanpa file cookies.
+
+### Perbaikan bug
+
+- **Urutan stream gabungan.** Penggabung Android kini menaruh bagian yang lebih besar terlebih dahulu, sehingga FFmpeg memilih stream video saat yt-dlp mencantumkan audio lebih dulu.
+
+### Peningkatan
+
+- **88 test lulus**, termasuk uji argumen header kustom.
+- **Header tersimpan.** Header kustom ikut tersimpan di pengaturan dan terbawa pada unduhan yang antre maupun yang dipulihkan.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.26.0-windows-x64.zip`. Linux: `Talos-v0.26.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.25.0
 
 Update besar yang menambahkan pembatas unduhan WiFi-only di Android dengan pemeriksaan konektivitas native.

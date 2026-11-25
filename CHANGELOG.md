@@ -5,6 +5,27 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.26.0
+
+A large update adding custom HTTP headers, plus a native merge ordering fix.
+
+### New features
+
+- **Custom headers.** Settings accepts newline-separated `Name: value` headers. Each line is passed to yt-dlp with `--add-headers`, so sites requiring a specific Referer work without a cookies file.
+
+### Bug fixes
+
+- **Merge stream order.** The Android merger now puts the larger part first, so FFmpeg picks the video stream when yt-dlp lists the audio part first.
+
+### Improvements
+
+- **88 tests passing**, including a custom header argument test.
+- **Header persistence.** Custom headers are saved with settings and carried through queued and restored downloads.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.26.0-windows-x64.zip`. Linux: `Talos-v0.26.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.25.0
 
 A large update adding a WiFi-only download gate on Android, backed by a native connectivity check.
