@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.32.0
+
+Update besar yang menambahkan pembersihan file sementara agar penyimpanan lokal tetap ringan.
+
+### Fitur baru
+
+- **Bersih file sementara.** Aksi di Pengaturan menghapus file `.tmp`, `.part`, `.ytdl`, dan `.download` lama dari data aplikasi serta folder output. File yang lebih baru dari satu jam dan unduhan selesai tetap disimpan.
+
+### Peningkatan
+
+- **96 test lulus**, termasuk perilaku pembersihan untuk file lama, baru, dan file yang tidak terkait.
+- **Konfirmasi eksplisit.** Aksi pembersihan menjelaskan jenis file yang dihapus sebelum dijalankan.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.32.0-windows-x64.zip`. Linux: `Talos-v0.32.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.31.0
 
 Update besar yang menambahkan jendela unduhan yang bisa diatur untuk antrean.
