@@ -5,6 +5,27 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.25.0
+
+A large update adding a WiFi-only download gate on Android, backed by a native connectivity check.
+
+### New features
+
+- **WiFi only.** When enabled on Android, queued downloads pause and resume automatically when an active WiFi connection is detected. Tasks keep their position and settings while waiting. Turning the setting off restarts the queue immediately.
+
+### Bug fixes
+
+- **Network permission.** ACCESS_NETWORK_STATE is now declared explicitly as a normal permission for the connectivity check. No runtime prompt is added.
+
+### Improvements
+
+- **87 tests passing**, including a WiFi gating regression with an injectable probe.
+- **Queue feedback.** Waiting tasks show a distinct stage instead of looking stalled.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.25.0-windows-x64.zip`. Linux: `Talos-v0.25.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.24.0
 
 A large update adding a runtime license inventory and automatic history retention, plus engine memory and version alignment fixes.
