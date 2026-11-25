@@ -737,6 +737,11 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 10));
     }
     expect(manager.history.entries, hasLength(1));
+    // The history row is written just before the task is removed. Wait for
+    // both states so a slow filesystem cannot make this test flaky.
+    for (var i = 0; i < 200 && manager.tasks.isNotEmpty; i++) {
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
     expect(manager.tasks, isEmpty);
     DownloadManager.retryDelayBase = const Duration(seconds: 2);
   });
