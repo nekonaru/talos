@@ -465,6 +465,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 SwitchListTile(
+                  secondary: const Icon(Icons.schedule_outlined),
+                  title: Text(l.quietHours),
+                  subtitle: Text(l.quietHoursHint),
+                  value: settings.quietHoursEnabled,
+                  onChanged: (value) async {
+                    await manager.settings.mutate(
+                      (s) => s.copyWith(quietHoursEnabled: value),
+                    );
+                    manager.kickQueue();
+                  },
+                ),
+                if (settings.quietHoursEnabled)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 20, 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(l.quietStart),
+                        ),
+                        DropdownButton<int>(
+                          value: settings.quietStartHour,
+                          underline: const SizedBox(),
+                          items: [
+                            for (var hour = 0; hour < 24; hour++)
+                              DropdownMenuItem(value: hour, child: Text('$hour')),
+                          ],
+                          onChanged: (value) => manager.settings.mutate(
+                            (s) => s.copyWith(quietStartHour: value ?? 22),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(child: Text(l.quietEnd)),
+                        DropdownButton<int>(
+                          value: settings.quietEndHour,
+                          underline: const SizedBox(),
+                          items: [
+                            for (var hour = 0; hour < 24; hour++)
+                              DropdownMenuItem(value: hour, child: Text('$hour')),
+                          ],
+                          onChanged: (value) => manager.settings.mutate(
+                            (s) => s.copyWith(quietEndHour: value ?? 6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                SwitchListTile(
                   secondary: const Icon(Icons.notifications_outlined),
                   title: Text(l.downloadNotification),
                   subtitle: Text(l.downloadNotificationHint),

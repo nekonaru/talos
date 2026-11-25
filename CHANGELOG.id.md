@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.31.0
+
+Update besar yang menambahkan jendela unduhan yang bisa diatur untuk antrean.
+
+### Fitur baru
+
+- **Jendela unduhan.** Unduhan yang antre bisa dibatasi pada jam mulai dan berakhir tertentu. Rentang lintas malam seperti 22 sampai 6 didukung. Tugas menunggu di antrean dan lanjut otomatis saat jendela terbuka.
+
+### Peningkatan
+
+- **95 test lulus**, termasuk kasus jendela normal, lintas malam, dan jam sama.
+- **Lanjut langsung.** Mematikan jendela atau mengubah batasnya langsung menjalankan pengecekan antrean.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.31.0-windows-x64.zip`. Linux: `Talos-v0.31.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.30.0
 
 Update besar yang menambahkan filter playlist berdasarkan durasi dan judul.

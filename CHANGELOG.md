@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.31.0
+
+A large update adding a configurable download window for the queue.
+
+### New features
+
+- **Download window.** Queued downloads can be restricted to an hourly start and end time. Overnight ranges such as 22 to 6 are supported. Tasks wait inside the queue and resume automatically when the window opens.
+
+### Improvements
+
+- **95 tests passing**, including normal, overnight and equal-hour window cases.
+- **Immediate resume.** Turning the window off or changing its bounds restarts the queue check right away.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.31.0-windows-x64.zip`. Linux: `Talos-v0.31.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.30.0
 
 A large update adding playlist filtering by duration and title.

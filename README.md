@@ -59,6 +59,7 @@
 | **Format selection** | Video up to 2160p, or audio as MP3, M4A, Opus, FLAC, or the source format |
 | **Progress view** | Percent, speed, ETA, and playlist position, with cancel and retry |
 | **Sequential queue** | One download at a time, so sites are not hammered with parallel requests |
+| **Download window** | Restrict new downloads to an hourly window, including overnight ranges |
 | **Queue persistence** | Pending downloads survive an app restart and resume with their original settings |
 | **Cancel and retry** | Cancel any task, retry failed or cancelled ones with the same options |
 | **Pause and clear queue** | Pause new downloads without stopping the active one, or cancel everything still pending |
@@ -169,8 +170,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.30.0-windows-x64.zip`
-   - Linux: `Talos-v0.30.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.31.0-windows-x64.zip`
+   - Linux: `Talos-v0.31.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]

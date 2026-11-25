@@ -58,6 +58,9 @@ class TalosSettings {
     this.wifiOnly = false,
     this.customHeaders = '',
     this.queuePaused = false,
+    this.quietHoursEnabled = false,
+    this.quietStartHour = 22,
+    this.quietEndHour = 6,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -114,6 +117,9 @@ class TalosSettings {
       wifiOnly: json['wifiOnly'] as bool? ?? false,
       customHeaders: json['customHeaders'] as String? ?? '',
       queuePaused: json['queuePaused'] as bool? ?? false,
+      quietHoursEnabled: json['quietHoursEnabled'] as bool? ?? false,
+      quietStartHour: intChoice((json['quietStartHour'] as num?)?.toInt(), List<int>.generate(24, (i) => i), 22),
+      quietEndHour: intChoice((json['quietEndHour'] as num?)?.toInt(), List<int>.generate(24, (i) => i), 6),
     );
   }
 
@@ -162,6 +168,9 @@ class TalosSettings {
   bool wifiOnly;
   String customHeaders;
   bool queuePaused;
+  bool quietHoursEnabled;
+  int quietStartHour;
+  int quietEndHour;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -209,6 +218,9 @@ class TalosSettings {
         'wifiOnly': wifiOnly,
         'customHeaders': customHeaders,
         'queuePaused': queuePaused,
+        'quietHoursEnabled': quietHoursEnabled,
+        'quietStartHour': quietStartHour,
+        'quietEndHour': quietEndHour,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -273,6 +285,9 @@ class TalosSettings {
     bool? wifiOnly,
     String? customHeaders,
     bool? queuePaused,
+    bool? quietHoursEnabled,
+    int? quietStartHour,
+    int? quietEndHour,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -320,6 +335,9 @@ class TalosSettings {
       wifiOnly: wifiOnly ?? this.wifiOnly,
       customHeaders: customHeaders ?? this.customHeaders,
       queuePaused: queuePaused ?? this.queuePaused,
+      quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
+      quietStartHour: quietStartHour ?? this.quietStartHour,
+      quietEndHour: quietEndHour ?? this.quietEndHour,
     );
   }
 }

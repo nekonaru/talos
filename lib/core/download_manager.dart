@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'background_service.dart';
 import 'history_store.dart';
 import 'preset_store.dart';
+import 'quiet_hours.dart';
 import 'queue_store.dart';
 import 'saved_link_store.dart';
 import 'settings_store.dart';
@@ -159,6 +160,7 @@ class DownloadManager extends ChangeNotifier {
   DateTime? _lastProgressNotify;
   Timer? _progressNotifyTimer;
   Timer? _wifiRetryTimer;
+  Timer? _quietRetryTimer;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
   List<DownloadTask> get activeTasks =>
@@ -286,6 +288,8 @@ class DownloadManager extends ChangeNotifier {
     _activeSession = null;
     _wifiRetryTimer?.cancel();
     _wifiRetryTimer = null;
+    _quietRetryTimer?.cancel();
+    _quietRetryTimer = null;
     _tasks.clear();
     notifyListeners();
     await _persistQueue();
@@ -380,6 +384,8 @@ class DownloadManager extends ChangeNotifier {
   void kickQueue() {
     _wifiRetryTimer?.cancel();
     _wifiRetryTimer = null;
+    _quietRetryTimer?.cancel();
+    _quietRetryTimer = null;
     if (!_pumping) unawaited(_pump());
   }
 
@@ -387,6 +393,7 @@ class DownloadManager extends ChangeNotifier {
   void dispose() {
     _progressNotifyTimer?.cancel();
     _wifiRetryTimer?.cancel();
+    _quietRetryTimer?.cancel();
     super.dispose();
   }
 
@@ -409,6 +416,24 @@ class DownloadManager extends ChangeNotifier {
           next.stage = 'queuePaused';
           notifyListeners();
           break;
+        }
+        if (_settings.value.quietHoursEnabled) {
+          final now = nowOverride != null ? nowOverride!() : DateTime.now();
+          final active = isWithinQuietHours(
+            now,
+            _settings.value.quietStartHour,
+            _settings.value.quietEndHour,
+          );
+          if (!active) {
+            next.stage = 'quietHours';
+            notifyListeners();
+            _quietRetryTimer?.cancel();
+            _quietRetryTimer = Timer(quietRetryDelay, () {
+              _quietRetryTimer = null;
+              if (!_pumping) unawaited(_pump());
+            });
+            break;
+          }
         }
         if (_settings.value.wifiOnly) {
           final onWifi = wifiProbeOverride != null
@@ -731,6 +756,12 @@ class DownloadManager extends ChangeNotifier {
 
   @visibleForTesting
   static Duration wifiRetryDelay = const Duration(seconds: 30);
+
+  @visibleForTesting
+  static DateTime Function()? nowOverride;
+
+  @visibleForTesting
+  static Duration quietRetryDelay = const Duration(minutes: 1);
 
   static Future<String> _uniqueFilename(Directory dir, String name) async {
     final sep = dir.path.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;
