@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.33.0
+
+Update besar yang menambahkan pembatas baterai rendah native untuk antrean unduhan.
+
+### Fitur baru
+
+- **Hemat baterai.** Di Android, unduhan baru menunggu saat baterai di bawah ambang pilihan (5, 10, 20, atau 30 persen) dan perangkat tidak sedang diisi. Tugas lanjut otomatis setelah kondisi membaik.
+
+### Peningkatan
+
+- **97 test lulus**, termasuk regresi gating baterai rendah dengan probe yang bisa disuntik.
+- **Tanpa izin tambahan.** Status baterai dibaca dari broadcast sistem sticky, sehingga tidak ada prompt runtime baru.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.33.0-windows-x64.zip`. Linux: `Talos-v0.33.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.32.0
 
 Update besar yang menambahkan pembersihan file sementara agar penyimpanan lokal tetap ringan.
