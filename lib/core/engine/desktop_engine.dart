@@ -338,7 +338,14 @@ class DesktopEngine implements TalosEngine {
       final name = entry.name.split('/').last;
       if (name != 'ffmpeg.exe' && name != 'ffprobe.exe') continue;
       final target = File('${dir.path}${Platform.pathSeparator}$name');
-      await target.writeAsBytes(entry.content as List<int>);
+      // Stream the decompressed binary straight to disk. Decoding entry.content
+      // would hold the whole ~80 MB executable in memory at once.
+      final output = OutputFileStream(target.path);
+      try {
+        entry.writeContent(output);
+      } finally {
+        await output.close();
+      }
       extracted++;
     }
     if (extracted != 2 ||

@@ -174,6 +174,17 @@ class HistoryStore extends ChangeNotifier {
     await _persist();
   }
 
+  /// Drops history rows older than [cutoffMs]. Files on disk are never
+  /// deleted here; the user can remove them from Insights explicitly.
+  Future<void> pruneBefore(int cutoffMs) async {
+    final before = _entries.length;
+    _entries.removeWhere((entry) => entry.dateMs > 0 && entry.dateMs < cutoffMs);
+    if (_entries.length == before) return;
+    revision++;
+    notifyListeners();
+    await _persist();
+  }
+
   Future<void> clear() async {
     _entries.clear();
     revision++;

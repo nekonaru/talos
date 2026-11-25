@@ -5,6 +5,30 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.24.0
+
+A large update adding a runtime license inventory and automatic history retention, plus engine memory and version alignment fixes.
+
+### New features
+
+- **Runtime licenses.** About now links to an explicit inventory of the licenses of yt-dlp, Chaquopy, FFmpegKit, the desktop engine binaries, managed FFmpeg and the Dart packages.
+- **History retention.** Old history rows can be dropped automatically on startup after 7, 30 or 90 days. Files on disk are never deleted by this setting.
+
+### Bug fixes
+
+- **FFmpeg extraction memory.** The managed Windows FFmpeg binaries are streamed to disk instead of decompressed fully in memory.
+- **Engine version drift.** The Android yt-dlp pin now matches the desktop managed version.
+- **Author label.** The About screen uses the localized GitHub label instead of hardcoded English.
+
+### Improvements
+
+- **86 tests passing**, including history retention coverage.
+- **License transparency.** The open GPL and LGPL component question is now documented in the app itself.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.24.0-windows-x64.zip`. Linux: `Talos-v0.24.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.23.0
 
 A large update adding queue persistence, plus smaller polish fixes from the ongoing deep audit.
