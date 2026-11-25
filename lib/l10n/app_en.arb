@@ -62,6 +62,15 @@
   "exportHistory": "Export history as CSV",
   "exportHistoryHint": "Copy or share a spreadsheet-friendly list of finished downloads",
   "historyCsvCopied": "History CSV copied to clipboard",
+  "cleanTemp": "Clean temporary files",
+  "cleanTempHint": "Remove leftover partial downloads and atomic-write temp files older than one hour",
+  "cleanTempBody": "Removes stale .tmp, .part, .ytdl and .download files from app data and the output folder. Recent files and completed downloads are kept.",
+  "cleanTempDone": "Removed {count} temporary file(s)",
+  "@cleanTempDone": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "resetAllData": "Reset all data",
   "resetAllDataHint": "Clears settings, finished downloads history, command templates and SAF folder shortcuts. This cannot be undone.",
   "resetAllDataTitle": "Reset all data?",

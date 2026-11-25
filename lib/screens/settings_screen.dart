@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import '../widgets/section_label.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -12,6 +14,7 @@ import '../core/app_info.dart';
 import '../core/backup.dart';
 import '../core/command_template_store.dart';
 import '../core/settings_store.dart';
+import '../core/storage_cleanup.dart';
 import '../core/storage_bridge.dart';
 import '../core/update_checker.dart';
 import '../core/theme.dart';
@@ -112,6 +115,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     }
+  }
+
+  Future<void> _cleanTemporaryFiles() async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.cleanTemp),
+        content: Text(l.cleanTempBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.cleanTemp),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final support = await getApplicationSupportDirectory();
+    final fromSupport = await cleanTemporaryFiles(support);
+    final fromOutput = await cleanTemporaryFiles(Directory(manager.outputDirectory));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l.cleanTempDone(fromSupport + fromOutput))),
+    );
   }
 
   Future<void> _exportHistoryCsv() async {
@@ -1067,6 +1100,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(l.exportHistoryHint),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _exportHistoryCsv,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.cleaning_services_outlined),
+                  title: Text(l.cleanTemp),
+                  subtitle: Text(l.cleanTempHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _cleanTemporaryFiles,
                 ),
               ],
             ),

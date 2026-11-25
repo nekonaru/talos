@@ -24,6 +24,7 @@ import 'package:talos/core/quiet_hours.dart';
 import 'package:talos/core/queue_store.dart';
 import 'package:talos/core/saved_link_store.dart';
 import 'package:talos/core/settings_store.dart';
+import 'package:talos/core/storage_cleanup.dart';
 
 class FakeSession implements TalosDownloadSession {
   FakeSession();
@@ -526,6 +527,32 @@ void main() {
     // Without ffmpeg the section flag is omitted instead of failing at runtime.
     final noFfmpeg = CommandBuilder.downloadArgs(clip(start: 10), ffmpegAvailable: false);
     expect(noFfmpeg, isNot(contains('--download-sections')));
+  });
+
+  test('temporary file cleanup removes only stale partial files', () async {
+    final dir = await Directory.systemTemp.createTemp('talos_cleanup_test');
+    try {
+      final old = File('${dir.path}${Platform.pathSeparator}old.part');
+      await old.writeAsString('x');
+      await old.setLastModified(
+        DateTime.now().subtract(const Duration(hours: 2)),
+      );
+      final recent = File('${dir.path}${Platform.pathSeparator}recent.tmp');
+      await recent.writeAsString('x');
+      final keep = File('${dir.path}${Platform.pathSeparator}keep.mp4');
+      await keep.writeAsString('x');
+      await keep.setLastModified(
+        DateTime.now().subtract(const Duration(hours: 2)),
+      );
+
+      final removed = await cleanTemporaryFiles(dir);
+      expect(removed, 1);
+      expect(await old.exists(), isFalse);
+      expect(await recent.exists(), isTrue);
+      expect(await keep.exists(), isTrue);
+    } finally {
+      await dir.delete(recursive: true);
+    }
   });
 
   test('playlist filter applies duration and title constraints', () {
