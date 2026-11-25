@@ -280,6 +280,15 @@
   "quietHoursHint": "Only start queued downloads inside an hourly window. Overnight windows are supported.",
   "quietStart": "From",
   "quietEnd": "To",
+  "batterySaver": "Pause on low battery",
+  "batterySaverHint": "On Android, hold new downloads while the battery is low and the device is not charging",
+  "batteryThreshold": "Low battery level",
+  "batteryPercent": "{count}%",
+  "@batteryPercent": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "customHeaders": "Custom HTTP headers",
   "customHeadersHint": "One `Name: value` header per line, for example Referer: https://example.invalid/",
   "historyRetentionDays": "{count} days",

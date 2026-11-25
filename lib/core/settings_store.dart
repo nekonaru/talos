@@ -61,6 +61,8 @@ class TalosSettings {
     this.quietHoursEnabled = false,
     this.quietStartHour = 22,
     this.quietEndHour = 6,
+    this.batterySaverEnabled = false,
+    this.batteryThreshold = 20,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -120,6 +122,8 @@ class TalosSettings {
       quietHoursEnabled: json['quietHoursEnabled'] as bool? ?? false,
       quietStartHour: intChoice((json['quietStartHour'] as num?)?.toInt(), List<int>.generate(24, (i) => i), 22),
       quietEndHour: intChoice((json['quietEndHour'] as num?)?.toInt(), List<int>.generate(24, (i) => i), 6),
+      batterySaverEnabled: json['batterySaverEnabled'] as bool? ?? false,
+      batteryThreshold: intChoice((json['batteryThreshold'] as num?)?.toInt(), const [5, 10, 20, 30], 20),
     );
   }
 
@@ -171,6 +175,8 @@ class TalosSettings {
   bool quietHoursEnabled;
   int quietStartHour;
   int quietEndHour;
+  bool batterySaverEnabled;
+  int batteryThreshold;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -221,6 +227,8 @@ class TalosSettings {
         'quietHoursEnabled': quietHoursEnabled,
         'quietStartHour': quietStartHour,
         'quietEndHour': quietEndHour,
+        'batterySaverEnabled': batterySaverEnabled,
+        'batteryThreshold': batteryThreshold,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -288,6 +296,8 @@ class TalosSettings {
     bool? quietHoursEnabled,
     int? quietStartHour,
     int? quietEndHour,
+    bool? batterySaverEnabled,
+    int? batteryThreshold,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -338,6 +348,8 @@ class TalosSettings {
       quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
       quietStartHour: quietStartHour ?? this.quietStartHour,
       quietEndHour: quietEndHour ?? this.quietEndHour,
+      batterySaverEnabled: batterySaverEnabled ?? this.batterySaverEnabled,
+      batteryThreshold: batteryThreshold ?? this.batteryThreshold,
     );
   }
 }

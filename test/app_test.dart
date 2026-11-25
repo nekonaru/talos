@@ -902,6 +902,41 @@ void main() {
     }
   });
 
+  test('low battery holds the queue until charging or a higher level', () async {
+    final engine = FakeEngine();
+    final manager = await DownloadManager.create(engine: engine);
+    await manager.settings.mutate(
+      (s) => s.copyWith(batterySaverEnabled: true, batteryThreshold: 20),
+    );
+    DownloadManager.batteryRetryDelay = const Duration(milliseconds: 10);
+    DownloadManager.batteryProbeOverride = (_) async => true;
+    try {
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=battery',
+          videoMode: true,
+          outputDir: 'out',
+        ),
+        title: 'Battery item',
+        kind: HistoryKind.video,
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(engine.lastSession, isNull);
+      expect(manager.tasks.single.stage, 'batteryLow');
+
+      DownloadManager.batteryProbeOverride = (_) async => false;
+      manager.kickQueue();
+      for (var i = 0; i < 200 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      expect(engine.lastSession, isNotNull);
+    } finally {
+      DownloadManager.batteryProbeOverride = null;
+      DownloadManager.batteryRetryDelay = const Duration(minutes: 1);
+      await manager.resetAll();
+    }
+  });
+
   test('quiet hours supports normal and overnight windows', () {
     expect(isWithinQuietHours(DateTime(2026, 1, 1, 23), 22, 6), isTrue);
     expect(isWithinQuietHours(DateTime(2026, 1, 1, 3), 22, 6), isTrue);
