@@ -16,13 +16,27 @@ class CommandsScreen extends StatefulWidget {
 
 class _CommandsScreenState extends State<CommandsScreen> {
   CommandTemplateStore? _store;
+  bool _loadFailed = false;
 
   @override
   void initState() {
     super.initState();
-    CommandTemplateStore.load().then((store) {
-      if (mounted) setState(() => _store = store);
-    });
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final store = await CommandTemplateStore.load();
+      if (mounted) {
+        setState(() {
+          _store = store;
+          _loadFailed = false;
+        });
+      }
+    } catch (_) {
+      // Without an error state a failed load shows an endless spinner.
+      if (mounted) setState(() => _loadFailed = true);
+    }
   }
 
   Future<void> _editTemplate([CommandTemplate? existing]) async {
@@ -142,9 +156,23 @@ class _CommandsScreenState extends State<CommandsScreen> {
           IconButton(tooltip: l.addCommand, icon: const Icon(Icons.add), onPressed: _editTemplate),
         ],
       ),
-      body: store == null
-          ? const Center(child: CircularProgressIndicator())
-          : store.templates.isEmpty
+      body: _loadFailed
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(l.commandsLoadFailed, style: theme.textTheme.bodyMedium),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _load,
+                    child: Text(l.retry),
+                  ),
+                ],
+              ),
+            )
+          : store == null
+              ? const Center(child: CircularProgressIndicator())
+              : store.templates.isEmpty
               ? Center(child: Text(l.commandsHint, style: theme.textTheme.bodyMedium))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),

@@ -21,6 +21,10 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
   String? _videoId;
   String? _audioId;
 
+  /// A stored selector such as `bv*[height<=720]+ba` is not made of plain
+  /// format ids. Keep it verbatim until the user deliberately picks a stream.
+  bool _keepInitial = false;
+
   List<YtdlpFormat> get _videoFormats {
     // Video-only streams pair with an audio-only stream. Muxed formats have
     // their own audio and must not be combined with a separate audio id.
@@ -50,9 +54,10 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
     return list;
   }
 
-  bool get _bestMode => _videoId == null && _audioId == null;
+  bool get _bestMode => !_keepInitial && _videoId == null && _audioId == null;
 
   String? get _selector {
+    if (_keepInitial) return widget.initialSelector;
     if (_bestMode) return null;
     if (_videoId != null && _audioId != null) return '$_videoId+$_audioId';
     return _videoId ?? _audioId;
@@ -71,7 +76,9 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
         if (aFormats.any((f) => f.id == p)) _audioId ??= p;
       }
       // An id that matches no known format is left unselected rather than
-      // forced into _videoId, which would build an invalid selector.
+      // forced into _videoId, which would build an invalid selector. Keep the
+      // original value so reopening the picker does not silently clear it.
+      if (_bestMode && initial.isNotEmpty) _keepInitial = true;
     }
   }
 
@@ -99,6 +106,7 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
             selected: {_bestMode},
             onSelectionChanged: (selection) {
               setState(() {
+                _keepInitial = false;
                 if (selection.first) {
                   _videoId = null;
                   _audioId = null;
@@ -113,7 +121,10 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
           SectionLabel(l.filterVideo.toUpperCase()),
           for (final format in videoFormats)
             ListTile(
-              onTap: () => setState(() => _videoId = format.id),
+              onTap: () => setState(() {
+                _keepInitial = false;
+                _videoId = format.id;
+              }),
               leading: Icon(_videoId == format.id ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: theme.colorScheme.primary, size: 20),
               title: Text(format.recommended ? '★ ${l.recommended} · ${format.resolution ?? format.note}  (${format.ext.toUpperCase()})' : '${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
               subtitle: Text([
@@ -131,7 +142,10 @@ class _FormatSelectionScreenState extends State<FormatSelectionScreen> {
           SectionLabel(l.filterAudio.toUpperCase()),
           for (final format in audioFormats)
             ListTile(
-              onTap: () => setState(() => _audioId = format.id),
+              onTap: () => setState(() {
+                _keepInitial = false;
+                _audioId = format.id;
+              }),
               leading: Icon(_audioId == format.id ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: theme.colorScheme.primary, size: 20),
               title: Text(format.recommended ? '★ ${l.recommended} · ${format.resolution ?? format.note}  (${format.ext.toUpperCase()})' : '${format.resolution ?? format.note}  (${format.ext.toUpperCase()})'),
               subtitle: Text([

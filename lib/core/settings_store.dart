@@ -48,6 +48,7 @@ class TalosSettings {
     this.videoFolder,
     this.audioFolder,
     this.engineChannel = 'stable',
+    this.autoRetryAttempts = 1,
     this.downloadNotification = true,
     this.downloadSubtitles = true,
     this.autoSubtitle = false,
@@ -99,6 +100,7 @@ class TalosSettings {
       audioFolder: json['audioFolder'] as String?,
       autoUpdateEngine: json['autoUpdateEngine'] as bool? ?? false,
       engineChannel: choice(json['engineChannel'] as String?, const ['stable', 'nightly'], 'stable'),
+      autoRetryAttempts: intChoice((json['autoRetryAttempts'] as num?)?.toInt(), const [0, 1, 2, 3], 1),
       downloadNotification: json['downloadNotification'] as bool? ?? true,
       downloadSubtitles: json['downloadSubtitles'] as bool? ?? true,
       autoSubtitle: json['autoSubtitle'] as bool? ?? false,
@@ -142,6 +144,7 @@ class TalosSettings {
   String? audioFolder;
   bool autoUpdateEngine;
   String engineChannel;
+  int autoRetryAttempts;
   bool downloadNotification;
   bool downloadSubtitles;
   bool autoSubtitle;
@@ -184,6 +187,7 @@ class TalosSettings {
         'audioFolder': audioFolder,
         'autoUpdateEngine': autoUpdateEngine,
         'engineChannel': engineChannel,
+        'autoRetryAttempts': autoRetryAttempts,
         'downloadNotification': downloadNotification,
         'downloadSubtitles': downloadSubtitles,
         'autoSubtitle': autoSubtitle,
@@ -243,6 +247,7 @@ class TalosSettings {
     String? audioFolder,
     bool? autoUpdateEngine,
     String? engineChannel,
+    int? autoRetryAttempts,
     bool? downloadNotification,
     bool? downloadSubtitles,
     bool? autoSubtitle,
@@ -285,6 +290,7 @@ class TalosSettings {
       audioFolder: clearAudioFolder ? null : (audioFolder ?? this.audioFolder),
       autoUpdateEngine: autoUpdateEngine ?? this.autoUpdateEngine,
       engineChannel: engineChannel ?? this.engineChannel,
+      autoRetryAttempts: autoRetryAttempts ?? this.autoRetryAttempts,
       downloadNotification: downloadNotification ?? this.downloadNotification,
       downloadSubtitles: downloadSubtitles ?? this.downloadSubtitles,
       autoSubtitle: autoSubtitle ?? this.autoSubtitle,

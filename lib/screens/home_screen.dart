@@ -13,6 +13,7 @@ import '../core/format.dart';
 import '../core/history_store.dart';
 import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
+import 'error_message.dart';
 import 'player_screen.dart';
 import '../widgets/section_label.dart';
 
@@ -145,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_friendlyError(error))),
+        SnackBar(content: Text(friendlyError(context, error))),
       );
     }
   }
@@ -305,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_friendlyError(error))),
+        SnackBar(content: Text(friendlyError(context, error))),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -326,35 +327,12 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (error) {
       if (!mounted) return;
-      final message = _friendlyError(error);
+      final message = friendlyError(context, error);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
-
-  String _friendlyError(Object error) {
-    final l = AppLocalizations.of(context)!;
-    final text = '$error';
-    for (final pattern in _errorPatterns) {
-      final match = pattern.$1.firstMatch(text);
-      if (match != null) return pattern.$2(l);
-    }
-    return text
-        .replaceFirst('StateError: ', '')
-        .replaceFirst('Exception: ', '')
-        .replaceFirst('FormatException: ', '');
-  }
-
-  static final _errorPatterns = <(RegExp, String Function(AppLocalizations l))>[
-    (RegExp(r'HTTP Error 403|403 Forbidden', caseSensitive: false), (l) => l.err403),
-    (RegExp(r'Sign in|sign-in|not a bot', caseSensitive: false), (l) => l.errSignin),
-    (RegExp(r'video is unavailable|This video is unavailable', caseSensitive: false), (l) => l.errUnavailable),
-    (RegExp(r'Private video', caseSensitive: false), (l) => l.errPrivate),
-    (RegExp(r'HTTP Error 404|404 Not Found', caseSensitive: false), (l) => l.err404),
-    (RegExp(r'ffmpeg.*not found|ffmpeg.*required', caseSensitive: false), (l) => l.errFfmpeg),
-    (RegExp(r'Live event is in progress', caseSensitive: false), (l) => l.errLive),
-  ];
 
   Future<void> _openFile(HistoryEntry entry) async {
     // Finished downloads open in the built-in player.

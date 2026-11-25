@@ -51,6 +51,36 @@ class FakeSession implements TalosDownloadSession {
     _controller.close();
     _outcome.complete(SessionOutcome(outputPath: outputPath));
   }
+
+  void fail(String error) {
+    _controller.close();
+    _outcome.complete(SessionOutcome(error: error));
+  }
+}
+
+class FlakyEngine extends FakeEngine {
+  final List<SessionOutcome> outcomes;
+
+  FlakyEngine(this.outcomes);
+
+  final List<FakeSession> sessions = [];
+  int _index = 0;
+
+  @override
+  TalosDownloadSession download(DownloadRequest request, {required bool ffmpegAvailable}) {
+    final session = FakeSession();
+    sessions.add(session);
+    final outcome = outcomes[_index++];
+    // Schedule completion so the manager can subscribe first.
+    Future<void>.microtask(() {
+      if (outcome.error != null) {
+        session.fail(outcome.error!);
+      } else {
+        session.complete(outcome.outputPath ?? '/tmp/retry.mp4');
+      }
+    });
+    return session;
+  }
 }
 
 class FakeEngine implements TalosEngine {
@@ -184,11 +214,12 @@ void main() {
     await tester.tap(find.text('Download'));
     await tester.pumpAndSettle();
 
-    await tester.runAsync(() async {
-      for (var i = 0; i < 100 && engine.lastSession == null; i++) {
-        await Future.delayed(const Duration(milliseconds: 10));
-      }
-    });
+    // Filename resolution is async so a large output folder cannot block the
+    // UI isolate. Pump the test binding so that I/O can complete.
+    for (var i = 0; i < 100 && engine.lastSession == null; i++) {
+      await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 10)));
+      await tester.pump();
+    }
     expect(engine.lastSession, isNotNull);
     await tester.runAsync(() async {
       engine.lastSession!.complete('/tmp/example.mp4');
@@ -220,11 +251,12 @@ void main() {
     await tester.tap(find.text('Download'));
     await tester.pumpAndSettle();
 
-    await tester.runAsync(() async {
-      for (var i = 0; i < 100 && engine.lastSession == null; i++) {
-        await Future.delayed(const Duration(milliseconds: 10));
-      }
-    });
+    // Filename resolution is async so a large output folder cannot block the
+    // UI isolate. Pump the test binding so that I/O can complete.
+    for (var i = 0; i < 100 && engine.lastSession == null; i++) {
+      await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 10)));
+      await tester.pump();
+    }
     expect(engine.lastSession, isNotNull);
     await tester.runAsync(() async {
       engine.lastSession!.complete('/tmp/example.mp4');
@@ -676,6 +708,37 @@ void main() {
     final commands = await CommandTemplateStore.load();
     expect(commands.templates, hasLength(1));
     expect(commands.templates.first.name, 'Cmd');
+  });
+
+  test('auto retry re-runs a transient failure once', () async {
+    final engine = FlakyEngine([
+      SessionOutcome(error: 'network error'),
+      SessionOutcome(outputPath: '/tmp/retry.mp4'),
+    ]);
+    final manager = await DownloadManager.create(engine: engine);
+    await manager.settings.mutate(
+      (s) => s.copyWith(autoRetryAttempts: 1, privateMode: false),
+    );
+    DownloadManager.retryDelayBase = const Duration(milliseconds: 10);
+    await manager.enqueue(
+      DownloadRequest(
+        url: 'https://example.invalid/watch?v=retry',
+        videoMode: true,
+        outputDir: 'out',
+      ),
+      title: 'Retry',
+      kind: HistoryKind.video,
+    );
+    for (var i = 0; i < 200 && engine.sessions.length < 2; i++) {
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+    expect(engine.sessions, hasLength(2));
+    for (var i = 0; i < 200 && manager.history.entries.isEmpty; i++) {
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+    expect(manager.history.entries, hasLength(1));
+    expect(manager.tasks, isEmpty);
+    DownloadManager.retryDelayBase = const Duration(seconds: 2);
   });
 
   test('backup rejects foreign payloads', () async {

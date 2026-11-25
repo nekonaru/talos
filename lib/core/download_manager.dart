@@ -51,6 +51,10 @@ class DownloadTask {
   /// session exists yet. [_run] checks this before starting the download so a
   /// tap on Cancel during the setup window is never silently ignored.
   bool cancelRequested = false;
+
+  /// Number of automatic retries already used by the queue. A manual Retry
+  /// creates a fresh task, so this always starts at zero.
+  int attempts = 0;
 }
 
 /// Error codes resolved to localized text by the UI. Kept as constants so a
@@ -338,6 +342,24 @@ class DownloadManager extends ChangeNotifier {
         }
         if (next == null) break;
         await _run(next);
+        // Transient failures can be retried automatically. Stable storage
+        // errors and explicit cancellation are never retried.
+        if (next.status == TaskStatus.failed &&
+            !next.cancelRequested &&
+            next.attempts < _settings.value.autoRetryAttempts &&
+            _retryable(next.error)) {
+          final generation = _resetGeneration;
+          next.attempts++;
+          next.stage = 'retrying';
+          next.error = null;
+          next.status = TaskStatus.queued;
+          _tasks.remove(next);
+          _tasks.insert(0, next);
+          notifyListeners();
+          // Linear backoff keeps the delay predictable: 2s, 4s, 6s.
+          await Future.delayed(retryDelayBase * next.attempts);
+          if (generation != _resetGeneration) break;
+        }
       }
     } finally {
       _pumping = false;
@@ -368,24 +390,25 @@ class DownloadManager extends ChangeNotifier {
     // download must always run: when the target name already exists, Talos
     // writes "name(1).ext", "name(2).ext" and so on. The user asked for
     // unlimited repeats of the same video without any hidden deduplication.
-    final effectiveRequest = (() {
-      final typed = task.request.outputFilename?.trim();
-      try {
-        final dir = Directory(task.request.outputDir);
-        if (typed != null && typed.isNotEmpty) {
-          final unique = _uniqueFilename(dir, typed);
-          if (unique == typed) return task.request;
-          return task.request.copyWith(outputFilename: unique);
+    DownloadRequest effectiveRequest = task.request;
+    final typed = task.request.outputFilename?.trim();
+    try {
+      final dir = Directory(task.request.outputDir);
+      if (typed != null && typed.isNotEmpty) {
+        final unique = await _uniqueFilename(dir, typed);
+        if (unique != typed) {
+          effectiveRequest = task.request.copyWith(outputFilename: unique);
         }
-        if (task.request.includePlaylist) return task.request;
-        final base = _uniqueOutputTemplate(dir, _sanitizeFilenameComponent(task.title));
-        return task.request.copyWith(outputFilename: '$base.%(ext)s');
-      } catch (_) {
-        // Directory access can fail on unusual paths (for example SAF content
-        // URIs); fall back to the requested name unchanged.
-        return task.request;
+      } else if (!task.request.includePlaylist) {
+        // Listing runs asynchronously so a large Downloads folder does not
+        // freeze the UI while a download is being enqueued.
+        final base = await _uniqueOutputTemplate(dir, _sanitizeFilenameComponent(task.title));
+        effectiveRequest = task.request.copyWith(outputFilename: '$base.%(ext)s');
       }
-    })();
+    } catch (_) {
+      // Directory access can fail on unusual paths (for example SAF content
+      // URIs); fall back to the requested name unchanged.
+    }
 
     try {
       final dir = Directory(effectiveRequest.outputDir);
@@ -578,6 +601,12 @@ class DownloadManager extends ChangeNotifier {
     await _maybeStopForeground();
   }
 
+  static bool _retryable(String? error) {
+    if (error == null || error == 'cancelled') return false;
+    if (error == kErrSafNotWritable || error == kErrSaveToDownloads) return false;
+    return true;
+  }
+
   Future<void> _maybeStopForeground() async {
     final busy = _tasks.any((t) =>
         t.status == TaskStatus.running || t.status == TaskStatus.queued);
@@ -587,15 +616,18 @@ class DownloadManager extends ChangeNotifier {
   @visibleForTesting
   static Future<bool> Function(String configured)? ffmpegProbeOverride;
 
-  static String _uniqueFilename(Directory dir, String name) {
+  @visibleForTesting
+  static Duration retryDelayBase = const Duration(seconds: 2);
+
+  static Future<String> _uniqueFilename(Directory dir, String name) async {
     final sep = dir.path.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;
-    if (!File('${dir.path}$sep$name').existsSync()) return name;
+    if (!await File('${dir.path}$sep$name').exists()) return name;
     final dot = name.lastIndexOf('.');
     final base = dot >= 0 ? name.substring(0, dot) : name;
     final ext = dot >= 0 ? name.substring(dot) : '';
     for (var i = 1; i < 1000; i++) {
       final candidate = '$base($i)$ext';
-      if (!File('${dir.path}$sep$candidate').existsSync()) return candidate;
+      if (!await File('${dir.path}$sep$candidate').exists()) return candidate;
     }
     // Never fall back to an occupied name. A time-based suffix keeps repeated
     // saves working even after hundreds of collisions.
@@ -623,13 +655,17 @@ class DownloadManager extends ChangeNotifier {
   /// Find a base name that no file uses: "Title", "Title(1)", "Title(2)",
   /// "Title(3)" and so on. Any file with a matching prefix counts, whatever
   /// the extension.
-  static String _uniqueOutputTemplate(Directory dir, String base) {
-    if (!dir.existsSync()) return base;
-    final taken = dir
-        .listSync(followLinks: false)
-        .whereType<File>()
-        .map((f) => f.uri.pathSegments.isNotEmpty ? f.uri.pathSegments.last : f.path.split(Platform.pathSeparator).last)
-        .toSet();
+  static Future<String> _uniqueOutputTemplate(Directory dir, String base) async {
+    if (!await dir.exists()) return base;
+    final taken = <String>{};
+    await for (final entity in dir.list(followLinks: false)) {
+      if (entity is! File) continue;
+      taken.add(
+        entity.uri.pathSegments.isNotEmpty
+            ? entity.uri.pathSegments.last
+            : entity.path.split(Platform.pathSeparator).last,
+      );
+    }
     bool used(String candidate) => taken.any((name) => name.startsWith('$candidate.'));
     if (!used(base)) return base;
     for (var i = 1; i < 1000; i++) {

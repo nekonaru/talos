@@ -180,6 +180,13 @@
       }
     }
   },
+  "cleanupPartial": "Menghapus {removed} dari {total} unduhan lama. Sisanya gagal dihapus.",
+  "@cleanupPartial": {
+    "placeholders": {
+      "removed": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
   "cleanupNone": "Tidak ada unduhan yang lebih tua dari ini.",
   "qualityNone": "Tidak ada",
   "safFolder": "(folder SAF)",
@@ -190,6 +197,7 @@
   "deleteFile": "Hapus file",
   "retry": "Coba lagi",
   "clearFinished": "Bersihkan yang selesai",
+  "clearFinishedBody": "Ini hanya menghapus daftar unduhan selesai. File di penyimpanan tidak dihapus.",
   "unknownError": "Terjadi kesalahan",
   "engineMissing": "Mesin unduhan belum siap.",
   "installEngine": "Siapkan mesin",
@@ -220,6 +228,12 @@
   "maxFilesizeHint": "Ukuran maksimal file unduhan, misal 50M. 0 nonaktif.",
   "engineChannel": "Saluran engine",
   "engineChannelHint": "Pilih rilis yt-dlp stabil atau nightly untuk update terkelola",
+  "engineChannelStable": "Stabil",
+  "engineChannelNightly": "Nightly",
+  "authorGithub": "@nekonaru di GitHub",
+  "autoRetry": "Coba ulang otomatis",
+  "autoRetryHint": "Coba ulang unduhan gagal otomatis dengan jeda singkat",
+  "autoRetryOff": "Nonaktif",
   "downloadNotification": "Tampilkan notifikasi saat mengunduh",
   "downloadNotificationHint": "Tampilkan notifikasi persisten selama unduhan",
   "downloadSubtitles": "Unduh subtitle",
@@ -274,6 +288,7 @@
   "accent": "Aksen",
   "commands": "Perintah kustom",
   "commandsHint": "Jalankan yt-dlp dengan argumen buatanmu sendiri",
+  "commandsLoadFailed": "Gagal memuat template perintah",
   "addCommand": "Tambah perintah",
   "commandName": "Nama",
   "commandArgs": "Argumen",
@@ -315,6 +330,7 @@
   "errPrivate": "Video ini privat. Unduh dengan cookies.txt dari akun yang sesuai.",
   "err404": "Tidak ditemukan (HTTP 404). Periksa lagi URL-nya.",
   "errFfmpeg": "FFmpeg belum tersedia. Di desktop, buka Pengaturan dan perbarui engine. Di Android, penggabungan stream memakai FFmpegKit bawaan; instal ulang aplikasi jika tidak ada.",
+  "errAria2": "aria2c tidak terpasang. Nonaktifkan aria2 di Pengaturan.",
   "errSafNotWritable": "Folder penyimpanan yang dipilih tidak bisa ditulis. Pilih ulang di Pengaturan > Download, atau kosongkan untuk memakai folder Download bawaan.",
   "errSaveToDownloads": "Talos gagal menyimpan file ke folder Download. Pastikan akses penyimpanan dan notifikasi diberikan, atau pilih folder lain di Pengaturan > Download.",
   "errLive": "Live event belum berakhir. Tunggu selesai, lalu coba lagi.",

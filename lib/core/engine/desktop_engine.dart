@@ -86,6 +86,9 @@ class DesktopEngine implements TalosEngine {
 
   Future<String?> ytdlpPath() async => (await _managedYtdlpPath()) ?? (await _onPath(_managedName));
 
+  /// aria2 is optional and only useful when its binary is actually on PATH.
+  Future<bool> aria2Available() async => (await _onPath('aria2c')) != null;
+
   Future<String?> ffmpegPath(String configured) async {
     if (configured.trim().isNotEmpty && File(configured.trim()).existsSync()) {
       return configured.trim();
@@ -451,6 +454,10 @@ class _DesktopDownloadSession implements TalosDownloadSession {
       final binary = await _engine.ytdlpPath();
       if (binary == null) {
         _finish(SessionOutcome(error: 'yt-dlp is not available'));
+        return;
+      }
+      if (_request.useAria2 && !await _engine.aria2Available()) {
+        _finish(SessionOutcome(error: 'aria2c is not installed'));
         return;
       }
       final args = CommandBuilder.downloadArgs(_request, ffmpegAvailable: ffmpegAvailable);

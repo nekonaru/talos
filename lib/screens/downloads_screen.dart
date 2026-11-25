@@ -15,6 +15,7 @@ import '../core/history_store.dart';
 import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
+import 'error_message.dart';
 import 'player_screen.dart';
 
 /// Resolves stable error codes from the download engine to localized text.
@@ -62,15 +63,16 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
   }
 
   void _onTabChanged() {
-    if (!mounted) return;
-    setState(() {
-      // Selection only belongs to the Finished tab. Leaving it clears the
-      // stale selection so returning later starts fresh.
-      if (_tabController.index != 1 && _selectionMode) {
+    if (!mounted || _tabController.indexIsChanging) return;
+    // Selection only belongs to the Finished tab. Leaving it clears the
+    // stale selection so returning later starts fresh. Avoid rebuilding the
+    // whole list on duplicate notifications that did not change the tab.
+    if (_tabController.index != 1 && _selectionMode) {
+      setState(() {
         _selectionMode = false;
         _selectedIds.clear();
-      }
-    });
+      });
+    }
   }
 
   void _onSearchChanged() {
@@ -175,6 +177,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l.clearFinished),
+        content: Text(l.clearFinishedBody),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l.cancel)),
           FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l.clearFinished)),
@@ -545,7 +548,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     } catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$error')),
+        SnackBar(content: Text(friendlyError(context, error))),
       );
     }
   }

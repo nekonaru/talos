@@ -6,14 +6,12 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity : FlutterActivity() {
-    private var bridge: TalosEngineBridge? = null
     private val intentBridge = IntentBridge()
     private val storageBridge by lazy { TalosStorageBridge(applicationContext) }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         val engine = TalosEngineBridge(application)
-        bridge = engine
         engine.attach(flutterEngine)
         intentBridge.attach(flutterEngine, intent)
         storageBridge.attach(flutterEngine, this)
