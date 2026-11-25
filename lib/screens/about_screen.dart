@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/app_info.dart';
 import '../gen/app_localizations.dart';
 import '../widgets/section_label.dart';
+import 'runtime_licenses_screen.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -78,12 +79,20 @@ class AboutScreen extends StatelessWidget {
             icon: const Icon(Icons.article_outlined),
             label: Text(l.licenses),
           ),
+          const SizedBox(height: 8),
+          FilledButton.tonalIcon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const RuntimeLicensesScreen()),
+            ),
+            icon: const Icon(Icons.account_balance_outlined),
+            label: Text(l.runtimeLicenses),
+          ),
           SectionLabel(l.author),
           Card(
             child: ListTile(
               leading: const Icon(Icons.person_outline),
               title: Text(TalosInfo.authorName),
-              subtitle: Text('@${TalosInfo.authorHandle} on GitHub'),
+              subtitle: Text(l.authorGithub),
               trailing: const Icon(Icons.open_in_new, size: 18),
               onTap: () => _open(context, TalosInfo.authorUrl),
             ),

@@ -809,6 +809,34 @@ void main() {
     await QueueStore.save([]);
   });
 
+  test('history retention drops only old rows', () async {
+    final store = await HistoryStore.load();
+    await store.clear();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await store.add(HistoryEntry(
+      id: 'old',
+      title: 'Old',
+      url: 'https://example.invalid/old',
+      filePath: '/tmp/old',
+      kind: HistoryKind.video,
+      dateMs: now - const Duration(days: 40).inMilliseconds,
+    ));
+    await store.add(HistoryEntry(
+      id: 'new',
+      title: 'New',
+      url: 'https://example.invalid/new',
+      filePath: '/tmp/new',
+      kind: HistoryKind.video,
+      dateMs: now,
+    ));
+    await store.pruneBefore(now - const Duration(days: 30).inMilliseconds);
+    expect(store.entries, hasLength(1));
+    expect(store.entries.first.id, 'new');
+    final reloaded = await HistoryStore.load();
+    expect(reloaded.entries, hasLength(1));
+    await store.clear();
+  });
+
   test('backup rejects foreign payloads', () async {
     final manager = await DownloadManager.create(engine: FakeEngine());
     expect(

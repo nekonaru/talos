@@ -113,7 +113,8 @@ chaquopy {
     defaultConfig {
         version = "3.14"
         pip {
-            install("yt-dlp==2026.10.26")
+            // Keep the Android pin aligned with the desktop managed engine.
+            install("yt-dlp==2026.11.23")
         }
     }
 }

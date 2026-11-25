@@ -442,6 +442,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
+                ListTile(
+                  leading: const Icon(Icons.history_toggle_off_outlined),
+                  title: Text(l.historyRetention),
+                  subtitle: Text(l.historyRetentionHint),
+                  trailing: DropdownButton<int>(
+                    value: settings.historyRetentionDays,
+                    underline: const SizedBox(),
+                    items: [
+                      for (final days in const [0, 7, 30, 90])
+                        DropdownMenuItem(
+                          value: days,
+                          child: Text(days == 0
+                              ? l.autoRetryOff
+                              : l.historyRetentionDays(days)),
+                        ),
+                    ],
+                    onChanged: (value) => manager.settings.mutate(
+                      (s) => s.copyWith(historyRetentionDays: value ?? 0),
+                    ),
+                  ),
+                ),
                 SwitchListTile(
                   secondary: const Icon(Icons.visibility_off_outlined),
                   title: Text(l.privateMode),

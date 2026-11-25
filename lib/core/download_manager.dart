@@ -113,9 +113,17 @@ class DownloadManager extends ChangeNotifier {
         // A transient channel error must not discard the user's folder choice.
       }
     }
+    final history = await historyFuture;
+    final retention = settings.value.historyRetentionDays;
+    if (retention > 0) {
+      final cutoff = DateTime.now()
+          .subtract(Duration(days: retention))
+          .millisecondsSinceEpoch;
+      await history.pruneBefore(cutoff);
+    }
     final manager = DownloadManager._(
       engine ?? createEngine(),
-      await historyFuture,
+      history,
       settings,
       outputDir,
       await savedFuture,

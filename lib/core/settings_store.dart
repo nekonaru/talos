@@ -54,6 +54,7 @@ class TalosSettings {
     this.autoSubtitle = false,
     this.keepSubtitles = false,
     this.customCommandDirectory,
+    this.historyRetentionDays = 0,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -106,6 +107,7 @@ class TalosSettings {
       autoSubtitle: json['autoSubtitle'] as bool? ?? false,
       keepSubtitles: json['keepSubtitles'] as bool? ?? false,
       customCommandDirectory: json['customCommandDirectory'] as String?,
+      historyRetentionDays: intChoice((json['historyRetentionDays'] as num?)?.toInt(), const [0, 7, 30, 90], 0),
     );
   }
 
@@ -150,6 +152,7 @@ class TalosSettings {
   bool autoSubtitle;
   bool keepSubtitles;
   String? customCommandDirectory;
+  int historyRetentionDays;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -193,6 +196,7 @@ class TalosSettings {
         'autoSubtitle': autoSubtitle,
         'keepSubtitles': keepSubtitles,
         'customCommandDirectory': customCommandDirectory,
+        'historyRetentionDays': historyRetentionDays,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -253,6 +257,7 @@ class TalosSettings {
     bool? autoSubtitle,
     bool? keepSubtitles,
     String? customCommandDirectory,
+    int? historyRetentionDays,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -296,6 +301,7 @@ class TalosSettings {
       autoSubtitle: autoSubtitle ?? this.autoSubtitle,
       keepSubtitles: keepSubtitles ?? this.keepSubtitles,
       customCommandDirectory: clearCustomCommandDirectory ? null : (customCommandDirectory ?? this.customCommandDirectory),
+      historyRetentionDays: historyRetentionDays ?? this.historyRetentionDays,
     );
   }
 }
