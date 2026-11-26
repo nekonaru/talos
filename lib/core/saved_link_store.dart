@@ -92,6 +92,32 @@ class SavedLinkStore extends ChangeNotifier {
     await _persist();
   }
 
+  /// Adds several links at once, skipping invalid and duplicate rows. The
+  /// store cap is enforced so a pasted list cannot grow without bound.
+  Future<int> addMany(Iterable<String> texts) async {
+    var added = 0;
+    for (final text in texts) {
+      final value = text.trim();
+      if (value.isEmpty || contains(value)) continue;
+      _entries.insert(
+        0,
+        SavedLink(
+          id: DateTime.now().microsecondsSinceEpoch.toRadixString(16) + added.toString(),
+          text: value,
+          dateMs: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+      added++;
+    }
+    if (added == 0) return 0;
+    if (_entries.length > maxEntries) {
+      _entries = _entries.sublist(0, maxEntries);
+    }
+    notifyListeners();
+    await _persist();
+    return added;
+  }
+
   Future<void> update(String id, String text) async {
     final value = text.trim();
     if (value.isEmpty) return;

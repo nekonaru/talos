@@ -156,6 +156,13 @@
   "linkRemoved": "Link removed",
   "linkCopied": "Link copied to clipboard",
   "linkUpdated": "Link updated",
+  "saveAllLinks": "Save all links",
+  "linksSaved": "Saved {count} link(s)",
+  "@linksSaved": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "editSaved": "Edit saved link",
   "openSaved": "Open link",
   "fetchSaved": "Download",

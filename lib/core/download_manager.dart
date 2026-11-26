@@ -215,44 +215,9 @@ class DownloadManager extends ChangeNotifier {
         ? _settings.value.videoFolder
         : _settings.value.audioFolder;
     final outputDir = configured?.trim().isNotEmpty == true ? configured!.trim() : outputDirectory;
-    final rebuilt = DownloadRequest(
-      url: task.request.url,
-      videoMode: task.request.videoMode,
-      outputDir: outputDir,
-      maxHeight: task.request.maxHeight,
-      audioFormat: task.request.audioFormat,
-      audioBitrate: task.request.audioBitrate,
-      embedSubtitles: task.request.embedSubtitles,
-      embedMetadata: task.request.embedMetadata,
-      filenameTemplate: task.request.filenameTemplate,
-      proxy: task.request.proxy,
-      rateLimit: task.request.rateLimit,
-      useAria2: task.request.useAria2,
-      concurrentFragments: task.request.concurrentFragments,
-      playlistItems: task.request.playlistItems,
-      includePlaylist: task.request.includePlaylist,
-      ffmpegPath: task.request.ffmpegPath,
-      sponsorBlockCategories: task.request.sponsorBlockCategories,
-      cookiesPath: task.request.cookiesPath,
-      subtitleLanguage: task.request.subtitleLanguage,
-      formatSelector: task.request.formatSelector,
-      restrictFilenames: task.request.restrictFilenames,
-      downloadArchive: task.request.downloadArchive,
-      cropArtwork: task.request.cropArtwork,
-      subtitleFormat: task.request.subtitleFormat,
-      clipStartSeconds: task.request.clipStartSeconds,
-      clipEndSeconds: task.request.clipEndSeconds,
-      forceIpv4: task.request.forceIpv4,
-      remuxContainer: task.request.remuxContainer,
-      maxFilesize: task.request.maxFilesize,
-      userAgent: task.request.userAgent,
-      customHeaders: task.request.customHeaders,
-      formatSort: task.request.formatSort,
-      downloadSubtitles: task.request.downloadSubtitles,
-      autoSubtitle: task.request.autoSubtitle,
-      keepSubtitles: task.request.keepSubtitles,
-      outputFilename: task.request.outputFilename,
-    );
+    // Copying from the stored request keeps every field, so future options
+    // are never accidentally dropped when a task is retried.
+    final rebuilt = task.request.copyWith(outputDir: outputDir);
     _tasks.remove(task);
     await enqueue(rebuilt, title: task.title, kind: task.kind, thumbnailUrl: task.thumbnailUrl);
   }

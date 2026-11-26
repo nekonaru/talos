@@ -186,6 +186,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _saveAllLinks() async {
+    final l = AppLocalizations.of(context)!;
+    final urls = _detectUrls(_urlController.text);
+    if (urls.isEmpty) return;
+    final manager = TalosScope.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final added = await manager.savedLinks.addMany(urls);
+    if (!mounted) return;
+    setState(() {});
+    messenger.showSnackBar(
+      SnackBar(content: Text(l.linksSaved(added))),
+    );
+  }
+
   void _handleFetch() {
     final urls = _detectUrls(_urlController.text);
     if (urls.length > 1) {
@@ -414,6 +428,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                         : Icons.bookmark_add_outlined,
                                   ),
                                   onPressed: _detectUrls(_urlController.text).isEmpty ? null : _saveCurrentLink,
+                                ),
+                              if (isBatch)
+                                IconButton(
+                                  tooltip: l.saveAllLinks,
+                                  icon: const Icon(Icons.bookmark_add_outlined),
+                                  onPressed: _saveAllLinks,
                                 ),
                             ],
                           ),
