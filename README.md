@@ -94,6 +94,9 @@
 | **Proxy support** | Route downloads through an HTTP or SOCKS proxy |
 | **WiFi only** | On Android, pause queued downloads until an active WiFi connection is available |
 | **Battery saver** | On Android, hold new downloads while the battery is low and the device is not charging |
+| **Charging only** | On Android, wait until the device is plugged in before starting queued downloads |
+| **Multi-link share** | Share several URLs from another app and handle them as a batch |
+| **Offline help** | Built-in FAQ answering common questions about storage, waiting, cookies and backups |
 | **Rate limiting** | Cap download speed, for example 5M or 512K |
 | **Concurrent fragments** | Speed up fragmented downloads with parallel fragments |
 | **aria2c** | Use aria2c as the external downloader on desktop when it is installed |
@@ -181,8 +184,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.41.0-windows-x64.zip`
-   - Linux: `Talos-v0.41.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.42.0-windows-x64.zip`
+   - Linux: `Talos-v0.42.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]

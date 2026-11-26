@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.42.0
+
+A large update finishing the automation roadmap with charging control, multi-link sharing and offline help.
+
+### New features
+
+- **Charging-only gate.** On Android, queued downloads can wait until the device is plugged in. Unknown bridge results allow the queue instead of blocking it.
+- **Multi-link share.** Sharing several URLs from another app now forwards all of them to Home, where the existing batch flow can handle them.
+- **Offline help.** About now links to a built-in FAQ covering storage, wait reasons, cookies, opening files, backups and engine problems.
+
+### Improvements
+
+- **104 tests passing**, including the charging gate regression.
+
+### Notes
+
+- Parallel download lanes and notification-center controls remain deferred because they need deeper engine isolation. Biometric lock is also deferred because it would add a new dependency and permission.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.42.0-windows-x64.zip`. Linux: `Talos-v0.42.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.41.0
 
 A large update adding batch sharing and duplicate cleanup to the finished library.
