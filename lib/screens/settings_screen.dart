@@ -553,6 +553,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
                 ),
+                ListTile(
+                  leading: const Icon(Icons.folder_special_outlined),
+                  title: Text(l.folderRules),
+                  subtitle: Text(
+                    settings.folderRules.isEmpty
+                        ? l.folderRulesHint
+                        : settings.folderRules.split(RegExp(r'\r?\n')).first,
+                  ),
+                  onTap: () async {
+                    final value = await _editDialog(
+                      title: l.folderRules,
+                      initial: settings.folderRules,
+                      hint: l.folderRulesHint,
+                    );
+                    if (value != null) {
+                      await manager.settings.mutate((s) => s.copyWith(folderRules: value));
+                    }
+                  },
+                ),
                 SwitchListTile(
                   secondary: const Icon(Icons.schedule_outlined),
                   title: Text(l.quietHours),
@@ -656,6 +675,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                     onChanged: (value) => manager.settings.mutate(
                       (s) => s.copyWith(autoRetryAttempts: value ?? 0),
+                    ),
+                  ),
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.open_in_new_outlined),
+                  title: Text(l.autoOpen),
+                  value: settings.autoOpen,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(autoOpen: value)),
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.share_outlined),
+                  title: Text(l.autoShare),
+                  value: settings.autoShare,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(autoShare: value)),
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.star_outline),
+                  title: Text(l.autoFavorite),
+                  value: settings.autoFavorite,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(autoFavorite: value)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.timeline_outlined),
+                  title: Text(l.retryBackoff),
+                  trailing: DropdownButton<String>(
+                    value: settings.retryBackoff,
+                    underline: const SizedBox(),
+                    items: [
+                      DropdownMenuItem(value: 'linear', child: Text(l.retryBackoffLinear)),
+                      DropdownMenuItem(value: 'exponential', child: Text(l.retryBackoffExponential)),
+                    ],
+                    onChanged: (value) => manager.settings.mutate(
+                      (s) => s.copyWith(retryBackoff: value ?? 'linear'),
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.hourglass_disabled_outlined),
+                  title: Text(l.stallTimeout),
+                  subtitle: Text(l.stallTimeoutHint),
+                  trailing: DropdownButton<int>(
+                    value: settings.stallTimeoutMinutes,
+                    underline: const SizedBox(),
+                    items: [
+                      for (final minutes in const [0, 2, 5, 10, 30])
+                        DropdownMenuItem(
+                          value: minutes,
+                          child: Text(minutes == 0 ? l.autoRetryOff : l.stallMinutes(minutes)),
+                        ),
+                    ],
+                    onChanged: (value) => manager.settings.mutate(
+                      (s) => s.copyWith(stallTimeoutMinutes: value ?? 0),
                     ),
                   ),
                 ),
@@ -1203,6 +1274,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: _exportHistoryCsv,
                 ),
                 const Divider(height: 1),
+                SwitchListTile(
+                  secondary: const Icon(Icons.auto_mode_outlined),
+                  title: Text(l.autoCleanTemp),
+                  value: settings.autoCleanTemp,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(autoCleanTemp: value)),
+                ),
                 ListTile(
                   leading: const Icon(Icons.cleaning_services_outlined),
                   title: Text(l.cleanTemp),

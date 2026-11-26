@@ -37,7 +37,14 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
   String? _formatSelector;
   String? _selectedPresetId;
   bool? _engineReady;
+  late String _rateLimit;
+  late String _proxy;
+  late String _customHeaders;
+  String _playlistOrder = 'normal';
   late final TextEditingController _fileNameController;
+  late final TextEditingController _rateController;
+  late final TextEditingController _proxyController;
+  late final TextEditingController _headersController;
 
   @override
   void initState() {
@@ -49,13 +56,22 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
     _embedSubtitles = settings.embedSubtitles;
     _embedMetadata = settings.embedMetadata;
     _selected = {for (final entry in widget.probe.entries) entry.index};
+    _rateLimit = settings.rateLimit;
+    _proxy = settings.proxy;
+    _customHeaders = settings.customHeaders;
     _fileNameController = TextEditingController();
+    _rateController = TextEditingController(text: _rateLimit);
+    _proxyController = TextEditingController(text: _proxy);
+    _headersController = TextEditingController(text: _customHeaders);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkEngine());
   }
 
   @override
   void dispose() {
     _fileNameController.dispose();
+    _rateController.dispose();
+    _proxyController.dispose();
+    _headersController.dispose();
     super.dispose();
   }
 
@@ -206,9 +222,15 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
 
     String? items;
     if (widget.probe.isPlaylist && widget.probe.entries.isNotEmpty) {
-      if (_selected.length < widget.probe.entries.length) {
-        items = (_selected.toList()..sort()).join(',');
+      var indices = (_selected.toList()..sort());
+      if (_playlistOrder == 'reverse') {
+        indices = indices.reversed.toList();
+      } else if (_playlistOrder == 'shuffle') {
+        indices.shuffle();
       }
+      // Always send an explicit list for playlists so the chosen order is
+      // honored, even when every entry is selected.
+      items = indices.join(',');
     }
 
     final outputDir = _videoMode
@@ -234,8 +256,8 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       outputFilename: requestedName.isNotEmpty && !widget.probe.isPlaylist
           ? requestedName
           : null,
-      proxy: settings.proxy,
-      rateLimit: settings.rateLimit,
+      proxy: _proxyController.text.trim(),
+      rateLimit: _rateController.text.trim(),
       useAria2: settings.useAria2,
       concurrentFragments: settings.concurrentFragments,
       playlistItems: items,
@@ -255,7 +277,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       remuxContainer: settings.remuxContainer,
       maxFilesize: settings.maxFilesize,
       userAgent: settings.userAgent,
-      customHeaders: settings.customHeaders,
+      customHeaders: _headersController.text,
       formatSort: settings.formatSort,
       downloadSubtitles: settings.downloadSubtitles,
       autoSubtitle: settings.autoSubtitle,
@@ -360,6 +382,51 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                     labelText: l.outputFileName,
                     prefixIcon: const Icon(Icons.edit_outlined),
                   ),
+                ),
+                const SizedBox(height: 12),
+                ExpansionTile(
+                  leading: const Icon(Icons.tune_outlined),
+                  title: Text(l.advancedOptions),
+                  subtitle: Text(l.advancedOptionsHint),
+                  children: [
+                    TextField(
+                      controller: _rateController,
+                      decoration: InputDecoration(
+                        labelText: l.rateLimit,
+                        hintText: l.rateLimitHint,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _proxyController,
+                      decoration: InputDecoration(
+                        labelText: l.proxy,
+                        hintText: l.proxyHint,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _headersController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: l.customHeaders,
+                        hintText: l.customHeadersHint,
+                      ),
+                    ),
+                    if (widget.probe.isPlaylist && widget.probe.entries.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: _playlistOrder,
+                        decoration: InputDecoration(labelText: l.playlistOrder),
+                        items: [
+                          DropdownMenuItem(value: 'normal', child: Text(l.playlistOrderNormal)),
+                          DropdownMenuItem(value: 'reverse', child: Text(l.playlistOrderReverse)),
+                          DropdownMenuItem(value: 'shuffle', child: Text(l.playlistOrderShuffle)),
+                        ],
+                        onChanged: (value) => setState(() => _playlistOrder = value ?? 'normal'),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 12),
                 SegmentedButton<bool>(

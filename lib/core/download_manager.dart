@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'background_service.dart';
 import 'history_store.dart';
@@ -13,7 +14,9 @@ import 'settings_store.dart';
 import 'engine/engine.dart';
 import 'engine/engine_factory.dart';
 import 'engine/models.dart';
+import 'folder_rules.dart';
 import 'storage_bridge.dart';
+import 'storage_cleanup.dart';
 
 class DownloadTask {
   DownloadTask({
@@ -47,6 +50,10 @@ class DownloadTask {
   /// per entry, so saving only [outputPath] would orphan the other items.
   final List<String> outputPaths = [];
   String? error;
+
+  /// Set when the watchdog stopped a stalled task. A cancel outcome is then
+  /// reported as a retryable failure instead of a user cancellation.
+  bool stallDetected = false;
   final List<String> log = [];
 
   /// Set when the user cancels while the task is running but before an engine
@@ -122,6 +129,15 @@ class DownloadManager extends ChangeNotifier {
           .millisecondsSinceEpoch;
       await history.pruneBefore(cutoff);
     }
+    if (settings.value.autoCleanTemp) {
+      try {
+        final support = await getApplicationSupportDirectory();
+        await cleanTemporaryFiles(support);
+        await cleanTemporaryFiles(Directory(outputDir));
+      } catch (_) {
+        // Cleanup is best effort and must never delay app startup.
+      }
+    }
     final manager = DownloadManager._(
       engine ?? createEngine(),
       history,
@@ -162,6 +178,8 @@ class DownloadManager extends ChangeNotifier {
   Timer? _wifiRetryTimer;
   Timer? _quietRetryTimer;
   Timer? _batteryRetryTimer;
+  Timer? _stallTimer;
+  DateTime? _lastProgressAt;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
   List<DownloadTask> get activeTasks =>
@@ -258,6 +276,8 @@ class DownloadManager extends ChangeNotifier {
     _quietRetryTimer = null;
     _batteryRetryTimer?.cancel();
     _batteryRetryTimer = null;
+    _stallTimer?.cancel();
+    _stallTimer = null;
     _tasks.clear();
     notifyListeners();
     await _persistQueue();
@@ -344,6 +364,8 @@ class DownloadManager extends ChangeNotifier {
     _quietRetryTimer = null;
     _batteryRetryTimer?.cancel();
     _batteryRetryTimer = null;
+    _stallTimer?.cancel();
+    _stallTimer = null;
     for (final task in pending) {
       task.status = TaskStatus.cancelled;
       task.stage = 'cancelled';
@@ -363,6 +385,8 @@ class DownloadManager extends ChangeNotifier {
     _quietRetryTimer = null;
     _batteryRetryTimer?.cancel();
     _batteryRetryTimer = null;
+    _stallTimer?.cancel();
+    _stallTimer = null;
     if (!_pumping) unawaited(_pump());
   }
 
@@ -372,6 +396,7 @@ class DownloadManager extends ChangeNotifier {
     _wifiRetryTimer?.cancel();
     _quietRetryTimer?.cancel();
     _batteryRetryTimer?.cancel();
+    _stallTimer?.cancel();
     super.dispose();
   }
 
@@ -466,8 +491,12 @@ class DownloadManager extends ChangeNotifier {
           _tasks.insert(0, next);
           notifyListeners();
           await _persistQueue();
-          // Linear backoff keeps the delay predictable: 2s, 4s, 6s.
-          await Future.delayed(retryDelayBase * next.attempts);
+          // Linear keeps 2s, 4s, 6s. Exponential caps at 8x to avoid a
+          // runaway wait when the network is down for a long time.
+          final multiplier = _settings.value.retryBackoff == 'exponential'
+              ? (1 << (next.attempts - 1)).clamp(1, 8)
+              : next.attempts;
+          await Future.delayed(retryDelayBase * multiplier);
           if (generation != _resetGeneration) break;
         }
       }
@@ -502,6 +531,10 @@ class DownloadManager extends ChangeNotifier {
     // writes "name(1).ext", "name(2).ext" and so on. The user asked for
     // unlimited repeats of the same video without any hidden deduplication.
     DownloadRequest effectiveRequest = task.request;
+    final ruleFolder = folderForUrl(_settings.value.folderRules, task.request.url);
+    if (ruleFolder != null) {
+      effectiveRequest = effectiveRequest.copyWith(outputDir: ruleFolder);
+    }
     final typed = task.request.outputFilename?.trim();
     try {
       final dir = Directory(task.request.outputDir);
@@ -546,10 +579,25 @@ class DownloadManager extends ChangeNotifier {
       return;
     }
     _activeSession = session;
+    task.stallDetected = false;
+    _lastProgressAt = DateTime.now();
+    final stallMinutes = _settings.value.stallTimeoutMinutes;
+    if (stallMinutes > 0) {
+      _stallTimer?.cancel();
+      _stallTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+        if (!identical(_activeSession, session) || task.cancelRequested) return;
+        final last = _lastProgressAt;
+        if (last == null || task.status != TaskStatus.running) return;
+        if (DateTime.now().difference(last).inMinutes < stallMinutes) return;
+        task.stallDetected = true;
+        unawaited(session.cancel());
+      });
+    }
     final rawSubscription = session.rawLog?.listen((line) {
       if (task.log.length < 500) task.log.add(line);
     });
     final subscription = session.events.listen((event) {
+      _lastProgressAt = DateTime.now();
       if (event.error != null) {
         task.error = event.error;
         notifyListeners();
@@ -573,6 +621,9 @@ class DownloadManager extends ChangeNotifier {
     });
 
     final outcome = await session.outcome;
+    _stallTimer?.cancel();
+    _stallTimer = null;
+    _lastProgressAt = null;
     await subscription.cancel();
     await rawSubscription?.cancel();
     // A stale run resuming after a reset+re-enqueue must not clear the newer
@@ -602,7 +653,7 @@ class DownloadManager extends ChangeNotifier {
       final saf = _settings.value.downloadFolderSAF.trim();
       // A plain per-type folder the user chose is authoritative: the file is
       // already there and must not be relocated into Downloads/Talos.
-      final requestedDir = task.request.outputDir.trim();
+      final requestedDir = effectiveRequest.outputDir.trim();
       final plainSet = requestedDir.isNotEmpty &&
           !requestedDir.startsWith('content://') &&
           requestedDir != _outputDir;
@@ -696,6 +747,18 @@ class DownloadManager extends ChangeNotifier {
           ));
         }
       }
+      if (!_settings.value.privateMode && savedPaths.length == 1) {
+        final path = savedPaths.first;
+        if (_settings.value.autoFavorite) {
+          await _history.toggleFavorite(task.id);
+        }
+        if (_settings.value.autoOpen) {
+          await TalosStorageBridge.openUri(path);
+        }
+        if (_settings.value.autoShare) {
+          await TalosStorageBridge.shareUri(path);
+        }
+      }
       task.outputPath = savedPaths.isNotEmpty ? savedPaths.last : null;
       task.outputPaths
         ..clear()
@@ -703,7 +766,13 @@ class DownloadManager extends ChangeNotifier {
       // Completed work moves to the Finished tab via history.
       _tasks.remove(task);
     } else if (outcome.error == 'cancelled') {
-      task.status = TaskStatus.cancelled;
+      if (task.stallDetected) {
+        // A watchdog stop is a retryable failure, not a user cancellation.
+        task.status = TaskStatus.failed;
+        task.error = 'stalled';
+      } else {
+        task.status = TaskStatus.cancelled;
+      }
     } else {
       task.status = TaskStatus.failed;
       task.error = outcome.error;

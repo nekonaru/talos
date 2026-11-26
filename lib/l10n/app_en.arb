@@ -71,6 +71,7 @@
   "permissionGranted": "Granted",
   "permissionDenied": "Denied",
   "openSettings": "Open system settings",
+  "autoCleanTemp": "Clean temp files on startup",
   "cleanTemp": "Clean temporary files",
   "cleanTempHint": "Remove leftover partial downloads and atomic-write temp files older than one hour",
   "cleanTempBody": "Removes stale .tmp, .part, .ytdl and .download files from app data and the output folder. Recent files and completed downloads are kept.",
@@ -275,6 +276,14 @@
   "proxyHint": "http://host:port or socks5://host:port",
   "rateLimit": "Rate limit",
   "rateLimitHint": "For example 5M or 512K, empty for none",
+  "folderRules": "Folder rules",
+  "folderRulesHint": "One `domain=folder` rule per line, for example youtube.com=/storage/emulated/0/Videos/YouTube",
+  "advancedOptions": "Advanced options",
+  "advancedOptionsHint": "Override rate, proxy and headers for this download only",
+  "playlistOrder": "Playlist order",
+  "playlistOrderNormal": "Original order",
+  "playlistOrderReverse": "Reverse order",
+  "playlistOrderShuffle": "Shuffle",
   "aria2": "Use aria2c when available",
   "fragments": "Concurrent fragments",
   "sponsorBlock": "Skip sponsor segments (SponsorBlock)",
@@ -293,6 +302,28 @@
   "autoRetry": "Auto retry",
   "autoRetryHint": "Retry failed downloads automatically with a short delay",
   "autoRetryOff": "Off",
+  "whatsNew": "What's new",
+  "whatsNewBody": "Talos v{version} is installed. This update adds advanced per-download controls, folder rules, retry and stall handling, post-download actions and a faster audit cleanup.",
+  "@whatsNewBody": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "releaseNotes": "Release notes",
+  "autoOpen": "Open file after download",
+  "autoShare": "Share file after download",
+  "autoFavorite": "Add to favorites after download",
+  "retryBackoff": "Retry backoff",
+  "retryBackoffLinear": "Linear",
+  "retryBackoffExponential": "Exponential",
+  "stallTimeout": "Stall timeout",
+  "stallTimeoutHint": "Retry a download that stops sending progress for this long",
+  "stallMinutes": "{count} min",
+  "@stallMinutes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "historyRetention": "History retention",
   "historyRetentionHint": "Drop old history rows on startup. Files on disk are kept.",
   "wifiOnly": "Download on WiFi only",
