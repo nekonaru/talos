@@ -450,9 +450,11 @@ class TalosStorageBridge(private val context: Context) {
             context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
         result["notifications"] = sdk < 33 || granted(Manifest.permission.POST_NOTIFICATIONS)
         result["storage"] = when {
-            sdk >= 33 -> granted(Manifest.permission.READ_MEDIA_VIDEO) &&
-                granted(Manifest.permission.READ_MEDIA_AUDIO) &&
-                granted(Manifest.permission.READ_MEDIA_IMAGES)
+            // Video or audio access is what downloads actually need. Images
+            // are only for optional cover art, so denying it alone must not
+            // leave the reminder visible forever.
+            sdk >= 33 -> granted(Manifest.permission.READ_MEDIA_VIDEO) ||
+                granted(Manifest.permission.READ_MEDIA_AUDIO)
             sdk >= 29 -> granted(Manifest.permission.READ_EXTERNAL_STORAGE)
             else -> granted(Manifest.permission.READ_EXTERNAL_STORAGE) &&
                 granted(Manifest.permission.WRITE_EXTERNAL_STORAGE)

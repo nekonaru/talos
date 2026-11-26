@@ -286,6 +286,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await TalosBackup.restoreJson(manager, controller.text.trim());
       await manager.refreshOutputDirectory();
+      // Restored settings may have removed a gate that was holding the queue.
+      manager.kickQueue();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l.backupImported)),
