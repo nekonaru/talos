@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/app_info.dart';
 import '../gen/app_localizations.dart';
 import '../widgets/section_label.dart';
+import 'faq_screen.dart';
 import 'runtime_licenses_screen.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -86,6 +87,14 @@ class AboutScreen extends StatelessWidget {
             ),
             icon: const Icon(Icons.account_balance_outlined),
             label: Text(l.runtimeLicenses),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.tonalIcon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const FaqScreen()),
+            ),
+            icon: const Icon(Icons.help_outline),
+            label: Text(l.faq),
           ),
           SectionLabel(l.author),
           Card(

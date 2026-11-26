@@ -953,6 +953,39 @@ void main() {
     }
   });
 
+  test('charging only holds the queue until the device is plugged in', () async {
+    final engine = FakeEngine();
+    final manager = await DownloadManager.create(engine: engine);
+    await manager.settings.mutate((s) => s.copyWith(chargingOnly: true));
+    DownloadManager.chargingRetryDelay = const Duration(milliseconds: 10);
+    DownloadManager.chargingProbeOverride = () async => false;
+    try {
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=charge',
+          videoMode: true,
+          outputDir: 'out',
+        ),
+        title: 'Charging item',
+        kind: HistoryKind.video,
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(engine.lastSession, isNull);
+      expect(manager.tasks.single.stage, 'waitingCharging');
+
+      DownloadManager.chargingProbeOverride = () async => true;
+      manager.kickQueue();
+      for (var i = 0; i < 200 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      expect(engine.lastSession, isNotNull);
+    } finally {
+      DownloadManager.chargingProbeOverride = null;
+      DownloadManager.chargingRetryDelay = const Duration(minutes: 1);
+      await manager.resetAll();
+    }
+  });
+
   test('low battery holds the queue until charging or a higher level', () async {
     final engine = FakeEngine();
     final manager = await DownloadManager.create(engine: engine);

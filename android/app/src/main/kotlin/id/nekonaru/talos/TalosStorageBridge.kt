@@ -141,6 +141,7 @@ class TalosStorageBridge(private val context: Context) {
                 "isBatteryLow" -> result.success(
                     isBatteryLow(call.argument<Int>("threshold") ?: 20),
                 )
+                "isCharging" -> result.success(isCharging())
                 "copyToTree" -> {
                     val localPath = call.argument<String>("localPath") ?: ""
                     val displayName = call.argument<String>("displayName") ?: ""
@@ -470,6 +471,18 @@ class TalosStorageBridge(private val context: Context) {
             ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
             true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun isCharging(): Boolean {
+        return try {
+            val intent = context.registerReceiver(
+                null,
+                IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+            ) ?: return false
+            intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0
         } catch (_: Exception) {
             false
         }

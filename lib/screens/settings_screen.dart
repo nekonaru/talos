@@ -632,6 +632,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       manager.kickQueue();
                     },
                   ),
+                if (Theme.of(context).platform == TargetPlatform.android)
+                  SwitchListTile(
+                    secondary: const Icon(Icons.power_outlined),
+                    title: Text(l.chargingOnly),
+                    subtitle: Text(l.chargingOnlyHint),
+                    value: settings.chargingOnly,
+                    onChanged: (value) async {
+                      await manager.settings.mutate(
+                        (s) => s.copyWith(chargingOnly: value),
+                      );
+                      manager.kickQueue();
+                    },
+                  ),
                 if (Theme.of(context).platform == TargetPlatform.android &&
                     settings.batterySaverEnabled)
                   ListTile(
