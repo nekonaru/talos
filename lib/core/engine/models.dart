@@ -216,10 +216,10 @@ class DownloadRequest {
   /// with --add-headers. Useful for sites that require a Referer.
   final String customHeaders;
 
-  DownloadRequest copyWith({String? outputFilename}) => DownloadRequest(
+  DownloadRequest copyWith({String? outputFilename, String? outputDir}) => DownloadRequest(
         url: url,
         videoMode: videoMode,
-        outputDir: outputDir,
+        outputDir: outputDir ?? this.outputDir,
         maxHeight: maxHeight,
         audioFormat: audioFormat,
         audioBitrate: audioBitrate,

@@ -136,6 +136,7 @@
 | **Cadangkan dan pulihkan** | Ekspor pengaturan, riwayat, tautan tersimpan, preset, perintah, dan antrean tertunda sebagai JSON portabel, lalu pulihkan di perangkat yang sama atau yang baru |
 | **Ekspor CSV** | Ekspor riwayat unduhan selesai sebagai file CSV yang ramah spreadsheet |
 | **Ubah tautan tersimpan** | Salin, ubah, atau buka tautan tersimpan langsung dari daftar |
+| **Simpan semua tautan** | Tambahkan semua URL yang terdeteksi dari teks tempelan sekaligus |
 | **Mode privat** | Lewati riwayat sama sekali bila diinginkan |
 
 ---
@@ -174,8 +175,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.35.0-windows-x64.zip`
-   - Linux: `Talos-v0.35.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.36.0-windows-x64.zip`
+   - Linux: `Talos-v0.36.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]

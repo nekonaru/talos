@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.36.0
+
+Update besar yang menambahkan simpan banyak tautan dan implementasi coba ulang yang lebih aman.
+
+### Fitur baru
+
+- **Simpan semua tautan.** Saat teks tempelan berisi beberapa URL, aksi Simpan semua menyimpan semua tautan yang terdeteksi sekaligus, melewati duplikat dan baris kosong.
+
+### Peningkatan
+
+- **Coba ulang lebih aman.** Retry kini menyalin request yang tersimpan alih-alih membangunnya satu per satu, sehingga opsi baru tidak pernah terhilang.
+- **100 test lulus**, termasuk tautan tersimpan massal dan pelestarian field saat retry.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.36.0-windows-x64.zip`. Linux: `Talos-v0.36.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.35.0
 
 Update besar yang meningkatkan akses ke detail unduhan aktif.

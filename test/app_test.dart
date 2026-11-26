@@ -575,6 +575,21 @@ void main() {
     expect(filterPlaylistEntries(entries), hasLength(3));
   });
 
+  test('saved links addMany dedupes and reports the real count', () async {
+    final store = await SavedLinkStore.load();
+    await store.clear();
+    final added = await store.addMany([
+      'https://example.invalid/a',
+      'https://example.invalid/a',
+      'https://example.invalid/b\n',
+      '   ',
+    ]);
+    expect(added, 2);
+    expect(store.entries, hasLength(2));
+    expect((await SavedLinkStore.load()).entries, hasLength(2));
+    await store.clear();
+  });
+
   test('saved links can be edited without changing id or date', () async {
     final store = await SavedLinkStore.load();
     await store.clear();
@@ -825,6 +840,24 @@ void main() {
     }
     expect(manager.tasks, isEmpty);
     DownloadManager.retryDelayBase = const Duration(seconds: 2);
+  });
+
+  test('retry copy preserves every request field', () {
+    final original = DownloadRequest(
+      url: 'https://example.invalid/watch?v=copy',
+      videoMode: false,
+      outputDir: 'old',
+      audioFormat: 'flac',
+      customHeaders: 'Referer: https://example.invalid/',
+      formatSelector: 'bestaudio',
+      outputFilename: 'Song.flac',
+    );
+    final copy = original.copyWith(outputDir: 'new');
+    expect(copy.outputDir, 'new');
+    expect(copy.audioFormat, 'flac');
+    expect(copy.customHeaders, 'Referer: https://example.invalid/');
+    expect(copy.formatSelector, 'bestaudio');
+    expect(copy.outputFilename, 'Song.flac');
   });
 
   test('download request survives a JSON round trip', () {

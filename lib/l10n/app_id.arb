@@ -162,6 +162,13 @@
   "linkRemoved": "Tautan dihapus",
   "linkCopied": "Tautan disalin ke papan klip",
   "linkUpdated": "Tautan diperbarui",
+  "saveAllLinks": "Simpan semua tautan",
+  "linksSaved": "Menyimpan {count} tautan",
+  "@linksSaved": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "editSaved": "Ubah tautan tersimpan",
   "openSaved": "Buka tautan",
   "fetchSaved": "Unduh",
