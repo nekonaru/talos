@@ -12,6 +12,7 @@ import 'package:talos/core/backup.dart';
 import 'package:talos/core/command_template_store.dart';
 import 'package:talos/core/download_manager.dart';
 import 'package:talos/core/engine/desktop_engine.dart';
+import 'package:talos/core/folder_rules.dart';
 import 'package:talos/core/engine/command_builder.dart';
 import 'package:talos/core/engine/engine.dart';
 import 'package:talos/core/engine/models.dart';
@@ -535,6 +536,15 @@ void main() {
     if (Platform.isAndroid) return;
     expect(await TalosStorageBridge.permissionStatus(), isEmpty);
     expect(await TalosStorageBridge.openAppSettings(), isFalse);
+  });
+
+  test('folder rules match exact and subdomains', () {
+    const rules = 'youtube.com=/videos/yt\n.example.com=/shared\n\ninvalid';
+    expect(folderForUrl(rules, 'https://www.youtube.com/watch?v=1'), '/videos/yt');
+    expect(folderForUrl(rules, 'https://youtube.com/watch?v=1'), '/videos/yt');
+    expect(folderForUrl(rules, 'https://sub.example.com/a'), '/shared');
+    expect(folderForUrl(rules, 'https://other.com/a'), isNull);
+    expect(folderForUrl('', 'https://youtube.com/a'), isNull);
   });
 
   test('temporary file cleanup removes only stale partial files', () async {

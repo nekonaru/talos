@@ -5,6 +5,34 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.40.0
+
+Update besar yang menambahkan kontrol lanjutan per unduhan, otomatisasi keandalan, dan aturan alur file.
+
+### Fitur baru
+
+- **Opsi lanjutan.** Kecepatan, proxy, dan header HTTP bisa ditimpa untuk satu unduhan tanpa mengubah pengaturan global.
+- **Urutan playlist.** Playlist bisa dijalankan sesuai urutan asli, terbalik, atau acak.
+- **Aturan folder.** Aturan domain ke folder mengarahkan unduhan otomatis, termasuk pencocokan subdomain.
+- **Backoff retry.** Pilih jeda linier atau eksponensial yang dibatasi untuk coba ulang otomatis.
+- **Pengawas mandek.** Opsional coba ulang unduhan yang berhenti melaporkan progres selama beberapa menit.
+- **Aksi setelah unduhan.** Opsional buka, bagikan, atau tambahkan file ke favorit setelah unduhan satu file berhasil.
+- **Bersih saat start.** Opsional hapus file sementara lama saat aplikasi dibuka.
+- **Yang baru.** Setelah update, dialog menautkan ke catatan rilis.
+
+### Peningkatan
+
+- **102 test lulus**, termasuk pencocokan aturan folder.
+- **Timer gate** dibatalkan saat antrean tertunda dikosongkan atau cadangan dipulihkan.
+
+### Ditunda ke gelombang berikutnya
+
+- Jalur unduhan paralel dan kontrol di notifikasi membutuhkan isolasi engine yang lebih dalam dan akan dirilis setelah versi ini.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.40.0-windows-x64.zip`. Linux: `Talos-v0.40.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.39.0
 
 Update besar yang membuat pengingat izin akurat dan menyelesaikan audit terfokus.

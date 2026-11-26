@@ -77,6 +77,7 @@
   "permissionGranted": "Diberikan",
   "permissionDenied": "Ditolak",
   "openSettings": "Buka pengaturan sistem",
+  "autoCleanTemp": "Bersihkan file sementara saat start",
   "cleanTemp": "Bersihkan file sementara",
   "cleanTempHint": "Hapus sisa unduhan parsial dan file tmp penulisan atomik yang lebih tua dari satu jam",
   "cleanTempBody": "Menghapus file .tmp, .part, .ytdl, dan .download lama dari data aplikasi serta folder output. File baru dan unduhan selesai tetap disimpan.",
@@ -281,6 +282,14 @@
   "proxyHint": "http://host:port atau socks5://host:port",
   "rateLimit": "Batas kecepatan",
   "rateLimitHint": "Contoh 5M atau 512K, kosongkan untuk tanpa batas",
+  "folderRules": "Aturan folder",
+  "folderRulesHint": "Satu aturan `domain=folder` per baris, misalnya youtube.com=/storage/emulated/0/Video/YouTube",
+  "advancedOptions": "Opsi lanjutan",
+  "advancedOptionsHint": "Timpa kecepatan, proxy, dan header hanya untuk unduhan ini",
+  "playlistOrder": "Urutan playlist",
+  "playlistOrderNormal": "Urutan asli",
+  "playlistOrderReverse": "Urutan terbalik",
+  "playlistOrderShuffle": "Acak",
   "aria2": "Gunakan aria2c bila tersedia",
   "fragments": "Fragmen bersamaan",
   "sponsorBlock": "Lewati segmen sponsor (SponsorBlock)",
@@ -299,6 +308,28 @@
   "autoRetry": "Coba ulang otomatis",
   "autoRetryHint": "Coba ulang unduhan gagal otomatis dengan jeda singkat",
   "autoRetryOff": "Nonaktif",
+  "whatsNew": "Yang baru",
+  "whatsNewBody": "Talos v{version} terpasang. Pembaruan ini menambahkan kontrol lanjutan per unduhan, aturan folder, penanganan retry dan mandek, aksi setelah unduhan, serta pembersihan audit yang lebih cepat.",
+  "@whatsNewBody": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "releaseNotes": "Catatan rilis",
+  "autoOpen": "Buka file setelah unduhan",
+  "autoShare": "Bagikan file setelah unduhan",
+  "autoFavorite": "Tambahkan ke favorit setelah unduhan",
+  "retryBackoff": "Jeda coba ulang",
+  "retryBackoffLinear": "Linier",
+  "retryBackoffExponential": "Eksponensial",
+  "stallTimeout": "Batas mandek",
+  "stallTimeoutHint": "Coba ulang unduhan yang berhenti mengirim progres terlalu lama",
+  "stallMinutes": "{count} mnt",
+  "@stallMinutes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "historyRetention": "Retensi riwayat",
   "historyRetentionHint": "Hapus baris riwayat lama saat aplikasi dibuka. File di penyimpanan tetap ada.",
   "wifiOnly": "Unduh hanya lewat WiFi",

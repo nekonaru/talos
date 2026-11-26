@@ -63,6 +63,14 @@ class TalosSettings {
     this.quietEndHour = 6,
     this.batterySaverEnabled = false,
     this.batteryThreshold = 20,
+    this.folderRules = '',
+    this.retryBackoff = 'linear',
+    this.stallTimeoutMinutes = 0,
+    this.autoOpen = false,
+    this.autoShare = false,
+    this.autoFavorite = false,
+    this.autoCleanTemp = false,
+    this.lastSeenVersion = '',
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -124,6 +132,14 @@ class TalosSettings {
       quietEndHour: intChoice((json['quietEndHour'] as num?)?.toInt(), List<int>.generate(24, (i) => i), 6),
       batterySaverEnabled: json['batterySaverEnabled'] as bool? ?? false,
       batteryThreshold: intChoice((json['batteryThreshold'] as num?)?.toInt(), const [5, 10, 20, 30], 20),
+      folderRules: json['folderRules'] as String? ?? '',
+      retryBackoff: choice(json['retryBackoff'] as String?, const ['linear', 'exponential'], 'linear'),
+      stallTimeoutMinutes: intChoice((json['stallTimeoutMinutes'] as num?)?.toInt(), const [0, 2, 5, 10, 30], 0),
+      autoOpen: json['autoOpen'] as bool? ?? false,
+      autoShare: json['autoShare'] as bool? ?? false,
+      autoFavorite: json['autoFavorite'] as bool? ?? false,
+      autoCleanTemp: json['autoCleanTemp'] as bool? ?? false,
+      lastSeenVersion: json['lastSeenVersion'] as String? ?? '',
     );
   }
 
@@ -177,6 +193,14 @@ class TalosSettings {
   int quietEndHour;
   bool batterySaverEnabled;
   int batteryThreshold;
+  String folderRules;
+  String retryBackoff;
+  int stallTimeoutMinutes;
+  bool autoOpen;
+  bool autoShare;
+  bool autoFavorite;
+  bool autoCleanTemp;
+  String lastSeenVersion;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -229,6 +253,14 @@ class TalosSettings {
         'quietEndHour': quietEndHour,
         'batterySaverEnabled': batterySaverEnabled,
         'batteryThreshold': batteryThreshold,
+        'folderRules': folderRules,
+        'retryBackoff': retryBackoff,
+        'stallTimeoutMinutes': stallTimeoutMinutes,
+        'autoOpen': autoOpen,
+        'autoShare': autoShare,
+        'autoFavorite': autoFavorite,
+        'autoCleanTemp': autoCleanTemp,
+        'lastSeenVersion': lastSeenVersion,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -298,6 +330,14 @@ class TalosSettings {
     int? quietEndHour,
     bool? batterySaverEnabled,
     int? batteryThreshold,
+    String? folderRules,
+    String? retryBackoff,
+    int? stallTimeoutMinutes,
+    bool? autoOpen,
+    bool? autoShare,
+    bool? autoFavorite,
+    bool? autoCleanTemp,
+    String? lastSeenVersion,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -350,6 +390,14 @@ class TalosSettings {
       quietEndHour: quietEndHour ?? this.quietEndHour,
       batterySaverEnabled: batterySaverEnabled ?? this.batterySaverEnabled,
       batteryThreshold: batteryThreshold ?? this.batteryThreshold,
+      folderRules: folderRules ?? this.folderRules,
+      retryBackoff: retryBackoff ?? this.retryBackoff,
+      stallTimeoutMinutes: stallTimeoutMinutes ?? this.stallTimeoutMinutes,
+      autoOpen: autoOpen ?? this.autoOpen,
+      autoShare: autoShare ?? this.autoShare,
+      autoFavorite: autoFavorite ?? this.autoFavorite,
+      autoCleanTemp: autoCleanTemp ?? this.autoCleanTemp,
+      lastSeenVersion: lastSeenVersion ?? this.lastSeenVersion,
     );
   }
 }
