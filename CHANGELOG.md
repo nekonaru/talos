@@ -5,6 +5,34 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.40.0
+
+A large update adding advanced per-download controls, reliability automation and file workflow rules.
+
+### New features
+
+- **Advanced options.** Rate limit, proxy and HTTP headers can be overridden for a single download without changing global settings.
+- **Playlist order.** Playlists can run in original, reverse or shuffled order.
+- **Folder rules.** Domain to folder rules route downloads automatically, with subdomain matching.
+- **Retry backoff.** Choose linear or capped exponential backoff for automatic retries.
+- **Stall watchdog.** Optionally retry a download that stops reporting progress for a chosen number of minutes.
+- **Post-download actions.** Optionally open, share or favorite a file after a successful single-file download.
+- **Startup cleanup.** Optionally remove stale temporary files when the app starts.
+- **What's new.** After an update, a dialog links to the release notes.
+
+### Improvements
+
+- **102 tests passing**, including folder rule matching.
+- **Gate timers** are canceled when the pending queue is emptied or a backup is restored.
+
+### Deferred to later waves
+
+- Parallel download lanes and notification-center controls need deeper engine isolation and will ship after this release.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.40.0-windows-x64.zip`. Linux: `Talos-v0.40.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.39.0
 
 A large update making the permission reminder accurate and completing a focused audit pass.
