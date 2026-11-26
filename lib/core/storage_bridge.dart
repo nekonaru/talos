@@ -10,6 +10,31 @@ class TalosStorageBridge {
 
   static const MethodChannel _channel = MethodChannel('id.nekonaru.talos/storage');
 
+  /// Current grant state for notifications and storage. Empty off Android.
+  static Future<Map<String, bool>> permissionStatus() async {
+    if (!Platform.isAndroid) return const {};
+    try {
+      final result = await _channel.invokeMethod<Map>('permissionStatus');
+      return result?.cast<String, bool>() ?? const {};
+    } on PlatformException {
+      return const {};
+    } on MissingPluginException {
+      return const {};
+    }
+  }
+
+  /// Opens the system app settings page where permissions can be changed.
+  static Future<bool> openAppSettings() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      return await _channel.invokeMethod<bool>('openAppSettings') ?? false;
+    } on PlatformException {
+      return false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
+
   /// True when Android reports battery below [threshold] percent and the
   /// device is not charging. Null on platforms without the bridge.
   static Future<bool?> isBatteryLow(int threshold) async {
@@ -101,8 +126,10 @@ class TalosStorageBridge {
     }
   }
 
-  /// Ask once per install for the permissions Talos needs: POST_NOTIFICATIONS
-  /// on API 33+, WRITE_EXTERNAL_STORAGE on API 24-28. Best effort.
+  /// Ask once per install for notifications together with the correct storage
+  /// permission for the Android level: READ_MEDIA_* on API 33+,
+  /// READ_EXTERNAL_STORAGE on API 29-32, and read plus write on API 24-28.
+  /// Best effort.
   static Future<void> requestFirstLaunchPermissions() async {
     if (!Platform.isAndroid) return;
     try {

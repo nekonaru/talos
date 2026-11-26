@@ -47,8 +47,8 @@ import java.io.File
  *                 (requested on first launch). Never overwrites; a unique
  *                 "name(N).ext" is chosen. Returns true on success.
  * - "requestFirstLaunchPermissions"
- *                 asks for POST_NOTIFICATIONS (API 33+) and
- *                 WRITE_EXTERNAL_STORAGE (API 24-28) exactly once per install.
+ *                 asks for notifications and the correct storage/media
+ *                 permissions for the API level, together, once per install.
  * - "androidSdkInt" returns the platform SDK integer.
  * - "deleteInTree" deletes a file by display name from the picked tree.
  * - "deleteUri"   deletes a document by its full URI (O(1)).
@@ -135,6 +135,8 @@ class TalosStorageBridge(private val context: Context) {
                     result.success(null)
                 }
                 "getTreeUri" -> result.success(treeUriString ?: "")
+                "permissionStatus" -> result.success(permissionStatus())
+                "openAppSettings" -> result.success(openAppSettings())
                 "isWifi" -> result.success(isOnWifi())
                 "isBatteryLow" -> result.success(
                     isBatteryLow(call.argument<Int>("threshold") ?: 20),
@@ -390,22 +392,31 @@ class TalosStorageBridge(private val context: Context) {
     }
 
     /**
-     * Ask for the runtime permissions Talos needs, exactly once per install.
-     * POST_NOTIFICATIONS is needed on API 33+; WRITE_EXTERNAL_STORAGE is
-     * needed on API 24-28 to write the public Downloads folder directly.
-     * On API 29+ the public Downloads folder is reached through MediaStore
-     * and needs no permission.
+     * Ask for all runtime permissions in one first-launch dialog:
+     * notifications plus storage/media access on the appropriate API level.
+     * API 33+ uses granular READ_MEDIA_* permissions, API 29-32 uses
+     * READ_EXTERNAL_STORAGE, and API 24-28 also needs WRITE_EXTERNAL_STORAGE
+     * to write the public Downloads folder directly. MediaStore writes on
+     * API 29+ still work without a write permission.
      */
     private fun requestFirstLaunchPermissions(): String {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         if (prefs.getBoolean(KEY_PROMPTED, false)) return "skipped"
         val sdk = Build.VERSION.SDK_INT
         val needed = mutableListOf<String>()
-        if (sdk >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            needed.add(Manifest.permission.POST_NOTIFICATIONS)
+        fun addIfMissing(permission: String) {
+            if (context.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+                needed.add(permission)
+            }
         }
-        if (sdk <= 28 && context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            needed.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (sdk >= 33) {
+            addIfMissing(Manifest.permission.POST_NOTIFICATIONS)
+            addIfMissing(Manifest.permission.READ_MEDIA_VIDEO)
+            addIfMissing(Manifest.permission.READ_MEDIA_AUDIO)
+            addIfMissing(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            addIfMissing(Manifest.permission.READ_EXTERNAL_STORAGE)
+            if (sdk <= 28) addIfMissing(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
         val activity = hostActivity
         if (needed.isNotEmpty() && activity != null) {
@@ -427,6 +438,36 @@ class TalosStorageBridge(private val context: Context) {
         val file = target.findFile(displayName) ?: return false
         return try {
             file.delete()
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun permissionStatus(): Map<String, Boolean> {
+        val sdk = Build.VERSION.SDK_INT
+        val result = mutableMapOf<String, Boolean>()
+        fun granted(permission: String): Boolean =
+            context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+        result["notifications"] = sdk < 33 || granted(Manifest.permission.POST_NOTIFICATIONS)
+        result["storage"] = when {
+            sdk >= 33 -> granted(Manifest.permission.READ_MEDIA_VIDEO) &&
+                granted(Manifest.permission.READ_MEDIA_AUDIO) &&
+                granted(Manifest.permission.READ_MEDIA_IMAGES)
+            sdk >= 29 -> granted(Manifest.permission.READ_EXTERNAL_STORAGE)
+            else -> granted(Manifest.permission.READ_EXTERNAL_STORAGE) &&
+                granted(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+        return result
+    }
+
+    private fun openAppSettings(): Boolean {
+        return try {
+            val intent = Intent(
+                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:${context.packageName}"),
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+            true
         } catch (_: Exception) {
             false
         }
