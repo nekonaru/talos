@@ -5,6 +5,28 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.42.0
+
+Update besar yang menyelesaikan peta jalan otomatisasi dengan kontrol pengisian daya, berbagi banyak tautan, dan bantuan offline.
+
+### Fitur baru
+
+- **Hanya saat mengisi.** Di Android, unduhan tertunda bisa menunggu sampai perangkat dicolok. Hasil bridge yang tidak diketahui tetap mengizinkan antrean, bukan memblokirnya.
+- **Bagikan banyak tautan.** Membagikan beberapa URL dari aplikasi lain kini meneruskan semuanya ke Beranda, sehingga alur batch yang sudah ada bisa menanganinya.
+- **Bantuan offline.** Tentang kini menautkan FAQ bawaan tentang penyimpanan, alasan menunggu, cookie, membuka file, cadangan, dan masalah engine.
+
+### Peningkatan
+
+- **104 test lulus**, termasuk regresi gate pengisian daya.
+
+### Catatan
+
+- Jalur unduhan paralel dan kontrol di notifikasi tetap ditunda karena membutuhkan isolasi engine yang lebih dalam. Kunci biometrik juga ditunda karena menambah dependency dan izin baru.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.42.0-windows-x64.zip`. Linux: `Talos-v0.42.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.41.0
 
 Update besar yang menambahkan berbagi massal dan pembersihan duplikat pada pustaka selesai.

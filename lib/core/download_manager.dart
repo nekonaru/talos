@@ -179,6 +179,7 @@ class DownloadManager extends ChangeNotifier {
   Timer? _quietRetryTimer;
   Timer? _batteryRetryTimer;
   Timer? _stallTimer;
+  Timer? _chargingRetryTimer;
   DateTime? _lastProgressAt;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
@@ -278,6 +279,8 @@ class DownloadManager extends ChangeNotifier {
     _batteryRetryTimer = null;
     _stallTimer?.cancel();
     _stallTimer = null;
+    _chargingRetryTimer?.cancel();
+    _chargingRetryTimer = null;
     _tasks.clear();
     notifyListeners();
     await _persistQueue();
@@ -366,6 +369,8 @@ class DownloadManager extends ChangeNotifier {
     _batteryRetryTimer = null;
     _stallTimer?.cancel();
     _stallTimer = null;
+    _chargingRetryTimer?.cancel();
+    _chargingRetryTimer = null;
     for (final task in pending) {
       task.status = TaskStatus.cancelled;
       task.stage = 'cancelled';
@@ -387,6 +392,8 @@ class DownloadManager extends ChangeNotifier {
     _batteryRetryTimer = null;
     _stallTimer?.cancel();
     _stallTimer = null;
+    _chargingRetryTimer?.cancel();
+    _chargingRetryTimer = null;
     if (!_pumping) unawaited(_pump());
   }
 
@@ -397,6 +404,7 @@ class DownloadManager extends ChangeNotifier {
     _quietRetryTimer?.cancel();
     _batteryRetryTimer?.cancel();
     _stallTimer?.cancel();
+    _chargingRetryTimer?.cancel();
     super.dispose();
   }
 
@@ -451,6 +459,23 @@ class DownloadManager extends ChangeNotifier {
             _batteryRetryTimer?.cancel();
             _batteryRetryTimer = Timer(batteryRetryDelay, () {
               _batteryRetryTimer = null;
+              if (!_pumping) unawaited(_pump());
+            });
+            break;
+          }
+        }
+        if (_settings.value.chargingOnly) {
+          final charging = chargingProbeOverride != null
+              ? await chargingProbeOverride!()
+              : await TalosStorageBridge.isCharging();
+          // A null result means the bridge is unavailable. Allow the queue
+          // instead of blocking on an unknown charging state.
+          if (charging == false) {
+            next.stage = 'waitingCharging';
+            notifyListeners();
+            _chargingRetryTimer?.cancel();
+            _chargingRetryTimer = Timer(chargingRetryDelay, () {
+              _chargingRetryTimer = null;
               if (!_pumping) unawaited(_pump());
             });
             break;
@@ -835,6 +860,12 @@ class DownloadManager extends ChangeNotifier {
 
   @visibleForTesting
   static Duration batteryRetryDelay = const Duration(minutes: 1);
+
+  @visibleForTesting
+  static Future<bool?> Function()? chargingProbeOverride;
+
+  @visibleForTesting
+  static Duration chargingRetryDelay = const Duration(minutes: 1);
 
   static Future<String> _uniqueFilename(Directory dir, String name) async {
     final sep = dir.path.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;

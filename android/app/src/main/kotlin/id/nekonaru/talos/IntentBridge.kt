@@ -60,8 +60,10 @@ class IntentBridge {
     private fun extractShareUrl(intent: Intent?): String? {
         if (intent?.action != Intent.ACTION_SEND) return null
         val text = intent.getStringExtra(Intent.EXTRA_TEXT)?.trim() ?: return null
-        val match = Regex("https?://\\S+").find(text)?.value
-        if (match != null) return match
+        // Share sheets can deliver a whole list. Forward every URL so Home can
+        // offer the existing batch flow instead of keeping only the first one.
+        val matches = Regex("https?://\\S+").findAll(text).map { it.value }.toList()
+        if (matches.isNotEmpty()) return matches.joinToString("\n")
         return if (text.startsWith("http://") || text.startsWith("https://")) text else null
     }
 }

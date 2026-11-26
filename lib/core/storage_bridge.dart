@@ -23,6 +23,18 @@ class TalosStorageBridge {
     }
   }
 
+  /// True when Android reports that the device is charging. Null off Android.
+  static Future<bool?> isCharging() async {
+    if (!Platform.isAndroid) return null;
+    try {
+      return await _channel.invokeMethod<bool>('isCharging');
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
   /// Opens the system app settings page where permissions can be changed.
   static Future<bool> openAppSettings() async {
     if (!Platform.isAndroid) return false;
