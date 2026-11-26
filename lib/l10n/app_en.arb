@@ -345,6 +345,7 @@
   "formatSelectionHint": "Choose specific video and audio formats manually",
   "chooseFormats": "Choose formats",
   "taskLog": "Task log",
+  "copyUrl": "Copy URL",
   "taskLogHint": "Show raw engine output for the selected task",
   "cookieGenerator": "Cookie generator",
   "cookieGeneratorHint": "Generate cookies for sites by signing in to them here",

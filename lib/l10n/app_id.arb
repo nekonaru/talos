@@ -351,6 +351,7 @@
   "formatSelectionHint": "Pilih format video dan audio secara manual",
   "chooseFormats": "Pilih format",
   "taskLog": "Log tugas",
+  "copyUrl": "Salin URL",
   "taskLogHint": "Tampilkan output engine mentah untuk tugas terpilih",
   "cookieGenerator": "Generator cookies",
   "cookieGeneratorHint": "Buat cookies untuk situs dengan masuk ke situs di sini",

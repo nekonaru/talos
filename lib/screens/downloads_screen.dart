@@ -566,6 +566,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                         onRetry: () => manager.retry(task),
                         onRemove: () => manager.removeTask(task),
                         onShowLog: () => _showLog(context, task),
+                        onCopyUrl: () async {
+                          await Clipboard.setData(ClipboardData(text: task.url));
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l.linkCopied)),
+                          );
+                        },
                       );
                     },
                   ),
@@ -702,6 +709,7 @@ class _TaskCard extends StatelessWidget {
     required this.onRetry,
     required this.onRemove,
     required this.onShowLog,
+    required this.onCopyUrl,
   });
 
   final DownloadTask task;
@@ -710,6 +718,7 @@ class _TaskCard extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onRemove;
   final VoidCallback onShowLog;
+  final VoidCallback onCopyUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -745,6 +754,8 @@ class _TaskCard extends StatelessWidget {
                 Expanded(
                   child: Text(task.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.titleMedium),
                 ),
+                IconButton(tooltip: l.taskLog, icon: const Icon(Icons.description_outlined), onPressed: onShowLog),
+                IconButton(tooltip: l.copyUrl, icon: const Icon(Icons.link_outlined), onPressed: onCopyUrl),
                 if (running || queued)
                   IconButton(tooltip: l.cancel, icon: const Icon(Icons.close_rounded), onPressed: onCancel),
                 if (queued && dragIndex != null)
@@ -764,7 +775,6 @@ class _TaskCard extends StatelessWidget {
                     ),
                   ),
                 if (failed || cancelled) ...[
-                  IconButton(tooltip: l.taskLog, icon: const Icon(Icons.description_outlined), onPressed: onShowLog),
                   IconButton(tooltip: l.retry, icon: const Icon(Icons.refresh_rounded), onPressed: onRetry),
                   IconButton(tooltip: l.remove, icon: const Icon(Icons.delete_outline), onPressed: onRemove),
                 ],
