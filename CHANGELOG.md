@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.41.0
+
+A large update adding batch sharing and duplicate cleanup to the finished library.
+
+### New features
+
+- **Batch share.** Selection mode in Finished can now share several existing files at once through the system share sheet.
+- **Duplicate finder.** Insights can remove older rows that share a URL or title, keeping the newest row and all files on disk.
+
+### Improvements
+
+- **103 tests passing**, including duplicate detection coverage.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.41.0-windows-x64.zip`. Linux: `Talos-v0.41.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.40.0
 
 A large update adding advanced per-download controls, reliability automation and file workflow rules.

@@ -252,6 +252,19 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     });
   }
 
+  Future<void> _shareSelected(List<HistoryEntry> entries) async {
+    final selected = entries.where((e) => _selectedIds.contains(e.id)).toList();
+    if (selected.isEmpty) return;
+    final files = <XFile>[];
+    for (final entry in selected) {
+      if (await File(entry.filePath).exists()) {
+        files.add(XFile(entry.filePath));
+      }
+    }
+    if (files.isEmpty) return;
+    await SharePlus.instance.share(ShareParams(files: files));
+  }
+
   Future<void> _deleteSelected(BuildContext context, List<HistoryEntry> entries) async {
     final l = AppLocalizations.of(context)!;
     final manager = TalosScope.of(context);
@@ -372,6 +385,11 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                   tooltip: l.selectAll,
                   icon: const Icon(Icons.select_all),
                   onPressed: () => _toggleSelectAll(finished),
+                ),
+                IconButton(
+                  tooltip: l.shareSelected,
+                  icon: const Icon(Icons.share_outlined),
+                  onPressed: selectedCount == 0 ? null : () => _shareSelected(finished),
                 ),
                 IconButton(
                   tooltip: l.deleteSelected,

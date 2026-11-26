@@ -139,6 +139,8 @@
 | **Runtime licenses** | An explicit inventory of the licenses of the engine and native components Talos uses |
 | **Backup and restore** | Export settings, history, saved links, presets, commands and the pending queue as portable JSON, then restore them on the same device or a new one |
 | **CSV export** | Export the finished download history as a spreadsheet-friendly CSV file |
+| **Batch share** | Share several finished files at once from selection mode |
+| **Duplicate finder** | Remove older duplicate history rows while keeping the files |
 | **Saved link editing** | Copy, edit or open saved links directly from the saved list |
 | **Save all links** | Add every URL detected in pasted text to the saved list in one action |
 | **Private mode** | Optionally skip history entirely |
@@ -179,8 +181,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.40.0-windows-x64.zip`
-   - Linux: `Talos-v0.40.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.41.0-windows-x64.zip`
+   - Linux: `Talos-v0.41.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]

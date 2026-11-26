@@ -1126,6 +1126,17 @@ void main() {
     }
   });
 
+  test('duplicate finder keeps the newest row per URL', () {
+    final entries = [
+      HistoryEntry(id: 'old', title: 'A', url: 'https://example.invalid/a', filePath: '/a', kind: HistoryKind.video, dateMs: 100),
+      HistoryEntry(id: 'new', title: 'A', url: 'https://example.invalid/a', filePath: '/a2', kind: HistoryKind.video, dateMs: 200),
+      HistoryEntry(id: 'other', title: 'B', url: 'https://example.invalid/b', filePath: '/b', kind: HistoryKind.video, dateMs: 150),
+    ];
+    final duplicates = duplicateHistoryEntries(entries);
+    expect(duplicates, hasLength(1));
+    expect(duplicates.first.id, 'old');
+  });
+
   test('history CSV export escapes special characters', () async {
     final store = await HistoryStore.load();
     await store.clear();

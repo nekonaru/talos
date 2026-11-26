@@ -29,6 +29,43 @@ class _InsightsScreenState extends State<InsightsScreen> {
     return stats;
   }
 
+  Future<void> _removeDuplicates(BuildContext context, List<HistoryEntry> entries) async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.of(context);
+    final duplicates = duplicateHistoryEntries(entries);
+    if (duplicates.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.noDuplicates)),
+        );
+      }
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.findDuplicates),
+        content: Text(l.duplicatesFound(duplicates.length)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.remove),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await manager.history.removeMany(duplicates.map((e) => e.id));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l.duplicatesRemoved(duplicates.length))),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -43,7 +80,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
         : _buildStats(entries, revision);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.insights)),
+      appBar: AppBar(
+        title: Text(l.insights),
+        actions: [
+          IconButton(
+            tooltip: l.findDuplicates,
+            icon: const Icon(Icons.merge_type_outlined),
+            onPressed: () => _removeDuplicates(context, entries),
+          ),
+        ],
+      ),
       body: entries.isEmpty
           ? Center(
               child: Padding(

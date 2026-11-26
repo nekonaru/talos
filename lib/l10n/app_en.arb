@@ -135,6 +135,7 @@
       }
     }
   },
+  "shareSelected": "Share selected",
   "deleteSelected": "Delete selected",
   "deleteSelectedConfirm": "Delete {count} downloaded file(s) and remove them from the list?",
   "@deleteSelectedConfirm": {
@@ -219,6 +220,20 @@
     "placeholders": {
       "removed": { "type": "int" },
       "total": { "type": "int" }
+    }
+  },
+  "findDuplicates": "Find duplicates",
+  "noDuplicates": "No duplicate downloads found",
+  "duplicatesFound": "Remove {count} older duplicate row(s)? Files on disk are kept.",
+  "@duplicatesFound": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "duplicatesRemoved": "Removed {count} duplicate row(s)",
+  "@duplicatesRemoved": {
+    "placeholders": {
+      "count": { "type": "int" }
     }
   },
   "cleanupNone": "No downloads are older than this.",
