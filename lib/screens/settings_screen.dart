@@ -117,6 +117,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _showPermissions() async {
+    final l = AppLocalizations.of(context)!;
+    final status = await TalosStorageBridge.permissionStatus();
+    if (!mounted) return;
+    final notifications = status['notifications'] ?? false;
+    final storage = status['storage'] ?? false;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.permissions),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.permissionsIntro, style: Theme.of(dialogContext).textTheme.bodySmall),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(notifications ? Icons.check_circle_outline : Icons.cancel_outlined,
+                    color: notifications ? Colors.green : Colors.red),
+                const SizedBox(width: 8),
+                Expanded(child: Text(l.permissionNotifications)),
+                Text(notifications ? l.permissionGranted : l.permissionDenied),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(storage ? Icons.check_circle_outline : Icons.cancel_outlined,
+                    color: storage ? Colors.green : Colors.red),
+                const SizedBox(width: 8),
+                Expanded(child: Text(l.permissionStorage)),
+                Text(storage ? l.permissionGranted : l.permissionDenied),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l.close),
+          ),
+          FilledButton(
+            onPressed: () async {
+              await TalosStorageBridge.openAppSettings();
+              if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+            },
+            child: Text(l.openSettings),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _cleanTemporaryFiles() async {
     final l = AppLocalizations.of(context)!;
     final manager = TalosScope.of(context);
@@ -1107,6 +1161,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
+          if (Theme.of(context).platform == TargetPlatform.android) ...[
+            SectionLabel(l.permissions),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.fact_check_outlined),
+                title: Text(l.permissions),
+                subtitle: Text(l.permissionsHint),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _showPermissions,
+              ),
+            ),
+          ],
           SectionLabel(l.backupRestore),
           Card(
             child: Column(
