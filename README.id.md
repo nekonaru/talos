@@ -58,6 +58,7 @@
 | **Video dan audio** | Unduh dari ribuan situs yang didukung yt-dlp, sebagai video atau audio |
 | **Pemilihan format** | Video sampai 2160p, atau audio sebagai MP3, M4A, Opus, FLAC, atau format asli |
 | **Tampilan progres** | Persen, kecepatan, ETA, dan posisi playlist, dengan batal dan coba lagi |
+| **Detail tugas** | Salin URL tugas dan lihat log di tahap apa pun, termasuk saat masih berjalan |
 | **Antrean berurutan** | Satu unduhan pada satu waktu, agar situs tidak dihajar request paralel |
 | **Jendela unduhan** | Batasi unduhan baru pada rentang jam tertentu, termasuk rentang lintas malam |
 | **Antrean bertahan** | Unduhan tertunda tetap ada setelah aplikasi ditutup dan lanjut dengan pengaturan aslinya |
@@ -173,8 +174,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.34.0-windows-x64.zip`
-   - Linux: `Talos-v0.34.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.35.0-windows-x64.zip`
+   - Linux: `Talos-v0.35.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]

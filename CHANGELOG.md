@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.35.0
+
+A large update improving access to active download details.
+
+### New features
+
+- **Task URL copy.** Every active or failed task now has a Copy URL action, so a link can be reused without opening the history entry.
+- **Live task log.** The log viewer is available at every stage, including while a download is running, instead of only after failure.
+
+### Improvements
+
+- **98 tests passing**, analyzer clean and zero em/en dashes.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.35.0-windows-x64.zip`. Linux: `Talos-v0.35.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.34.0
 
 A large update fixing queue gate anomalies found in a focused audit, plus visible wait reasons in the Active tab.

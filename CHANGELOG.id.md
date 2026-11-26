@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.35.0
+
+Update besar yang meningkatkan akses ke detail unduhan aktif.
+
+### Fitur baru
+
+- **Salin URL tugas.** Setiap tugas aktif atau gagal kini punya aksi Salin URL, sehingga tautan bisa dipakai ulang tanpa membuka entri riwayat.
+- **Log tugas langsung.** Penampil log tersedia di semua tahap, termasuk saat unduhan masih berjalan, bukan hanya setelah gagal.
+
+### Peningkatan
+
+- **98 test lulus**, analyzer bersih, dan nol em/en dash.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.35.0-windows-x64.zip`. Linux: `Talos-v0.35.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.34.0
 
 Update besar yang memperbaiki anomali gate antrean dari audit terfokus, plus alasan menunggu yang terlihat di tab Aktif.
