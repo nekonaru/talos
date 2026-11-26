@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.41.0
+
+Update besar yang menambahkan berbagi massal dan pembersihan duplikat pada pustaka selesai.
+
+### Fitur baru
+
+- **Bagikan banyak.** Mode pilih di tab Selesai kini bisa membagikan beberapa file sekaligus lewat share sheet sistem.
+- **Cari duplikat.** Wawasan bisa menghapus baris lama yang memiliki URL atau judul sama, menyisakan baris terbaru dan seluruh file di penyimpanan.
+
+### Peningkatan
+
+- **103 test lulus**, termasuk cakupan deteksi duplikat.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.41.0-windows-x64.zip`. Linux: `Talos-v0.41.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.40.0
 
 Update besar yang menambahkan kontrol lanjutan per unduhan, otomatisasi keandalan, dan aturan alur file.
