@@ -5,6 +5,27 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.34.0
+
+A large update fixing queue gate anomalies found in a focused audit, plus visible wait reasons in the Active tab.
+
+### New features
+
+- **Wait reasons.** The Active tab now shows why queued downloads are waiting, with a localized message for paused queue, WiFi, low battery and download window.
+
+### Bug fixes
+
+- **Equal quiet hours.** Setting the same start and end hour now means no time restriction instead of blocking the queue forever.
+- **Unavailable gate probes.** When the WiFi or battery bridge returns no result, the queue proceeds instead of waiting forever for an unknown state.
+
+### Improvements
+
+- **98 tests passing**, including gate fallback and equal-hour coverage.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.34.0-windows-x64.zip`. Linux: `Talos-v0.34.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.33.0
 
 A large update adding a native low-battery gate for the download queue.
