@@ -5,6 +5,27 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.34.0
+
+Update besar yang memperbaiki anomali gate antrean dari audit terfokus, plus alasan menunggu yang terlihat di tab Aktif.
+
+### Fitur baru
+
+- **Alasan menunggu.** Tab Aktif kini menampilkan mengapa unduhan tertunda menunggu, dengan pesan terlokalisasi untuk antrean dijeda, WiFi, baterai rendah, dan jendela unduhan.
+
+### Perbaikan bug
+
+- **Jam jendela sama.** Jam mulai dan berakhir yang sama kini berarti tanpa pembatasan waktu, bukan memblokir antrean selamanya.
+- **Probe gate tidak tersedia.** Saat bridge WiFi atau baterai tidak menghasilkan hasil, antrean tetap berjalan alih-alih menunggu tanpa batas.
+
+### Peningkatan
+
+- **98 test lulus**, termasuk cakupan fallback gate dan jam yang sama.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.34.0-windows-x64.zip`. Linux: `Talos-v0.34.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.33.0
 
 Update besar yang menambahkan pembatas baterai rendah native untuk antrean unduhan.

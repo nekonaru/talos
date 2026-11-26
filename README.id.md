@@ -63,6 +63,7 @@
 | **Antrean bertahan** | Unduhan tertunda tetap ada setelah aplikasi ditutup dan lanjut dengan pengaturan aslinya |
 | **Batal dan coba lagi** | Batalkan tugas mana pun, coba lagi yang gagal atau dibatalkan dengan opsi sama |
 | **Jeda dan bersihkan antrean** | Jeda unduhan baru tanpa menghentikan yang berjalan, atau batalkan semua yang masih tertunda |
+| **Alasan menunggu** | Tab Aktif menjelaskan mengapa unduhan tertunda menunggu, misalnya WiFi, baterai, atau jendela unduhan |
 | **Coba ulang otomatis** | Opsional mengulang kegagalan sementara otomatis dengan jeda singkat |
 
 ### Playlist
@@ -172,8 +173,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.33.0-windows-x64.zip`
-   - Linux: `Talos-v0.33.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.34.0-windows-x64.zip`
+   - Linux: `Talos-v0.34.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]

@@ -432,6 +432,44 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 ),
               );
             }),
+          if (_tabController.index == 0)
+            Builder(builder: (context) {
+              const waitingStages = {
+                'queuePaused', 'waitingForWifi', 'batteryLow', 'quietHours',
+              };
+              final waiting = tasks
+                  .where((t) => waitingStages.contains(t.stage))
+                  .map((t) => t.stage)
+                  .toList();
+              if (waiting.isEmpty) return const SizedBox.shrink();
+              final reason = switch (waiting.first) {
+                'queuePaused' => l.waitingPaused,
+                'waitingForWifi' => l.waitingWifi,
+                'batteryLow' => l.waitingBattery,
+                'quietHours' => l.waitingQuiet,
+                _ => l.queueWaiting,
+              };
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 18,
+                          color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(reason,
+                          style: Theme.of(context).textTheme.bodySmall)),
+                    ],
+                  ),
+                ),
+              );
+            }),
           if (_tabController.index == 1) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

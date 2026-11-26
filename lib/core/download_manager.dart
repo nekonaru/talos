@@ -446,6 +446,8 @@ class DownloadManager extends ChangeNotifier {
           final low = batteryProbeOverride != null
               ? await batteryProbeOverride!(threshold)
               : await TalosStorageBridge.isBatteryLow(threshold);
+          // A null result means the native bridge is unavailable. Allow the
+          // download instead of stranding the queue on an unknown state.
           if (low == true) {
             next.stage = 'batteryLow';
             notifyListeners();
@@ -461,7 +463,9 @@ class DownloadManager extends ChangeNotifier {
           final onWifi = wifiProbeOverride != null
               ? await wifiProbeOverride!()
               : await TalosStorageBridge.isOnWifi();
-          if (onWifi != true) {
+          // A null result means the bridge is unavailable or the platform has
+          // no WiFi concept. Allow the download rather than blocking forever.
+          if (onWifi == false) {
             // Pause the queue instead of failing the task. Downloads resume
             // automatically when WiFi returns, without losing progress state.
             next.stage = 'waitingForWifi';
@@ -774,7 +778,7 @@ class DownloadManager extends ChangeNotifier {
   static Duration retryDelayBase = const Duration(seconds: 2);
 
   @visibleForTesting
-  static Future<bool> Function()? wifiProbeOverride;
+  static Future<bool?> Function()? wifiProbeOverride;
 
   @visibleForTesting
   static Duration wifiRetryDelay = const Duration(seconds: 30);
@@ -786,7 +790,7 @@ class DownloadManager extends ChangeNotifier {
   static Duration quietRetryDelay = const Duration(minutes: 1);
 
   @visibleForTesting
-  static Future<bool> Function(int threshold)? batteryProbeOverride;
+  static Future<bool?> Function(int threshold)? batteryProbeOverride;
 
   @visibleForTesting
   static Duration batteryRetryDelay = const Duration(minutes: 1);
