@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _engineVersion;
   bool _engineReady = true;
   bool _permissionsOk = true;
+  AppLifecycleListener? _lifecycleListener;
   bool _sharedUrlApplied = false;
 
   @override
@@ -45,6 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshEngine());
     WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardUrl());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkPermissions());
+    // Permissions can be changed in system settings while the app is in the
+    // background. Recheck on resume so granted access removes the reminder.
+    _lifecycleListener = AppLifecycleListener(onResume: _checkPermissions);
   }
 
   Future<void> _checkPermissions() async {
@@ -131,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _lifecycleListener?.dispose();
     _intentSubscription?.cancel();
     _urlController.dispose();
     super.dispose();
@@ -412,7 +417,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(l.permissionBanner, style: theme.textTheme.bodyMedium),
                           const SizedBox(height: 8),
                           TextButton.icon(
-                            onPressed: () => unawaited(TalosStorageBridge.openAppSettings()),
+                            onPressed: () async {
+                              await TalosStorageBridge.openAppSettings();
+                              await _checkPermissions();
+                            },
                             icon: const Icon(Icons.settings_outlined, size: 18),
                             label: Text(l.openSettings),
                           ),

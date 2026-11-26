@@ -337,6 +337,13 @@ class DownloadManager extends ChangeNotifier {
   Future<void> clearQueued() async {
     final pending = _tasks.where((t) => t.status == TaskStatus.queued).toSet();
     if (pending.isEmpty) return;
+    // No queued work remains, so pending gate timers have nothing to recheck.
+    _wifiRetryTimer?.cancel();
+    _wifiRetryTimer = null;
+    _quietRetryTimer?.cancel();
+    _quietRetryTimer = null;
+    _batteryRetryTimer?.cancel();
+    _batteryRetryTimer = null;
     for (final task in pending) {
       task.status = TaskStatus.cancelled;
       task.stage = 'cancelled';
