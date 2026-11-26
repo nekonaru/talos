@@ -4,7 +4,9 @@
 /// window is active from 22:00 through 05:59.
 bool isWithinQuietHours(DateTime now, int startHour, int endHour) {
   final hour = now.hour;
-  if (startHour == endHour) return false;
+  // Equal bounds mean no restriction. Blocking on every hour would strand the
+  // queue forever when the user leaves the two dropdowns on the same value.
+  if (startHour == endHour) return true;
   if (startHour < endHour) {
     return hour >= startHour && hour < endHour;
   }

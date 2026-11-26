@@ -943,7 +943,7 @@ void main() {
     expect(isWithinQuietHours(DateTime(2026, 1, 1, 12), 22, 6), isFalse);
     expect(isWithinQuietHours(DateTime(2026, 1, 1, 12), 9, 17), isTrue);
     expect(isWithinQuietHours(DateTime(2026, 1, 1, 18), 9, 17), isFalse);
-    expect(isWithinQuietHours(DateTime(2026, 1, 1, 9), 9, 9), isFalse);
+    expect(isWithinQuietHours(DateTime(2026, 1, 1, 9), 9, 9), isTrue);
   });
 
   test('quiet hours holds the queue until the window opens', () async {
@@ -1008,6 +1008,38 @@ void main() {
     }
     expect(engine.lastSession, isNotNull);
     await manager.resetAll();
+  });
+
+  test('an unavailable gate probe does not strand the queue', () async {
+    final engine = FakeEngine();
+    final manager = await DownloadManager.create(engine: engine);
+    await manager.settings.mutate((s) => s.copyWith(wifiOnly: true));
+    DownloadManager.wifiProbeOverride = () async => false;
+    try {
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=unknown',
+          videoMode: true,
+          outputDir: 'out',
+        ),
+        title: 'Unknown gate',
+        kind: HistoryKind.video,
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(engine.lastSession, isNull);
+
+      // null means the bridge is unavailable, not that WiFi is off.
+      DownloadManager.wifiProbeOverride = () async => null;
+      manager.kickQueue();
+      for (var i = 0; i < 200 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      expect(engine.lastSession, isNotNull);
+    } finally {
+      DownloadManager.wifiProbeOverride = null;
+      DownloadManager.wifiRetryDelay = const Duration(seconds: 30);
+      await manager.resetAll();
+    }
   });
 
   test('wifi only pauses the queue until WiFi returns', () async {
