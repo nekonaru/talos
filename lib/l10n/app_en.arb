@@ -66,6 +66,7 @@
   "permissionsHint": "Review notification and storage access requested on first launch",
   "permissionsIntro": "These permissions are requested together when the app starts for the first time.",
   "permissionNotifications": "Notifications",
+  "permissionBanner": "Notifications or storage access is off. Open system settings to let Talos save and notify properly.",
   "permissionStorage": "Storage and media",
   "permissionGranted": "Granted",
   "permissionDenied": "Denied",

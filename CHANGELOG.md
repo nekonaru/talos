@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.38.0
+
+A large update adding a home-screen reminder for denied permissions.
+
+### New features
+
+- **Permission reminder.** If notification or storage access is denied, Home shows a reminder card with a direct shortcut to system app settings instead of failing silently later.
+
+### Improvements
+
+- **101 tests passing**, including inert permission bridge behavior off Android.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.38.0-windows-x64.zip`. Linux: `Talos-v0.38.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.37.0
 
 A large update improving first-launch permissions and adding an in-app permission review.
