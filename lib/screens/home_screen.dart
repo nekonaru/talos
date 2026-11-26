@@ -11,6 +11,7 @@ import '../core/app_info.dart';
 import '../core/engine/models.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
+import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
 import 'error_message.dart';
@@ -33,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _setupPhase = '';
   String? _engineVersion;
   bool _engineReady = true;
+  bool _permissionsOk = true;
   bool _sharedUrlApplied = false;
 
   @override
@@ -42,6 +44,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkSharedIntent();
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshEngine());
     WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardUrl());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkPermissions());
+  }
+
+  Future<void> _checkPermissions() async {
+    final status = await TalosStorageBridge.permissionStatus();
+    if (!mounted || status.isEmpty) return;
+    final allGranted = status.values.every((granted) => granted);
+    if (allGranted != _permissionsOk) {
+      setState(() => _permissionsOk = allGranted);
+    }
   }
 
   Future<void> _detectClipboardUrl() async {
@@ -390,6 +402,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   onSetup: () => unawaited(_setupEngineFromBanner()),
                 ),
                 if (!_engineReady) const SizedBox(height: 16),
+                if (!_permissionsOk)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l.permissionBanner, style: theme.textTheme.bodyMedium),
+                          const SizedBox(height: 8),
+                          TextButton.icon(
+                            onPressed: () => unawaited(TalosStorageBridge.openAppSettings()),
+                            icon: const Icon(Icons.settings_outlined, size: 18),
+                            label: Text(l.openSettings),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (!_permissionsOk) const SizedBox(height: 16),
                 Builder(builder: (context) {
                   final url = _urlController.text.trim();
                   final detected = _detectUrls(url);

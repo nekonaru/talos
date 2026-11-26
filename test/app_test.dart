@@ -24,6 +24,7 @@ import 'package:talos/core/quiet_hours.dart';
 import 'package:talos/core/queue_store.dart';
 import 'package:talos/core/saved_link_store.dart';
 import 'package:talos/core/settings_store.dart';
+import 'package:talos/core/storage_bridge.dart';
 import 'package:talos/core/storage_cleanup.dart';
 
 class FakeSession implements TalosDownloadSession {
@@ -527,6 +528,13 @@ void main() {
     // Without ffmpeg the section flag is omitted instead of failing at runtime.
     final noFfmpeg = CommandBuilder.downloadArgs(clip(start: 10), ffmpegAvailable: false);
     expect(noFfmpeg, isNot(contains('--download-sections')));
+  });
+
+  test('permission bridge is inert off Android', () async {
+    // Tests run on the host platform, where no storage bridge is registered.
+    if (Platform.isAndroid) return;
+    expect(await TalosStorageBridge.permissionStatus(), isEmpty);
+    expect(await TalosStorageBridge.openAppSettings(), isFalse);
   });
 
   test('temporary file cleanup removes only stale partial files', () async {

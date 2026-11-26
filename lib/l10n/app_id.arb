@@ -72,6 +72,7 @@
   "permissionsHint": "Tinjau akses notifikasi dan penyimpanan yang diminta saat pertama kali dibuka",
   "permissionsIntro": "Izin ini diminta bersamaan saat aplikasi pertama kali dijalankan.",
   "permissionNotifications": "Notifikasi",
+  "permissionBanner": "Akses notifikasi atau penyimpanan nonaktif. Buka pengaturan sistem agar Talos bisa menyimpan dan memberi notifikasi dengan baik.",
   "permissionStorage": "Penyimpanan dan media",
   "permissionGranted": "Diberikan",
   "permissionDenied": "Ditolak",
