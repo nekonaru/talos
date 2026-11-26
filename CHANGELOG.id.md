@@ -5,6 +5,28 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.39.0
+
+Update besar yang membuat pengingat izin akurat dan menyelesaikan audit terfokus.
+
+### Fitur baru
+
+- **Status izin langsung.** Pengingat di Beranda kini hilang segera setelah semua izin yang dibutuhkan diberikan, termasuk saat pengguna kembali dari pengaturan sistem.
+
+### Perbaikan bug
+
+- **Izin gambar.** Menolak hanya akses gambar media tidak lagi membuat pengingat penyimpanan tetap muncul, karena unduhan membutuhkan akses video atau audio, bukan gambar sampul.
+- **Timer antrean.** Mengosongkan antrean tertunda kini membatalkan timer WiFi, baterai, dan jendela unduhan yang tersisa.
+- **Pulihkan cadangan.** Memulihkan pengaturan kini langsung memeriksa ulang antrean, sehingga gate yang hilang tidak membuat unduhan menunggu.
+
+### Peningkatan
+
+- **101 test lulus**, analyzer bersih, dan nol em/en dash.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.39.0-windows-x64.zip`. Linux: `Talos-v0.39.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.38.0
 
 Update besar yang menambahkan pengingat izin di beranda.

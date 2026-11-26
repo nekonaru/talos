@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.39.0
+
+A large update making the permission reminder accurate and completing a focused audit pass.
+
+### New features
+
+- **Live permission status.** The Home reminder now disappears as soon as all required permissions are granted, including when the user returns from system settings.
+
+### Bug fixes
+
+- **Image permission.** Denying only media image access no longer keeps the storage reminder visible, because downloads need video or audio access, not cover art images.
+- **Queue timers.** Emptying the pending queue now cancels leftover WiFi, battery and download-window timers.
+- **Backup restore.** Restoring settings now rechecks the queue immediately, so a removed gate does not keep downloads waiting.
+
+### Improvements
+
+- **101 tests passing**, analyzer clean and zero em/en dashes.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.39.0-windows-x64.zip`. Linux: `Talos-v0.39.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.38.0
 
 A large update adding a home-screen reminder for denied permissions.
