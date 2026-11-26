@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.37.0
+
+A large update improving first-launch permissions and adding an in-app permission review.
+
+### New features
+
+- **First-launch storage access.** Storage and media permissions are now requested in the same startup dialog as notifications, using the correct permissions for each Android level: granular media access on API 33+, read access on API 29 to 32, and read plus write on API 24 to 28.
+- **Permission review.** Settings now shows whether notification and storage access are granted, with a shortcut to system app settings.
+
+### Improvements
+
+- **100 tests passing**, analyzer clean and zero em/en dashes.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.37.0-windows-x64.zip`. Linux: `Talos-v0.37.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.36.0
 
 A large update adding bulk saved links and a safer retry implementation.

@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.37.0
+
+Update besar yang menyempurnakan izin saat pertama kali dibuka dan menambahkan tinjauan izin di dalam aplikasi.
+
+### Fitur baru
+
+- **Akses penyimpanan saat awal.** Izin penyimpanan dan media kini diminta dalam dialog startup yang sama dengan notifikasi, memakai izin yang tepat untuk tiap level Android: akses media terperinci di API 33+, akses baca di API 29 sampai 32, serta baca dan tulis di API 24 sampai 28.
+- **Tinjau izin.** Pengaturan kini menampilkan status izin notifikasi dan penyimpanan, dengan pintasan ke pengaturan aplikasi di sistem.
+
+### Peningkatan
+
+- **100 test lulus**, analyzer bersih, dan nol em/en dash.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.37.0-windows-x64.zip`. Linux: `Talos-v0.37.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.36.0
 
 Update besar yang menambahkan simpan banyak tautan dan implementasi coba ulang yang lebih aman.
