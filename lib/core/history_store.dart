@@ -77,6 +77,22 @@ class HistoryEntry {
   }
 }
 
+/// Returns older rows that share a URL, or a title when no URL is stored.
+/// The newest row of each group is kept.
+List<HistoryEntry> duplicateHistoryEntries(Iterable<HistoryEntry> entries) {
+  final sorted = entries.toList()
+    ..sort((a, b) => b.dateMs.compareTo(a.dateMs));
+  final seen = <String>{};
+  final duplicates = <HistoryEntry>[];
+  for (final entry in sorted) {
+    final key = entry.url.isNotEmpty
+        ? 'url:${entry.url}'
+        : 'title:${entry.title.toLowerCase()}';
+    if (!seen.add(key)) duplicates.add(entry);
+  }
+  return duplicates;
+}
+
 /// Returns a new list of [entries] ordered by [sort].
 ///
 /// Supported values: newest, oldest, largest, smallest, title. Unknown values

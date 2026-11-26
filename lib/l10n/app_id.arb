@@ -141,6 +141,7 @@
       }
     }
   },
+  "shareSelected": "Bagikan yang dipilih",
   "deleteSelected": "Hapus yang dipilih",
   "deleteSelectedConfirm": "Hapus {count} file unduhan dan keluarkan dari daftar?",
   "@deleteSelectedConfirm": {
@@ -225,6 +226,20 @@
     "placeholders": {
       "removed": { "type": "int" },
       "total": { "type": "int" }
+    }
+  },
+  "findDuplicates": "Cari duplikat",
+  "noDuplicates": "Tidak ada unduhan duplikat",
+  "duplicatesFound": "Hapus {count} baris duplikat yang lebih lama? File di penyimpanan tetap ada.",
+  "@duplicatesFound": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "duplicatesRemoved": "Menghapus {count} baris duplikat",
+  "@duplicatesRemoved": {
+    "placeholders": {
+      "count": { "type": "int" }
     }
   },
   "cleanupNone": "Tidak ada unduhan yang lebih tua dari ini.",
