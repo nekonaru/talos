@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.36.0
+
+A large update adding bulk saved links and a safer retry implementation.
+
+### New features
+
+- **Save all links.** When pasted text contains multiple URLs, a Save all action stores every detected link at once, skipping duplicates and empty rows.
+
+### Improvements
+
+- **Safer retry.** Retry now copies the stored request instead of rebuilding it field by field, so future options are never dropped.
+- **100 tests passing**, including bulk saved links and retry field preservation.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.36.0-windows-x64.zip`. Linux: `Talos-v0.36.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.35.0
 
 A large update improving access to active download details.

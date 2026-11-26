@@ -136,6 +136,7 @@
 | **Backup and restore** | Export settings, history, saved links, presets, commands and the pending queue as portable JSON, then restore them on the same device or a new one |
 | **CSV export** | Export the finished download history as a spreadsheet-friendly CSV file |
 | **Saved link editing** | Copy, edit or open saved links directly from the saved list |
+| **Save all links** | Add every URL detected in pasted text to the saved list in one action |
 | **Private mode** | Optionally skip history entirely |
 
 ---
@@ -174,8 +175,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.35.0-windows-x64.zip`
-   - Linux: `Talos-v0.35.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.36.0-windows-x64.zip`
+   - Linux: `Talos-v0.36.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]
