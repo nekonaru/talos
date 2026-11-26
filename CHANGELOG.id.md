@@ -5,6 +5,22 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.38.0
+
+Update besar yang menambahkan pengingat izin di beranda.
+
+### Fitur baru
+
+- **Pengingat izin.** Jika akses notifikasi atau penyimpanan ditolak, Beranda menampilkan kartu pengingat dengan pintasan langsung ke pengaturan aplikasi sistem, alih-alih gagal diam-diam kemudian.
+
+### Peningkatan
+
+- **101 test lulus**, termasuk perilaku bridge izin yang tidak aktif di luar Android.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.38.0-windows-x64.zip`. Linux: `Talos-v0.38.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.37.0
 
 Update besar yang menyempurnakan izin saat pertama kali dibuka dan menambahkan tinjauan izin di dalam aplikasi.
