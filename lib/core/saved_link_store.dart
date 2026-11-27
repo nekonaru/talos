@@ -13,6 +13,7 @@ class SavedLink {
     required this.id,
     required this.text,
     required this.dateMs,
+    this.tag = '',
   });
 
   factory SavedLink.fromJson(Map<String, dynamic> json) {
@@ -20,17 +21,27 @@ class SavedLink {
       id: json['id'] as String? ?? '',
       text: json['text'] as String? ?? '',
       dateMs: (json['dateMs'] as num?)?.toInt() ?? 0,
+      tag: json['tag'] as String? ?? '',
     );
   }
 
   final String id;
   final String text;
   final int dateMs;
+  final String tag;
+
+  SavedLink withTag(String value) => SavedLink(
+        id: id,
+        text: text,
+        dateMs: dateMs,
+        tag: value,
+      );
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'text': text,
         'dateMs': dateMs,
+        'tag': tag,
       };
 }
 
@@ -118,7 +129,7 @@ class SavedLinkStore extends ChangeNotifier {
     return added;
   }
 
-  Future<void> update(String id, String text) async {
+  Future<void> update(String id, String text, {String? tag}) async {
     final value = text.trim();
     if (value.isEmpty) return;
     final index = _entries.indexWhere((link) => link.id == id);
@@ -129,6 +140,7 @@ class SavedLinkStore extends ChangeNotifier {
       id: id,
       text: value,
       dateMs: _entries[index].dateMs,
+      tag: tag ?? _entries[index].tag,
     );
     notifyListeners();
     await _persist();

@@ -182,6 +182,7 @@
       "count": { "type": "int" }
     }
   },
+  "savedLinkTag": "Tag",
   "editSaved": "Ubah tautan tersimpan",
   "openSaved": "Buka tautan",
   "fetchSaved": "Unduh",

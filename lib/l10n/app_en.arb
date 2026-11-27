@@ -176,6 +176,7 @@
       "count": { "type": "int" }
     }
   },
+  "savedLinkTag": "Tag",
   "editSaved": "Edit saved link",
   "openSaved": "Open link",
   "fetchSaved": "Download",

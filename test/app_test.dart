@@ -593,6 +593,21 @@ void main() {
     expect(filterPlaylistEntries(entries), hasLength(3));
   });
 
+  test('saved link tags persist through update', () async {
+    final store = await SavedLinkStore.load();
+    await store.clear();
+    await store.add('https://example.invalid/tagged');
+    final id = store.entries.single.id;
+    await store.update(id, 'https://example.invalid/tagged', tag: 'music');
+    final reloaded = (await SavedLinkStore.load()).entries.single;
+    expect(reloaded.tag, 'music');
+    expect(
+      reloaded.withTag('video').toJson()['tag'],
+      'video',
+    );
+    await store.clear();
+  });
+
   test('saved links addMany dedupes and reports the real count', () async {
     final store = await SavedLinkStore.load();
     await store.clear();
