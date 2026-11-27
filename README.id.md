@@ -150,6 +150,7 @@
 | **Bagikan banyak** | Bagikan beberapa file selesai sekaligus dari mode pilih |
 | **Cari duplikat** | Hapus baris riwayat duplikat yang lebih lama tanpa menghapus file |
 | **Ubah tautan tersimpan** | Salin, ubah, atau buka tautan tersimpan langsung dari daftar |
+| **Tag tautan tersimpan** | Tambahkan tag pada tautan tersimpan dan filter daftar berdasarkan tag |
 | **Simpan semua tautan** | Tambahkan semua URL yang terdeteksi dari teks tempelan sekaligus |
 | **Mode privat** | Lewati riwayat sama sekali bila diinginkan |
 | **Tinjau izin** | Lihat status izin notifikasi dan penyimpanan serta buka pengaturan sistem dari aplikasi |
@@ -190,8 +191,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.46.0-windows-x64.zip`
-   - Linux: `Talos-v0.46.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.47.0-windows-x64.zip`
+   - Linux: `Talos-v0.47.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]

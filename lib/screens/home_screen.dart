@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool? _batteryLow;
   AppLifecycleListener? _lifecycleListener;
   bool _sharedUrlApplied = false;
+  String _savedTagFilter = '';
 
   @override
   void initState() {
@@ -618,12 +619,41 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  ListView.builder(
+                  if ({
+                    for (final link in manager.savedLinks.entries)
+                      if (link.tag.isNotEmpty) link.tag,
+                  }.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Wrap(
+                        spacing: 8,
+                        children: [
+                          for (final tag in {
+                            for (final link in manager.savedLinks.entries)
+                              if (link.tag.isNotEmpty) link.tag,
+                          })
+                            FilterChip(
+                              label: Text(tag),
+                              selected: _savedTagFilter == tag,
+                              onSelected: (selected) => setState(
+                                () => _savedTagFilter = selected ? tag : '',
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  Builder(builder: (context) {
+                    final links = _savedTagFilter.isEmpty
+                        ? manager.savedLinks.entries
+                        : manager.savedLinks.entries
+                            .where((link) => link.tag == _savedTagFilter)
+                            .toList();
+                    return ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: manager.savedLinks.entries.length,
+                    itemCount: links.length,
                     itemBuilder: (context, index) {
-                    final link = manager.savedLinks.entries[index];
+                    final link = links[index];
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
@@ -633,7 +663,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        subtitle: Text(formatDate(link.dateMs), style: theme.textTheme.bodySmall),
+                        subtitle: Text(
+                          link.tag.isEmpty
+                              ? formatDate(link.dateMs)
+                              : '${link.tag} · ${formatDate(link.dateMs)}',
+                          style: theme.textTheme.bodySmall,
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -655,14 +690,25 @@ class _HomeScreenState extends State<HomeScreen> {
                               onPressed: () async {
                                 final messenger = ScaffoldMessenger.of(context);
                                 final controller = TextEditingController(text: link.text);
+                                final tagController = TextEditingController(text: link.tag);
                                 final confirmed = await showDialog<bool>(
                                   context: context,
                                   builder: (dialogContext) => AlertDialog(
                                     title: Text(l.editSaved),
-                                    content: TextField(
-                                      controller: controller,
-                                      maxLines: 3,
-                                      autofocus: true,
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextField(
+                                          controller: controller,
+                                          maxLines: 3,
+                                          autofocus: true,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextField(
+                                          controller: tagController,
+                                          decoration: InputDecoration(labelText: l.savedLinkTag),
+                                        ),
+                                      ],
                                     ),
                                     actions: [
                                       TextButton(
@@ -677,7 +723,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 );
                                 if (confirmed != true || controller.text.trim().isEmpty) return;
-                                await manager.savedLinks.update(link.id, controller.text);
+                                await manager.savedLinks.update(
+                                  link.id,
+                                  controller.text,
+                                  tag: tagController.text.trim(),
+                                );
                                 if (!mounted) return;
                                 setState(() {});
                                 messenger.showSnackBar(
@@ -719,7 +769,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                     },
-                  ),
+                    );
+                  }),
                 ],
                 if (_engineReady && _engineVersion != null) ...[
                   const SizedBox(height: 24),
