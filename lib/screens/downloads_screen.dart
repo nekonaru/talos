@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../app_scope.dart';
 import '../core/download_manager.dart';
 import '../core/engine/models.dart';
+import '../core/file_actions.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
 import '../core/motion.dart';
@@ -145,6 +146,152 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
       return;
     }
     await SharePlus.instance.share(ShareParams(files: [XFile(path)]));
+  }
+
+  Future<void> _renameFile(BuildContext context, HistoryEntry entry) async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.read(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (!DownloadFileActions.isPlainPath(entry.filePath)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.fileActionUnavailable)),
+      );
+      return;
+    }
+    final current = entry.filePath.split(Platform.pathSeparator).last;
+    final controller = TextEditingController(text: current);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.renameFile),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(labelText: l.fileName),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.save),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final path = await DownloadFileActions.rename(entry.filePath, controller.text);
+    if (path == null) {
+      if (context.mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l.fileActionFailed)),
+        );
+      }
+      return;
+    }
+    await manager.history.updateFilePath(entry.id, path);
+    if (context.mounted) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l.fileActionDone)),
+      );
+    }
+  }
+
+  Future<void> _moveFile(BuildContext context, HistoryEntry entry) async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.read(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (!DownloadFileActions.isPlainPath(entry.filePath)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l.fileActionUnavailable)),
+      );
+      return;
+    }
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.moveFile),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(labelText: l.destinationFolder),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.moveFile),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || controller.text.trim().isEmpty) return;
+    final path = await DownloadFileActions.move(entry.filePath, controller.text);
+    if (path == null) {
+      if (context.mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l.fileActionFailed)),
+        );
+      }
+      return;
+    }
+    await manager.history.updateFilePath(entry.id, path);
+    if (context.mounted) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l.fileActionDone)),
+      );
+    }
+  }
+
+  Future<void> _showSubtitles(BuildContext context, HistoryEntry entry) async {
+    final l = AppLocalizations.of(context)!;
+    final files = DownloadFileActions.subtitleSidecars(entry.filePath);
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.subtitleFiles),
+        content: files.isEmpty
+            ? Text(l.noSubtitleFiles)
+            : SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: files.length,
+                  itemBuilder: (_, index) {
+                    final file = files[index];
+                    return ListTile(
+                      title: Text(
+                        file.uri.pathSegments.isNotEmpty
+                            ? file.uri.pathSegments.last
+                            : file.path.split(Platform.pathSeparator).last,
+                      ),
+                      trailing: IconButton(
+                        tooltip: l.delete,
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () async {
+                          await file.delete();
+                          if (dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l.close),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _deleteFile(BuildContext context, HistoryEntry entry) async {
@@ -645,7 +792,19 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final entry = finished[index];
-                      return _HistoryCard(
+                      return Dismissible(
+                        key: ValueKey('history-${entry.id}'),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          color: Theme.of(context).colorScheme.errorContainer,
+                          child: Icon(Icons.delete_outline,
+                              color: Theme.of(context).colorScheme.onErrorContainer),
+                        ),
+                        onDismissed: (_) =>
+                            unawaited(manager.history.remove(entry.id)),
+                        child: _HistoryCard(
                         entry: entry,
                         compact: manager.settings.value.compactCards,
                         selectionMode: _selectionMode,
@@ -659,8 +818,12 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                         onFolder: () => _openFolder(entry.filePath),
                         onShare: Platform.isAndroid || Platform.isIOS ? () => _share(entry.filePath) : null,
                         onDownloadAgain: () => unawaited(_downloadAgain(context, entry)),
+                        onRename: () => unawaited(_renameFile(context, entry)),
+                        onMove: () => unawaited(_moveFile(context, entry)),
+                        onSubtitles: () => unawaited(_showSubtitles(context, entry)),
                         onDelete: () => _deleteFile(context, entry),
                         onRemove: () => unawaited(manager.history.remove(entry.id)),
+                        ),
                       );
                     },
                   ),
@@ -891,6 +1054,9 @@ class _HistoryCard extends StatelessWidget {
     required this.onCopyPath,
     required this.onShare,
     required this.onDownloadAgain,
+    required this.onRename,
+    required this.onMove,
+    required this.onSubtitles,
     required this.onDelete,
     required this.onRemove,
   });
@@ -908,6 +1074,9 @@ class _HistoryCard extends StatelessWidget {
   final VoidCallback onCopyPath;
   final VoidCallback? onShare;
   final VoidCallback onDownloadAgain;
+  final VoidCallback onRename;
+  final VoidCallback onMove;
+  final VoidCallback onSubtitles;
   final VoidCallback onDelete;
   final VoidCallback onRemove;
 
@@ -978,6 +1147,12 @@ class _HistoryCard extends StatelessWidget {
                       onShare?.call();
                     case 'again':
                       onDownloadAgain();
+                    case 'rename':
+                      onRename();
+                    case 'move':
+                      onMove();
+                    case 'subtitles':
+                      onSubtitles();
                     case 'delete':
                       onDelete();
                     case 'remove':
@@ -993,6 +1168,9 @@ class _HistoryCard extends StatelessWidget {
                     PopupMenuItem(value: 'copyPath', child: Text(l.copyPath)),
                   if (onShare != null) PopupMenuItem(value: 'share', child: Text(l.share)),
                   PopupMenuItem(value: 'again', child: Text(l.downloadAgain)),
+                  PopupMenuItem(value: 'rename', child: Text(l.renameFile)),
+                  PopupMenuItem(value: 'move', child: Text(l.moveFile)),
+                  PopupMenuItem(value: 'subtitles', child: Text(l.subtitleFiles)),
                   const PopupMenuDivider(),
                   PopupMenuItem(value: 'remove', child: Text(l.remove)),
                   PopupMenuItem(value: 'delete', child: Text(l.deleteFile)),
