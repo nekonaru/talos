@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_search">Find a link</string>
+    <string name="shortcut_downloads">Downloads</string>
+    <string name="shortcut_pause">Pause queue</string>
+</resources>

@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.51.0
+
+A small native integration update adding Android app shortcuts.
+
+### New features
+
+- **App shortcuts.** Long pressing the app icon offers Find a link, Downloads and Pause queue. Labels are localized in English and Indonesian.
+
+### Notes
+
+- Notification-center controls, desktop tray, drag and drop, home widget and biometric lock remain deferred because they need deeper service or engine isolation.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.51.0-windows-x64.zip`. Linux: `Talos-v0.51.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.50.0
 
 A large update giving the finished library direct control over files and entries.

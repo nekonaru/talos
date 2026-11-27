@@ -5,6 +5,22 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.51.0
+
+Update integrasi native kecil yang menambahkan pintasan aplikasi Android.
+
+### Fitur baru
+
+- **Pintasan aplikasi.** Menahan ikon aplikasi menawarkan Cari tautan, Unduhan, dan Jeda antrean. Label tersedia dalam English dan Bahasa Indonesia.
+
+### Catatan
+
+- Kontrol di notifikasi, tray desktop, drag and drop, widget, dan kunci biometrik tetap ditunda karena memerlukan isolasi service atau engine yang lebih dalam.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.51.0-windows-x64.zip`. Linux: `Talos-v0.51.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.50.0
 
 Update besar yang memberi pustaka selesai kontrol langsung atas file dan entri.
