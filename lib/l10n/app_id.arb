@@ -275,6 +275,7 @@
   "waitingWifi": "Menunggu koneksi WiFi aktif.",
   "waitingBattery": "Menunggu baterai lebih tinggi atau sedang diisi.",
   "waitingQuiet": "Menunggu jendela unduhan yang diatur.",
+  "waitingCharging": "Menunggu perangkat mulai mengisi daya.",
   "pauseQueue": "Jeda antrean",
   "resumeQueue": "Lanjutkan antrean",
   "clearQueued": "Hapus unduhan tertunda",

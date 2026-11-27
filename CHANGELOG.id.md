@@ -5,6 +5,25 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.43.0
+
+Update besar yang meletakkan fondasi desain untuk gelombang antarmuka berikutnya.
+
+### Fitur baru
+
+- **Token desain.** Spacing, radius, dan warna status semantik bersama menggantikan nilai yang dibuat spontan.
+- **Konstanta gerak.** Satu keluarga easing, tiga durasi, dan helper reduced motion membuat gerak konsisten.
+- **Komponen bersama.** Status pill, wait reason banner, progress ring, dan empty state kini menjadi widget bersama.
+- **Status menunggu lebih jelas.** Tab Aktif kini menjelaskan penantian karena hanya saat mengisi daya dengan banner komponen yang sama seperti gate lainnya.
+
+### Peningkatan
+
+- **104 test lulus**, analyzer bersih, dan nol em/en dash.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.43.0-windows-x64.zip`. Linux: `Talos-v0.43.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.42.0
 
 Update besar yang menyelesaikan peta jalan otomatisasi dengan kontrol pengisian daya, berbagi banyak tautan, dan bantuan offline.

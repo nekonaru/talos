@@ -128,6 +128,7 @@
 | Feature | Description |
 |---------|-------------|
 | **Warm dark design** | A warm dark theme with a bronze accent, plus light and system modes |
+| **Shared design tokens** | Consistent spacing, radius, semantic status colors and reduced-motion aware animation |
 | **Accent colors** | Five accent hues: bronze, laurel, aegean, oxblood, marble |
 | **Bilingual UI** | English (default) and Bahasa Indonesia |
 
@@ -184,8 +185,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.42.0-windows-x64.zip`
-   - Linux: `Talos-v0.42.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.43.0-windows-x64.zip`
+   - Linux: `Talos-v0.43.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]

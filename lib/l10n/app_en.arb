@@ -269,6 +269,7 @@
   "waitingWifi": "Waiting for an active WiFi connection.",
   "waitingBattery": "Waiting for a higher battery level or charging.",
   "waitingQuiet": "Waiting for the configured download window.",
+  "waitingCharging": "Waiting for the device to start charging.",
   "pauseQueue": "Pause queue",
   "resumeQueue": "Resume queue",
   "clearQueued": "Clear pending downloads",

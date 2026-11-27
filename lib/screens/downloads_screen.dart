@@ -17,6 +17,7 @@ import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
 import 'error_message.dart';
 import 'player_screen.dart';
+import '../widgets/wait_reason_banner.dart';
 
 /// Resolves stable error codes from the download engine to localized text.
 /// Unknown values are returned unchanged (raw engine messages).
@@ -454,6 +455,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
             Builder(builder: (context) {
               const waitingStages = {
                 'queuePaused', 'waitingForWifi', 'batteryLow', 'quietHours',
+                'waitingCharging',
               };
               final waiting = tasks
                   .where((t) => waitingStages.contains(t.stage))
@@ -465,27 +467,12 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 'waitingForWifi' => l.waitingWifi,
                 'batteryLow' => l.waitingBattery,
                 'quietHours' => l.waitingQuiet,
+                'waitingCharging' => l.waitingCharging,
                 _ => l.queueWaiting,
               };
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 18,
-                          color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 10),
-                      Expanded(child: Text(reason,
-                          style: Theme.of(context).textTheme.bodySmall)),
-                    ],
-                  ),
-                ),
+                child: WaitReasonBanner(message: reason),
               );
             }),
           if (_tabController.index == 1) ...[
