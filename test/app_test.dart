@@ -1159,6 +1159,20 @@ void main() {
     }
   });
 
+  test('folder breakdown groups entries by parent directory', () {
+    final entries = [
+      HistoryEntry(id: 'a', title: 'A', url: 'u1', filePath: '/downloads/a.mp4', kind: HistoryKind.video, dateMs: 1, sizeBytes: 100),
+      HistoryEntry(id: 'b', title: 'B', url: 'u2', filePath: '/downloads/b.mp4', kind: HistoryKind.video, dateMs: 2, sizeBytes: 200),
+      HistoryEntry(id: 'c', title: 'C', url: 'u3', filePath: '/music/c.mp3', kind: HistoryKind.audio, dateMs: 3, sizeBytes: 50),
+    ];
+    final breakdown = folderBreakdown(entries);
+    expect(breakdown, hasLength(2));
+    expect(breakdown.first.folder, '/downloads');
+    expect(breakdown.first.count, 2);
+    expect(breakdown.first.bytes, 300);
+    expect(breakdown.last.folder, '/music');
+  });
+
   test('duplicate finder keeps the newest row per URL', () {
     final entries = [
       HistoryEntry(id: 'old', title: 'A', url: 'https://example.invalid/a', filePath: '/a', kind: HistoryKind.video, dateMs: 100),

@@ -163,6 +163,38 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                SectionLabel(l.storageFolders),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                    child: Column(
+                      children: [
+                        for (final folder in folderBreakdown(entries).take(6)) ...[
+                          Row(
+                            children: [
+                              Icon(Icons.folder_outlined, size: 18, color: theme.colorScheme.primary),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  folder.folder,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ),
+                              Text(
+                                '${folder.count} · ${formatBytes(folder.bytes)}',
+                                style: theme.textTheme.labelSmall,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 SectionLabel(l.largestDownloads),
                 Card(
                   child: Column(

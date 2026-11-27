@@ -72,6 +72,7 @@ class TalosSettings {
     this.autoCleanTemp = false,
     this.lastSeenVersion = '',
     this.chargingOnly = false,
+    this.setupChecklistDone = false,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -142,6 +143,7 @@ class TalosSettings {
       autoCleanTemp: json['autoCleanTemp'] as bool? ?? false,
       lastSeenVersion: json['lastSeenVersion'] as String? ?? '',
       chargingOnly: json['chargingOnly'] as bool? ?? false,
+      setupChecklistDone: json['setupChecklistDone'] as bool? ?? false,
     );
   }
 
@@ -204,6 +206,7 @@ class TalosSettings {
   bool autoCleanTemp;
   String lastSeenVersion;
   bool chargingOnly;
+  bool setupChecklistDone;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -265,6 +268,7 @@ class TalosSettings {
         'autoCleanTemp': autoCleanTemp,
         'lastSeenVersion': lastSeenVersion,
         'chargingOnly': chargingOnly,
+        'setupChecklistDone': setupChecklistDone,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -343,6 +347,7 @@ class TalosSettings {
     bool? autoCleanTemp,
     String? lastSeenVersion,
     bool? chargingOnly,
+    bool? setupChecklistDone,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -404,6 +409,7 @@ class TalosSettings {
       autoCleanTemp: autoCleanTemp ?? this.autoCleanTemp,
       lastSeenVersion: lastSeenVersion ?? this.lastSeenVersion,
       chargingOnly: chargingOnly ?? this.chargingOnly,
+      setupChecklistDone: setupChecklistDone ?? this.setupChecklistDone,
     );
   }
 }

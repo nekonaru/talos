@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -75,6 +76,34 @@ class HistoryEntry {
       return null;
     }
   }
+}
+
+/// Groups finished downloads by their parent folder and sums size and count.
+/// Sorted by total size descending.
+List<({String folder, int count, int bytes})> folderBreakdown(
+  Iterable<HistoryEntry> entries,
+) {
+  final groups = <String, ({int count, int bytes})>{};
+  for (final entry in entries) {
+    final separator = math.max(
+      entry.filePath.lastIndexOf(Platform.pathSeparator),
+      entry.filePath.lastIndexOf('/'),
+    );
+    final folder = separator > 0
+        ? entry.filePath.substring(0, separator)
+        : entry.filePath;
+    final current = groups[folder] ?? (count: 0, bytes: 0);
+    groups[folder] = (
+      count: current.count + 1,
+      bytes: current.bytes + (entry.sizeBytes ?? 0),
+    );
+  }
+  final result = [
+    for (final MapEntry(key: folder, value: stats) in groups.entries)
+      (folder: folder, count: stats.count, bytes: stats.bytes),
+  ];
+  result.sort((a, b) => b.bytes.compareTo(a.bytes));
+  return result;
 }
 
 /// Returns older rows that share a URL, or a title when no URL is stored.
