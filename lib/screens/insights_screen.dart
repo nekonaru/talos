@@ -21,12 +21,27 @@ class InsightsScreen extends StatefulWidget {
 class _InsightsScreenState extends State<InsightsScreen> {
   int? _cacheRevision;
   InsightStats? _cache;
+  int? _folderCacheRevision;
+  List<({String folder, int count, int bytes})> _folderCache = const [];
 
   InsightStats _buildStats(List<HistoryEntry> entries, int revision) {
     final stats = buildInsights(entries);
     _cacheRevision = revision;
     _cache = stats;
     return stats;
+  }
+
+  /// Folder grouping is O(n) over history. The Insights tab stays mounted and
+  /// rebuilds on every progress tick, so cache it by history revision.
+  List<({String folder, int count, int bytes})> _buildFolders(
+    List<HistoryEntry> entries,
+    int revision,
+  ) {
+    if (_folderCacheRevision == revision) return _folderCache;
+    final folders = folderBreakdown(entries);
+    _folderCacheRevision = revision;
+    _folderCache = folders;
+    return folders;
   }
 
   Future<void> _removeDuplicates(BuildContext context, List<HistoryEntry> entries) async {
@@ -169,7 +184,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                     child: Column(
                       children: [
-                        for (final folder in folderBreakdown(entries).take(6)) ...[
+                        for (final folder in _buildFolders(entries, revision).take(6)) ...[
                           Row(
                             children: [
                               Icon(Icons.folder_outlined, size: 18, color: theme.colorScheme.primary),

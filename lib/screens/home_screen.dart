@@ -537,11 +537,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               IconButton(
                                 tooltip: l.saveLink,
                                 icon: Icon(
-                                    manager.savedLinks.contains(_urlController.text.trim())
+                                    manager.savedLinks.contains(url)
                                         ? Icons.bookmark_added_rounded
                                         : Icons.bookmark_add_outlined,
                                   ),
-                                  onPressed: _detectUrls(_urlController.text).isEmpty ? null : _saveCurrentLink,
+                                  onPressed: detected.isEmpty ? null : _saveCurrentLink,
                                 ),
                               if (isBatch)
                                 IconButton(
