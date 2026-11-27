@@ -5,6 +5,26 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.50.0
+
+A large update giving the finished library direct control over files and entries.
+
+### New features
+
+- **File actions.** Rename or move a finished file from its menu. The history row follows the new path.
+- **Subtitle browser.** List and delete subtitle sidecar files next to a finished download.
+- **Swipe to remove.** Swipe a finished entry left to remove its history row.
+- **Playlist details.** Inspect all playlist entries in a bottom sheet with index, title and duration.
+- **Format sheet.** The format picker now opens as a bottom sheet on all platforms.
+
+### Improvements
+
+- **109 tests passing**, including file rename, move and subtitle discovery.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.50.0-windows-x64.zip`. Linux: `Talos-v0.50.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.49.0
 
 A focused optimization release. No new features, only native smoothness and cleanup.

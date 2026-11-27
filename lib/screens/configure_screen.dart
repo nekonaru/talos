@@ -488,9 +488,16 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                     title: Text(l.chooseFormats),
                     subtitle: Text(_formatSelector == null ? _autoLabel() : _formatSelector!),
                     onTap: () async {
-                      final selected = await Navigator.of(context).push<String?>(
-                        MaterialPageRoute(
-                          builder: (_) => FormatSelectionScreen(probe: probe, initialSelector: _formatSelector),
+                      final selected = await showModalBottomSheet<String?>(
+                        context: context,
+                        isScrollControlled: true,
+                        showDragHandle: true,
+                        builder: (_) => SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.75,
+                          child: FormatSelectionScreen(
+                            probe: probe,
+                            initialSelector: _formatSelector,
+                          ),
                         ),
                       );
                       if (!mounted) return;
@@ -562,6 +569,29 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           TextButton(onPressed: () => _filterPlaylist(entries), child: Text(l.filterPlaylist)),
+                          TextButton(
+                            onPressed: () => showModalBottomSheet<void>(
+                              context: context,
+                              showDragHandle: true,
+                              builder: (sheetContext) => ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: entries.length,
+                                itemBuilder: (_, index) {
+                                  final entry = entries[index];
+                                  return ListTile(
+                                    leading: Text('${entry.index}'),
+                                    title: Text(entry.title, maxLines: 2),
+                                    subtitle: Text(
+                                      entry.duration == null
+                                          ? l.playlistUnknownDuration
+                                          : formatDuration(entry.duration!),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            child: Text(l.playlistDetails),
+                          ),
                           TextButton(onPressed: () => setState(() => _selected = {for (final e in entries) e.index}), child: Text(l.selectAll)),
                           TextButton(onPressed: () => setState(() => _selected = {}), child: Text(l.selectNone)),
                         ],

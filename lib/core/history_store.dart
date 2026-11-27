@@ -46,7 +46,7 @@ class HistoryEntry {
   final String id;
   final String title;
   final String url;
-  final String filePath;
+  String filePath;
   final HistoryKind kind;
   final int dateMs;
   final String? uploader;
@@ -198,6 +198,17 @@ class HistoryStore extends ChangeNotifier {
       }
     }
     revision++;
+    notifyListeners();
+    await _persist();
+  }
+
+  Future<void> updateFilePath(String id, String path) async {
+    for (final entry in _entries) {
+      if (entry.id == id) {
+        entry.filePath = path;
+        break;
+      }
+    }
     notifyListeners();
     await _persist();
   }

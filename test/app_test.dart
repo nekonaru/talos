@@ -12,6 +12,7 @@ import 'package:talos/core/backup.dart';
 import 'package:talos/core/command_template_store.dart';
 import 'package:talos/core/download_manager.dart';
 import 'package:talos/core/engine/desktop_engine.dart';
+import 'package:talos/core/file_actions.dart';
 import 'package:talos/core/folder_rules.dart';
 import 'package:talos/core/engine/command_builder.dart';
 import 'package:talos/core/engine/engine.dart';
@@ -1240,6 +1241,34 @@ void main() {
       DownloadManager.wifiProbeOverride = null;
       DownloadManager.wifiRetryDelay = const Duration(seconds: 30);
       await manager.resetAll();
+    }
+  });
+
+  test('file actions rename, move and find subtitles', () async {
+    final dir = await Directory.systemTemp.createTemp('talos_file_actions');
+    try {
+      final source = File('${dir.path}${Platform.pathSeparator}movie.mp4');
+      await source.writeAsString('video');
+      final subtitle = File('${dir.path}${Platform.pathSeparator}movie.srt');
+      await subtitle.writeAsString('sub');
+
+      final renamed = await DownloadFileActions.rename(source.path, 'renamed.mp4');
+      expect(renamed, endsWith('renamed.mp4'));
+      expect(await source.exists(), isFalse);
+
+      final targetDir = Directory('${dir.path}${Platform.pathSeparator}moved');
+      await targetDir.create();
+      final moved = await DownloadFileActions.move(renamed!, targetDir.path);
+      expect(moved, endsWith('renamed.mp4'));
+
+      final movedSubtitle = await subtitle.rename(
+        '${targetDir.path}${Platform.pathSeparator}renamed.srt',
+      );
+      final sidecars = DownloadFileActions.subtitleSidecars(moved!);
+      expect(sidecars, hasLength(1));
+      expect(movedSubtitle.existsSync(), isTrue);
+    } finally {
+      await dir.delete(recursive: true);
     }
   });
 
