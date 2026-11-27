@@ -5,6 +5,24 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.45.0
+
+Update besar yang menyelesaikan peta jalan desain dengan onboarding dan wawasan penyimpanan.
+
+### Fitur baru
+
+- **Penyiapan cepat.** Beranda menampilkan daftar kecil yang bisa ditutup untuk izin, kesiapan engine, dan unduhan pertama.
+- **Folder penyimpanan.** Wawasan mengelompokkan unduhan selesai berdasarkan folder induk beserta jumlah dan total ukuran.
+
+### Peningkatan
+
+- **105 test lulus**, termasuk cakupan pengelompokan folder.
+- **Path lintas platform.** Pengelompokan folder menangani separator garis miring dan terbalik.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.45.0-windows-x64.zip`. Linux: `Talos-v0.45.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.44.0
 
 Update besar yang merancang ulang pengalaman Unduhan dengan komponen dan gerak bersama.
