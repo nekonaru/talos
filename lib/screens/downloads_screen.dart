@@ -301,6 +301,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
     }
   }
 
+  void _haptic(BuildContext context) {
+    final manager = TalosScope.read(context);
+    if (manager.settings.value.hapticsEnabled) {
+      HapticFeedback.mediumImpact();
+    }
+  }
+
   Future<void> _showLog(BuildContext context, DownloadTask task) async {
     final l = AppLocalizations.of(context)!;
     final log = task.log;
@@ -459,7 +466,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
             Builder(builder: (context) {
               const waitingStages = {
                 'queuePaused', 'waitingForWifi', 'batteryLow', 'quietHours',
-                'waitingCharging',
+                'waitingCharging', 'lowStorage',
               };
               final waiting = tasks
                   .where((t) => waitingStages.contains(t.stage))
@@ -472,6 +479,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 'batteryLow' => l.waitingBattery,
                 'quietHours' => l.waitingQuiet,
                 'waitingCharging' => l.waitingCharging,
+                'lowStorage' => l.waitingLowStorage,
                 _ => l.queueWaiting,
               };
               return Padding(
@@ -576,9 +584,16 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                       final delay = staggerDelay(context, index);
                       final card = _TaskCard(
                         dragIndex: index,
+                        compact: manager.settings.value.compactCards,
                         task: task,
-                        onCancel: () => manager.cancel(task),
-                        onRetry: () => manager.retry(task),
+                        onCancel: () {
+                          _haptic(context);
+                          unawaited(manager.cancel(task));
+                        },
+                        onRetry: () {
+                          _haptic(context);
+                          unawaited(manager.retry(task));
+                        },
                         onRemove: () => manager.removeTask(task),
                         onShowLog: () => _showLog(context, task),
                         onCopyUrl: () async {
@@ -631,6 +646,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                       final entry = finished[index];
                       return _HistoryCard(
                         entry: entry,
+                        compact: manager.settings.value.compactCards,
                         selectionMode: _selectionMode,
                         selected: _selectedIds.contains(entry.id),
                         onToggleSelection: () => _toggleSelection(entry.id),
@@ -706,6 +722,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
 class _TaskCard extends StatelessWidget {
   const _TaskCard({
     required this.task,
+    required this.compact,
     required this.dragIndex,
     required this.onCancel,
     required this.onRetry,
@@ -715,6 +732,7 @@ class _TaskCard extends StatelessWidget {
   });
 
   final DownloadTask task;
+  final bool compact;
   final int? dragIndex;
   final VoidCallback onCancel;
   final VoidCallback onRetry;
@@ -770,7 +788,7 @@ class _TaskCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(compact ? 10 : 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -860,6 +878,7 @@ class _TaskCard extends StatelessWidget {
 class _HistoryCard extends StatelessWidget {
   const _HistoryCard({
     required this.entry,
+    required this.compact,
     required this.selectionMode,
     required this.selected,
     required this.onToggleSelection,
@@ -876,6 +895,7 @@ class _HistoryCard extends StatelessWidget {
   });
 
   final HistoryEntry entry;
+  final bool compact;
   final bool selectionMode;
   final bool selected;
   final VoidCallback onToggleSelection;
@@ -902,6 +922,7 @@ class _HistoryCard extends StatelessWidget {
         onLongPress: onLongPress,
         borderRadius: BorderRadius.circular(16),
         child: ListTile(
+          dense: compact,
           leading: selectionMode
               ? _SelectionLeading(selected: selected)
               : _ThumbnailLeading(entry: entry),

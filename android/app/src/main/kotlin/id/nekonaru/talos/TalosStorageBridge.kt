@@ -12,6 +12,7 @@ import android.os.Looper
 import android.provider.DocumentsContract
 import android.os.BatteryManager
 import android.os.Build
+import android.os.StatFs
 import android.provider.MediaStore
 import android.content.ContentValues
 import android.content.ContentResolver
@@ -142,6 +143,7 @@ class TalosStorageBridge(private val context: Context) {
                     isBatteryLow(call.argument<Int>("threshold") ?: 20),
                 )
                 "isCharging" -> result.success(isCharging())
+                "freeSpaceMb" -> result.success(freeSpaceMb())
                 "copyToTree" -> {
                     val localPath = call.argument<String>("localPath") ?: ""
                     val displayName = call.argument<String>("displayName") ?: ""
@@ -473,6 +475,14 @@ class TalosStorageBridge(private val context: Context) {
             true
         } catch (_: Exception) {
             false
+        }
+    }
+
+    private fun freeSpaceMb(): Long {
+        return try {
+            StatFs(context.filesDir.path).availableBytes / (1024L * 1024L)
+        } catch (_: Exception) {
+            -1L
         }
     }
 

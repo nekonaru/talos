@@ -953,6 +953,39 @@ void main() {
     }
   });
 
+  test('low free space holds the queue until storage recovers', () async {
+    final engine = FakeEngine();
+    final manager = await DownloadManager.create(engine: engine);
+    await manager.settings.mutate((s) => s.copyWith(minFreeSpaceMb: 1000));
+    DownloadManager.storageRetryDelay = const Duration(milliseconds: 10);
+    DownloadManager.freeSpaceOverride = () async => 100;
+    try {
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=space',
+          videoMode: true,
+          outputDir: 'out',
+        ),
+        title: 'Storage item',
+        kind: HistoryKind.video,
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(engine.lastSession, isNull);
+      expect(manager.tasks.single.stage, 'lowStorage');
+
+      DownloadManager.freeSpaceOverride = () async => 2000;
+      manager.kickQueue();
+      for (var i = 0; i < 200 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      expect(engine.lastSession, isNotNull);
+    } finally {
+      DownloadManager.freeSpaceOverride = null;
+      DownloadManager.storageRetryDelay = const Duration(minutes: 1);
+      await manager.resetAll();
+    }
+  });
+
   test('charging only holds the queue until the device is plugged in', () async {
     final engine = FakeEngine();
     final manager = await DownloadManager.create(engine: engine);

@@ -327,6 +327,21 @@
   "autoRetry": "Coba ulang otomatis",
   "autoRetryHint": "Coba ulang unduhan gagal otomatis dengan jeda singkat",
   "autoRetryOff": "Nonaktif",
+  "statusWifi": "WiFi",
+  "statusCellular": "Seluler",
+  "statusCharging": "Mengisi",
+  "statusBatteryLow": "Baterai rendah",
+  "compactCards": "Kartu ringkas",
+  "hapticsEnabled": "Umpan balik getar",
+  "minFreeSpace": "Ruang kosong minimal",
+  "minFreeSpaceHint": "Di Android, tahan unduhan baru saat ruang kosong terlalu sedikit",
+  "megabytes": "{count} MB",
+  "@megabytes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "waitingLowStorage": "Menunggu ruang penyimpanan lebih besar.",
   "setupTitle": "Penyiapan cepat",
   "setupDismiss": "Sembunyikan daftar",
   "setupPermissions": "Izinkan notifikasi dan akses penyimpanan",

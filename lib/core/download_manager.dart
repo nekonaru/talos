@@ -180,6 +180,7 @@ class DownloadManager extends ChangeNotifier {
   Timer? _batteryRetryTimer;
   Timer? _stallTimer;
   Timer? _chargingRetryTimer;
+  Timer? _storageRetryTimer;
   DateTime? _lastProgressAt;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
@@ -281,6 +282,8 @@ class DownloadManager extends ChangeNotifier {
     _stallTimer = null;
     _chargingRetryTimer?.cancel();
     _chargingRetryTimer = null;
+    _storageRetryTimer?.cancel();
+    _storageRetryTimer = null;
     _tasks.clear();
     notifyListeners();
     await _persistQueue();
@@ -371,6 +374,8 @@ class DownloadManager extends ChangeNotifier {
     _stallTimer = null;
     _chargingRetryTimer?.cancel();
     _chargingRetryTimer = null;
+    _storageRetryTimer?.cancel();
+    _storageRetryTimer = null;
     for (final task in pending) {
       task.status = TaskStatus.cancelled;
       task.stage = 'cancelled';
@@ -394,6 +399,8 @@ class DownloadManager extends ChangeNotifier {
     _stallTimer = null;
     _chargingRetryTimer?.cancel();
     _chargingRetryTimer = null;
+    _storageRetryTimer?.cancel();
+    _storageRetryTimer = null;
     if (!_pumping) unawaited(_pump());
   }
 
@@ -405,6 +412,7 @@ class DownloadManager extends ChangeNotifier {
     _batteryRetryTimer?.cancel();
     _stallTimer?.cancel();
     _chargingRetryTimer?.cancel();
+    _storageRetryTimer?.cancel();
     super.dispose();
   }
 
@@ -476,6 +484,22 @@ class DownloadManager extends ChangeNotifier {
             _chargingRetryTimer?.cancel();
             _chargingRetryTimer = Timer(chargingRetryDelay, () {
               _chargingRetryTimer = null;
+              if (!_pumping) unawaited(_pump());
+            });
+            break;
+          }
+        }
+        final minFree = _settings.value.minFreeSpaceMb;
+        if (minFree > 0) {
+          final freeMb = freeSpaceOverride != null
+              ? await freeSpaceOverride!()
+              : await TalosStorageBridge.freeSpaceMb();
+          if (freeMb != null && freeMb < minFree) {
+            next.stage = 'lowStorage';
+            notifyListeners();
+            _storageRetryTimer?.cancel();
+            _storageRetryTimer = Timer(storageRetryDelay, () {
+              _storageRetryTimer = null;
               if (!_pumping) unawaited(_pump());
             });
             break;
@@ -866,6 +890,12 @@ class DownloadManager extends ChangeNotifier {
 
   @visibleForTesting
   static Duration chargingRetryDelay = const Duration(minutes: 1);
+
+  @visibleForTesting
+  static Future<int?> Function()? freeSpaceOverride;
+
+  @visibleForTesting
+  static Duration storageRetryDelay = const Duration(minutes: 1);
 
   static Future<String> _uniqueFilename(Directory dir, String name) async {
     final sep = dir.path.endsWith(Platform.pathSeparator) ? '' : Platform.pathSeparator;

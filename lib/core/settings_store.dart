@@ -73,6 +73,9 @@ class TalosSettings {
     this.lastSeenVersion = '',
     this.chargingOnly = false,
     this.setupChecklistDone = false,
+    this.compactCards = false,
+    this.hapticsEnabled = true,
+    this.minFreeSpaceMb = 0,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -144,6 +147,9 @@ class TalosSettings {
       lastSeenVersion: json['lastSeenVersion'] as String? ?? '',
       chargingOnly: json['chargingOnly'] as bool? ?? false,
       setupChecklistDone: json['setupChecklistDone'] as bool? ?? false,
+      compactCards: json['compactCards'] as bool? ?? false,
+      hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
+      minFreeSpaceMb: intChoice((json['minFreeSpaceMb'] as num?)?.toInt(), const [0, 500, 1000, 5000], 0),
     );
   }
 
@@ -207,6 +213,9 @@ class TalosSettings {
   String lastSeenVersion;
   bool chargingOnly;
   bool setupChecklistDone;
+  bool compactCards;
+  bool hapticsEnabled;
+  int minFreeSpaceMb;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -269,6 +278,9 @@ class TalosSettings {
         'lastSeenVersion': lastSeenVersion,
         'chargingOnly': chargingOnly,
         'setupChecklistDone': setupChecklistDone,
+        'compactCards': compactCards,
+        'hapticsEnabled': hapticsEnabled,
+        'minFreeSpaceMb': minFreeSpaceMb,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -348,6 +360,9 @@ class TalosSettings {
     String? lastSeenVersion,
     bool? chargingOnly,
     bool? setupChecklistDone,
+    bool? compactCards,
+    bool? hapticsEnabled,
+    int? minFreeSpaceMb,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -410,6 +425,9 @@ class TalosSettings {
       lastSeenVersion: lastSeenVersion ?? this.lastSeenVersion,
       chargingOnly: chargingOnly ?? this.chargingOnly,
       setupChecklistDone: setupChecklistDone ?? this.setupChecklistDone,
+      compactCards: compactCards ?? this.compactCards,
+      hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
+      minFreeSpaceMb: minFreeSpaceMb ?? this.minFreeSpaceMb,
     );
   }
 }
