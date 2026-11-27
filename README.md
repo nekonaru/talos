@@ -151,6 +151,7 @@
 | **Batch share** | Share several finished files at once from selection mode |
 | **Duplicate finder** | Remove older duplicate history rows while keeping the files |
 | **Saved link editing** | Copy, edit or open saved links directly from the saved list |
+| **Saved link tags** | Add a tag to a saved link and filter the list by tag |
 | **Save all links** | Add every URL detected in pasted text to the saved list in one action |
 | **Private mode** | Optionally skip history entirely |
 
@@ -190,8 +191,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.46.0-windows-x64.zip`
-   - Linux: `Talos-v0.46.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.47.0-windows-x64.zip`
+   - Linux: `Talos-v0.47.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]

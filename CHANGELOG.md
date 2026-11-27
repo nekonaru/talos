@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.47.0
+
+A large update adding tags to saved links and tag-based filtering.
+
+### New features
+
+- **Saved link tags.** The edit dialog now accepts a tag. Tags appear in the saved row and filter chips let the user show one group at a time.
+
+### Improvements
+
+- **107 tests passing**, including tag persistence coverage.
+- **Backward compatible.** Old saved rows without a tag keep working and are shown without a tag label.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.47.0-windows-x64.zip`. Linux: `Talos-v0.47.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.46.0
 
 A large update adding storage protection and adaptive interface density.

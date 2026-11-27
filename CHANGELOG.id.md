@@ -5,6 +5,23 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.47.0
+
+Update besar yang menambahkan tag pada tautan tersimpan dan filter berdasarkan tag.
+
+### Fitur baru
+
+- **Tag tautan tersimpan.** Dialog ubah kini menerima tag. Tag tampil di baris tersimpan dan filter chip menampilkan satu grup saja.
+
+### Peningkatan
+
+- **107 test lulus**, termasuk cakupan persistensi tag.
+- **Kompatibel mundur.** Baris lama tanpa tag tetap berfungsi dan ditampilkan tanpa label tag.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.47.0-windows-x64.zip`. Linux: `Talos-v0.47.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.46.0
 
 Update besar yang menambahkan perlindungan penyimpanan dan kepadatan antarmuka adaptif.
