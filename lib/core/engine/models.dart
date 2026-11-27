@@ -126,6 +126,7 @@ class DownloadRequest {
     this.keepSubtitles = false,
     this.outputFilename,
     this.customHeaders = '',
+    this.scheduledAtMs,
   });
 
   final String url;
@@ -216,7 +217,16 @@ class DownloadRequest {
   /// with --add-headers. Useful for sites that require a Referer.
   final String customHeaders;
 
-  DownloadRequest copyWith({String? outputFilename, String? outputDir}) => DownloadRequest(
+  /// Wall-clock time in milliseconds before this task may start. Null means
+  /// start as soon as the queue reaches it.
+  final int? scheduledAtMs;
+
+  DownloadRequest copyWith({
+    String? outputFilename,
+    String? outputDir,
+    int? scheduledAtMs,
+    bool clearSchedule = false,
+  }) => DownloadRequest(
         url: url,
         videoMode: videoMode,
         outputDir: outputDir ?? this.outputDir,
@@ -253,6 +263,7 @@ class DownloadRequest {
         keepSubtitles: keepSubtitles,
         outputFilename: outputFilename ?? this.outputFilename,
         customHeaders: customHeaders,
+        scheduledAtMs: clearSchedule ? null : (scheduledAtMs ?? this.scheduledAtMs),
       );
 
   Map<String, dynamic> toJson() => {
@@ -292,6 +303,7 @@ class DownloadRequest {
         'keepSubtitles': keepSubtitles,
         'outputFilename': outputFilename,
         'customHeaders': customHeaders,
+        'scheduledAtMs': scheduledAtMs,
       };
 
   /// Decodes a queued request. A persisted value can come from an older build
@@ -342,6 +354,7 @@ class DownloadRequest {
       keepSubtitles: flag('keepSubtitles', false),
       outputFilename: json['outputFilename'] as String?,
       customHeaders: text('customHeaders', ''),
+      scheduledAtMs: integer('scheduledAtMs'),
     );
   }
 }

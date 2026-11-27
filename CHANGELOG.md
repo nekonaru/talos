@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.48.0
+
+A large update finishing the roadmap with per-task scheduling and standalone queue transfer.
+
+### New features
+
+- **Scheduled start.** Advanced options accept a date and time. The queue holds the task until that moment, then starts it automatically.
+- **Queue import/export.** The pending queue can be copied or restored as standalone JSON from Settings, separate from the full backup.
+
+### Improvements
+
+- **108 tests passing**, including scheduled start persistence and gating.
+- **Clear wait reason.** Scheduled tasks show a dedicated explanation in the Active tab.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.48.0-windows-x64.zip`. Linux: `Talos-v0.48.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.47.0
 
 A large update adding tags to saved links and tag-based filtering.

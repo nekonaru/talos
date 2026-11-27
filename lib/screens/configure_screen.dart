@@ -41,6 +41,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
   late String _proxy;
   late String _customHeaders;
   String _playlistOrder = 'normal';
+  int? _scheduledAtMs;
   late final TextEditingController _fileNameController;
   late final TextEditingController _rateController;
   late final TextEditingController _proxyController;
@@ -278,6 +279,7 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
       maxFilesize: settings.maxFilesize,
       userAgent: settings.userAgent,
       customHeaders: _headersController.text,
+      scheduledAtMs: _scheduledAtMs,
       formatSort: settings.formatSort,
       downloadSubtitles: settings.downloadSubtitles,
       autoSubtitle: settings.autoSubtitle,
@@ -426,6 +428,48 @@ class _ConfigureScreenState extends State<ConfigureScreen> {
                         onChanged: (value) => setState(() => _playlistOrder = value ?? 'normal'),
                       ),
                     ],
+                    const SizedBox(height: 12),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.event_outlined),
+                      title: Text(l.startAt),
+                      subtitle: Text(
+                        _scheduledAtMs == null
+                            ? l.startAtHint
+                            : DateTime.fromMillisecondsSinceEpoch(_scheduledAtMs!).toString(),
+                      ),
+                      trailing: _scheduledAtMs == null
+                          ? null
+                          : IconButton(
+                              tooltip: l.clear,
+                              icon: const Icon(Icons.close),
+                              onPressed: () => setState(() => _scheduledAtMs = null),
+                            ),
+                      onTap: () async {
+                        final now = DateTime.now();
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: now,
+                          firstDate: now,
+                          lastDate: now.add(const Duration(days: 365)),
+                        );
+                        if (date == null || !context.mounted) return;
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(now),
+                        );
+                        if (time == null || !context.mounted) return;
+                        setState(() {
+                          _scheduledAtMs = DateTime(
+                            date.year,
+                            date.month,
+                            date.day,
+                            time.hour,
+                            time.minute,
+                          ).millisecondsSinceEpoch;
+                        });
+                      },
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),

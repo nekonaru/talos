@@ -909,6 +909,7 @@ void main() {
       clipStartSeconds: 10,
       clipEndSeconds: 30,
       outputFilename: 'Song(1).flac',
+      scheduledAtMs: 123456,
     );
     final restored = DownloadRequest.fromJson(original.toJson());
     expect(restored.url, original.url);
@@ -920,6 +921,7 @@ void main() {
     expect(restored.clipEndSeconds, 30);
     expect(restored.outputFilename, 'Song(1).flac');
     expect(restored.keepSubtitles, isTrue);
+    expect(restored.scheduledAtMs, 123456);
   });
 
   test('queue store restores pending downloads on startup', () async {
@@ -965,6 +967,40 @@ void main() {
       expect(DesktopEngine.engineAsset(), 'yt-dlp_macos');
     } finally {
       debugDefaultTargetPlatformOverride = original;
+    }
+  });
+
+  test('scheduled start holds the queue until the chosen time', () async {
+    final engine = FakeEngine();
+    final manager = await DownloadManager.create(engine: engine);
+    DownloadManager.quietRetryDelay = const Duration(milliseconds: 10);
+    DownloadManager.nowOverride = () => DateTime(2026, 1, 1, 10);
+    final future = DateTime(2026, 1, 1, 12).millisecondsSinceEpoch;
+    try {
+      await manager.enqueue(
+        DownloadRequest(
+          url: 'https://example.invalid/watch?v=later',
+          videoMode: true,
+          outputDir: 'out',
+          scheduledAtMs: future,
+        ),
+        title: 'Scheduled item',
+        kind: HistoryKind.video,
+      );
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(engine.lastSession, isNull);
+      expect(manager.tasks.single.stage, 'scheduled');
+
+      DownloadManager.nowOverride = () => DateTime(2026, 1, 1, 13);
+      manager.kickQueue();
+      for (var i = 0; i < 200 && engine.lastSession == null; i++) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      expect(engine.lastSession, isNotNull);
+    } finally {
+      DownloadManager.nowOverride = null;
+      DownloadManager.quietRetryDelay = const Duration(minutes: 1);
+      await manager.resetAll();
     }
   });
 

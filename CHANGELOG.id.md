@@ -5,6 +5,24 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.48.0
+
+Update besar yang menyelesaikan peta jalan dengan penjadwalan per tugas dan pemindahan antrean terpisah.
+
+### Fitur baru
+
+- **Mulai terjadwal.** Opsi lanjutan menerima tanggal dan jam. Antrean menahan tugas sampai saat itu, lalu memulainya otomatis.
+- **Impor/ekspor antrean.** Antrean tertunda bisa disalin atau dipulihkan sebagai JSON terpisah dari Pengaturan, di luar cadangan penuh.
+
+### Peningkatan
+
+- **108 test lulus**, termasuk persistensi dan gate jadwal.
+- **Alasan menunggu jelas.** Tugas terjadwal menampilkan penjelasan khusus di tab Aktif.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.48.0-windows-x64.zip`. Linux: `Talos-v0.48.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.47.0
 
 Update besar yang menambahkan tag pada tautan tersimpan dan filter berdasarkan tag.
