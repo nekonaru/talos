@@ -23,6 +23,19 @@ class TalosStorageBridge {
     }
   }
 
+  /// Available free storage in megabytes, or null when unavailable.
+  static Future<int?> freeSpaceMb() async {
+    if (!Platform.isAndroid) return null;
+    try {
+      final value = await _channel.invokeMethod<int>('freeSpaceMb');
+      return value != null && value >= 0 ? value : null;
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
   /// True when Android reports that the device is charging. Null off Android.
   static Future<bool?> isCharging() async {
     if (!Platform.isAndroid) return null;

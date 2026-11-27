@@ -573,6 +573,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 SwitchListTile(
+                  secondary: const Icon(Icons.density_medium_outlined),
+                  title: Text(l.compactCards),
+                  value: settings.compactCards,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(compactCards: value)),
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.vibration_outlined),
+                  title: Text(l.hapticsEnabled),
+                  value: settings.hapticsEnabled,
+                  onChanged: (value) => manager.settings.mutate((s) => s.copyWith(hapticsEnabled: value)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.sd_storage_outlined),
+                  title: Text(l.minFreeSpace),
+                  subtitle: Text(l.minFreeSpaceHint),
+                  trailing: DropdownButton<int>(
+                    value: settings.minFreeSpaceMb,
+                    underline: const SizedBox(),
+                    items: [
+                      for (final mb in const [0, 500, 1000, 5000])
+                        DropdownMenuItem(
+                          value: mb,
+                          child: Text(mb == 0 ? l.autoRetryOff : l.megabytes(mb)),
+                        ),
+                    ],
+                    onChanged: (value) => manager.settings.mutate(
+                      (s) => s.copyWith(minFreeSpaceMb: value ?? 0),
+                    ),
+                  ),
+                ),
+                SwitchListTile(
                   secondary: const Icon(Icons.schedule_outlined),
                   title: Text(l.quietHours),
                   subtitle: Text(l.quietHoursHint),

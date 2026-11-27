@@ -5,6 +5,29 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.46.0
+
+Update besar yang menambahkan perlindungan penyimpanan dan kepadatan antarmuka adaptif.
+
+### Fitur baru
+
+- **Jaga penyimpanan.** Di Android, unduhan baru menunggu saat ruang kosong di bawah 500 MB, 1 GB, atau 5 GB, lalu lanjut otomatis.
+- **Chip status.** Beranda menampilkan WiFi atau seluler, pengisian daya, dan baterai rendah di Android.
+- **Kartu ringkas.** Pilih kartu tugas dan riwayat ringkas atau nyaman.
+- **Umpan balik getar.** Getar ringan opsional saat batal dan coba ulang, aktif secara default.
+
+### Peningkatan
+
+- **106 test lulus**, termasuk regresi gate ruang kosong.
+
+### Ditunda
+
+- Jalur paralel, kontrol di notifikasi, dan app shortcuts masih memerlukan kerja engine dan service yang lebih dalam.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.46.0-windows-x64.zip`. Linux: `Talos-v0.46.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.45.0
 
 Update besar yang menyelesaikan peta jalan desain dengan onboarding dan wawasan penyimpanan.

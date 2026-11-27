@@ -35,6 +35,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _engineVersion;
   bool _engineReady = true;
   bool _permissionsOk = true;
+  bool? _onWifi;
+  bool? _isCharging;
+  bool? _batteryLow;
   AppLifecycleListener? _lifecycleListener;
   bool _sharedUrlApplied = false;
 
@@ -46,9 +49,23 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshEngine());
     WidgetsBinding.instance.addPostFrameCallback((_) => _detectClipboardUrl());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkPermissions());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkStatus());
     // Permissions can be changed in system settings while the app is in the
     // background. Recheck on resume so granted access removes the reminder.
     _lifecycleListener = AppLifecycleListener(onResume: _checkPermissions);
+  }
+
+  Future<void> _checkStatus() async {
+    if (!Platform.isAndroid) return;
+    final wifi = await TalosStorageBridge.isOnWifi();
+    final charging = await TalosStorageBridge.isCharging();
+    final low = await TalosStorageBridge.isBatteryLow(20);
+    if (!mounted) return;
+    setState(() {
+      _onWifi = wifi;
+      _isCharging = charging;
+      _batteryLow = low;
+    });
   }
 
   Future<void> _checkPermissions() async {
@@ -398,6 +415,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 Container(height: 2, width: 56, color: theme.colorScheme.primary),
+                if (Platform.isAndroid && (_onWifi != null || _isCharging != null || _batteryLow != null))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Wrap(
+                      spacing: 8,
+                      children: [
+                        if (_onWifi != null)
+                          Chip(
+                            avatar: Icon(
+                              _onWifi! ? Icons.wifi : Icons.signal_cellular_alt,
+                              size: 16,
+                            ),
+                            label: Text(_onWifi! ? l.statusWifi : l.statusCellular),
+                          ),
+                        if (_isCharging != null && _isCharging!)
+                          Chip(
+                            avatar: const Icon(Icons.power, size: 16),
+                            label: Text(l.statusCharging),
+                          ),
+                        if (_batteryLow == true)
+                          Chip(
+                            avatar: const Icon(Icons.battery_alert_outlined, size: 16),
+                            label: Text(l.statusBatteryLow),
+                          ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 32),
                 if (!manager.settings.value.setupChecklistDone)
                   Card(

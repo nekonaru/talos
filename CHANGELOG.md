@@ -5,6 +5,29 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.46.0
+
+A large update adding storage protection and adaptive interface density.
+
+### New features
+
+- **Storage guard.** On Android, new downloads wait when free space is below 500 MB, 1 GB or 5 GB, then resume automatically.
+- **Status chips.** Home shows WiFi or cellular, charging, and low battery state on Android.
+- **Compact cards.** Choose compact or comfortable task and history cards.
+- **Haptic feedback.** Optional light vibration on cancel and retry, enabled by default.
+
+### Improvements
+
+- **106 tests passing**, including the free-space gate regression.
+
+### Deferred
+
+- Parallel lanes, notification-center controls and app shortcuts still need deeper engine and service work.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.46.0-windows-x64.zip`. Linux: `Talos-v0.46.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.45.0
 
 A large update completing the design roadmap with onboarding and storage insight.

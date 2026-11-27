@@ -321,6 +321,21 @@
   "autoRetry": "Auto retry",
   "autoRetryHint": "Retry failed downloads automatically with a short delay",
   "autoRetryOff": "Off",
+  "statusWifi": "WiFi",
+  "statusCellular": "Cellular",
+  "statusCharging": "Charging",
+  "statusBatteryLow": "Low battery",
+  "compactCards": "Compact cards",
+  "hapticsEnabled": "Haptic feedback",
+  "minFreeSpace": "Minimum free space",
+  "minFreeSpaceHint": "On Android, hold new downloads when free space is too low",
+  "megabytes": "{count} MB",
+  "@megabytes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "waitingLowStorage": "Waiting for more free storage space.",
   "setupTitle": "Quick setup",
   "setupDismiss": "Hide checklist",
   "setupPermissions": "Allow notifications and storage access",

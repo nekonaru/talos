@@ -131,6 +131,9 @@
 | **Shared design tokens** | Consistent spacing, radius, semantic status colors and reduced-motion aware animation |
 | **Quick setup** | A dismissible checklist for permissions, engine readiness and the first download |
 | **Storage folders** | Insights groups finished downloads by folder with count and size |
+| **Storage guard** | Hold new downloads when free space falls below a chosen threshold |
+| **Status chips** | Home shows WiFi, charging and low battery state on Android |
+| **Adaptive density** | Choose compact or comfortable cards, with optional haptic feedback |
 | **Accent colors** | Five accent hues: bronze, laurel, aegean, oxblood, marble |
 | **Bilingual UI** | English (default) and Bahasa Indonesia |
 
@@ -187,8 +190,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.45.0-windows-x64.zip`
-   - Linux: `Talos-v0.45.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.46.0-windows-x64.zip`
+   - Linux: `Talos-v0.46.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]
