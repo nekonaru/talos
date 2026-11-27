@@ -182,6 +182,7 @@ class DownloadManager extends ChangeNotifier {
   Timer? _chargingRetryTimer;
   Timer? _storageRetryTimer;
   Timer? _scheduleTimer;
+  bool _queuePersistScheduled = false;
   DateTime? _lastProgressAt;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
@@ -856,6 +857,12 @@ class DownloadManager extends ChangeNotifier {
   /// Saves pending and running work. Running tasks are restored as queued,
   /// which resumes them after a process kill with their request intact.
   Future<void> _persistQueue() async {
+    // Several status changes can land in one tick. Coalesce them into a single
+    // atomic write so a fast queue does not thrash the filesystem.
+    if (_queuePersistScheduled) return;
+    _queuePersistScheduled = true;
+    await Future<void>.microtask(() {});
+    _queuePersistScheduled = false;
     await QueueStore.save([
       for (final task in _tasks)
         if (task.status == TaskStatus.queued || task.status == TaskStatus.running)

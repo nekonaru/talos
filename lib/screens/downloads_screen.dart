@@ -1056,6 +1056,10 @@ class _ThumbnailLeading extends StatelessWidget {
         child: Image.network(
           url,
           fit: BoxFit.cover,
+          // Decode a 48dp thumbnail at 2x instead of the source resolution.
+          cacheWidth: 96,
+          cacheHeight: 96,
+          filterQuality: FilterQuality.low,
           errorBuilder: (_, _, _) => icon,
         ),
       ),

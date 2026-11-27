@@ -5,6 +5,25 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.49.0
+
+Rilis optimasi terfokus. Tidak ada fitur baru, hanya kelancaran native dan pembersihan.
+
+### Peningkatan
+
+- **Rebuild Wawasan.** Pengelompokan folder di-cache berdasarkan revisi riwayat, sehingga tick progres tidak mengelompokkan ulang pustaka.
+- **Input Beranda.** Deteksi URL dijalankan sekali per build, bukan beberapa kali dalam kartu input yang sama.
+- **Thumbnail.** Gambar jaringan didekode pada 2x ukuran tampilan dengan filter rendah, mengurangi memori.
+- **Persistensi antrean.** Perubahan status cepat digabung menjadi satu tulisan atomik, bukan banyak tulisan filesystem.
+
+### Verifikasi
+
+- **108 test lulus**, analyzer bersih, dan nol em/en dash.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.49.0-windows-x64.zip`. Linux: `Talos-v0.49.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.48.0
 
 Update besar yang menyelesaikan peta jalan dengan penjadwalan per tugas dan pemindahan antrean terpisah.

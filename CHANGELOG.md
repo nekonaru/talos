@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.49.0
+
+A focused optimization release. No new features, only native smoothness and cleanup.
+
+### Improvements
+
+- **Insights rebuild.** Folder breakdown is cached by history revision, so progress ticks no longer regroup the library.
+- **Home input.** URL detection runs once per build instead of several times in the same input card.
+- **Thumbnails.** Network thumbnails decode at 2x the displayed size with low filter quality, reducing memory.
+- **Queue persistence.** Rapid status changes are coalesced into one atomic write instead of many filesystem writes.
+
+### Verification
+
+- **108 tests passing**, analyzer clean and zero em/en dashes.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.49.0-windows-x64.zip`. Linux: `Talos-v0.49.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.48.0
 
 A large update finishing the roadmap with per-task scheduling and standalone queue transfer.
