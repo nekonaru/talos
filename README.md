@@ -151,6 +151,7 @@
 | **File actions** | Rename or move a finished file and manage subtitle sidecars from history |
 | **Swipe to remove** | Swipe a finished entry to remove its history row |
 | **Playlist details** | Inspect playlist entries in a bottom sheet with index, title and duration |
+| **App shortcuts** | Long press the Android icon for Find a link, Downloads and Pause queue |
 | **Batch share** | Share several finished files at once from selection mode |
 | **Duplicate finder** | Remove older duplicate history rows while keeping the files |
 | **Saved link editing** | Copy, edit or open saved links directly from the saved list |
@@ -196,8 +197,8 @@
 1. Open the [Releases](https://github.com/nekonaru/talos/releases) page
 2. Download the file for your platform:
    - Android: `app-release.apk` (universal, for 64-bit Android devices)
-   - Windows: `Talos-v0.50.0-windows-x64.zip`
-   - Linux: `Talos-v0.50.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.51.0-windows-x64.zip`
+   - Linux: `Talos-v0.51.0-linux-x64.tar.gz`
 3. Android only: open the APK, allow installs from unknown sources if asked, grant notification permission
 
 > [!NOTE]
