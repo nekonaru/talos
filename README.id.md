@@ -130,6 +130,9 @@
 | **Token desain bersama** | Spacing, radius, warna status semantik, dan animasi yang mengikuti reduced motion |
 | **Penyiapan cepat** | Daftar kecil yang bisa ditutup untuk izin, kesiapan engine, dan unduhan pertama |
 | **Folder penyimpanan** | Wawasan mengelompokkan unduhan selesai per folder beserta jumlah dan ukuran |
+| **Jaga penyimpanan** | Tahan unduhan baru saat ruang kosong di bawah ambang pilihan |
+| **Chip status** | Beranda menampilkan WiFi, pengisian daya, dan baterai rendah di Android |
+| **Kepadatan adaptif** | Pilih kartu ringkas atau nyaman, dengan getar opsional |
 | **Warna aksen** | Lima warna aksen: bronze, laurel, aegean, oxblood, marble |
 | **Antarmuka dwibahasa** | English (bawaan) dan Bahasa Indonesia |
 
@@ -187,8 +190,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.45.0-windows-x64.zip`
-   - Linux: `Talos-v0.45.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.46.0-windows-x64.zip`
+   - Linux: `Talos-v0.46.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]
