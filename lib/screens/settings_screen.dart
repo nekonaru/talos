@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import '../widgets/section_label.dart';
@@ -13,6 +14,7 @@ import '../app_scope.dart';
 import '../core/app_info.dart';
 import '../core/backup.dart';
 import '../core/command_template_store.dart';
+import '../core/queue_store.dart';
 import '../core/settings_store.dart';
 import '../core/storage_cleanup.dart';
 import '../core/storage_bridge.dart';
@@ -199,6 +201,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l.cleanTempDone(fromSupport + fromOutput))),
     );
+  }
+
+  Future<void> _exportQueue() async {
+    final l = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final queue = await QueueStore.load();
+    final json = const JsonEncoder.withIndent('  ').convert([
+      for (final item in queue) item.toJson(),
+    ]);
+    await Clipboard.setData(ClipboardData(text: json));
+    if (!mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(l.queueExported(queue.length))));
+  }
+
+  Future<void> _importQueue() async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.read(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.importQueue),
+        content: TextField(
+          controller: controller,
+          maxLines: 6,
+          decoration: InputDecoration(hintText: l.queuePasteHint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.importQueue),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      final decoded = jsonDecode(controller.text.trim());
+      if (decoded is! List) throw const FormatException('not a list');
+      final items = <QueuedDownload>[];
+      for (final item in decoded) {
+        if (item is Map<String, dynamic>) {
+          items.add(QueuedDownload.fromJson(item));
+        }
+      }
+      await QueueStore.save(items);
+      manager.kickQueue();
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(l.queueImported(items.length))),
+      );
+    } catch (_) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l.backupInvalid)),
+        );
+      }
+    }
   }
 
   Future<void> _exportHistoryCsv() async {
@@ -1316,6 +1381,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(l.exportHistoryHint),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _exportHistoryCsv,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.file_upload_outlined),
+                  title: Text(l.exportQueue),
+                  subtitle: Text(l.exportQueueHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _exportQueue,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.file_download_outlined),
+                  title: Text(l.importQueue),
+                  subtitle: Text(l.importQueueHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _importQueue,
                 ),
                 const Divider(height: 1),
                 SwitchListTile(

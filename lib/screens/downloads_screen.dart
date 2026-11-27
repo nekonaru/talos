@@ -466,7 +466,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
             Builder(builder: (context) {
               const waitingStages = {
                 'queuePaused', 'waitingForWifi', 'batteryLow', 'quietHours',
-                'waitingCharging', 'lowStorage',
+                'waitingCharging', 'lowStorage', 'scheduled',
               };
               final waiting = tasks
                   .where((t) => waitingStages.contains(t.stage))
@@ -480,6 +480,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                 'quietHours' => l.waitingQuiet,
                 'waitingCharging' => l.waitingCharging,
                 'lowStorage' => l.waitingLowStorage,
+                'scheduled' => l.waitingScheduled,
                 _ => l.queueWaiting,
               };
               return Padding(

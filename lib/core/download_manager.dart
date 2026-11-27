@@ -181,6 +181,7 @@ class DownloadManager extends ChangeNotifier {
   Timer? _stallTimer;
   Timer? _chargingRetryTimer;
   Timer? _storageRetryTimer;
+  Timer? _scheduleTimer;
   DateTime? _lastProgressAt;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
@@ -284,6 +285,8 @@ class DownloadManager extends ChangeNotifier {
     _chargingRetryTimer = null;
     _storageRetryTimer?.cancel();
     _storageRetryTimer = null;
+    _scheduleTimer?.cancel();
+    _scheduleTimer = null;
     _tasks.clear();
     notifyListeners();
     await _persistQueue();
@@ -376,6 +379,8 @@ class DownloadManager extends ChangeNotifier {
     _chargingRetryTimer = null;
     _storageRetryTimer?.cancel();
     _storageRetryTimer = null;
+    _scheduleTimer?.cancel();
+    _scheduleTimer = null;
     for (final task in pending) {
       task.status = TaskStatus.cancelled;
       task.stage = 'cancelled';
@@ -401,6 +406,8 @@ class DownloadManager extends ChangeNotifier {
     _chargingRetryTimer = null;
     _storageRetryTimer?.cancel();
     _storageRetryTimer = null;
+    _scheduleTimer?.cancel();
+    _scheduleTimer = null;
     if (!_pumping) unawaited(_pump());
   }
 
@@ -413,6 +420,7 @@ class DownloadManager extends ChangeNotifier {
     _stallTimer?.cancel();
     _chargingRetryTimer?.cancel();
     _storageRetryTimer?.cancel();
+    _scheduleTimer?.cancel();
     super.dispose();
   }
 
@@ -435,6 +443,20 @@ class DownloadManager extends ChangeNotifier {
           next.stage = 'queuePaused';
           notifyListeners();
           break;
+        }
+        final scheduled = next.request.scheduledAtMs;
+        if (scheduled != null) {
+          final now = nowOverride != null ? nowOverride!() : DateTime.now();
+          if (now.millisecondsSinceEpoch < scheduled) {
+            next.stage = 'scheduled';
+            notifyListeners();
+            _scheduleTimer?.cancel();
+            _scheduleTimer = Timer(const Duration(seconds: 30), () {
+              _scheduleTimer = null;
+              if (!_pumping) unawaited(_pump());
+            });
+            break;
+          }
         }
         if (_settings.value.quietHoursEnabled) {
           final now = nowOverride != null ? nowOverride!() : DateTime.now();

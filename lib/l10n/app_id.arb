@@ -67,6 +67,23 @@
   "backupImported": "Cadangan dipulihkan",
   "backupInvalid": "Ini bukan cadangan Talos yang valid",
   "backupFailed": "Gagal membuat cadangan",
+  "exportQueue": "Ekspor antrean",
+  "exportQueueHint": "Salin antrean tertunda sebagai JSON",
+  "importQueue": "Impor antrean",
+  "importQueueHint": "Tempel JSON antrean untuk mengganti antrean tertunda",
+  "queuePasteHint": "Tempel JSON antrean di sini",
+  "queueExported": "Menyalin {count} unduhan tertunda",
+  "@queueExported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "queueImported": "Mengimpor {count} unduhan tertunda",
+  "@queueImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "exportHistory": "Ekspor riwayat sebagai CSV",
   "exportHistoryHint": "Salin atau bagikan daftar unduhan selesai dalam format tabel",
   "historyCsvCopied": "CSV riwayat disalin ke papan klip",
@@ -304,6 +321,9 @@
   "rateLimitHint": "Contoh 5M atau 512K, kosongkan untuk tanpa batas",
   "folderRules": "Aturan folder",
   "folderRulesHint": "Satu aturan `domain=folder` per baris, misalnya youtube.com=/storage/emulated/0/Video/YouTube",
+  "startAt": "Mulai pada waktu tertentu",
+  "startAtHint": "Opsional. Tunda unduhan ini hingga tanggal dan jam tertentu.",
+  "waitingScheduled": "Menunggu waktu mulai yang dijadwalkan.",
   "advancedOptions": "Opsi lanjutan",
   "advancedOptionsHint": "Timpa kecepatan, proxy, dan header hanya untuk unduhan ini",
   "playlistOrder": "Urutan playlist",

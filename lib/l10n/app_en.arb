@@ -61,6 +61,23 @@
   "backupImported": "Backup restored",
   "backupInvalid": "This is not a valid Talos backup",
   "backupFailed": "Could not create the backup",
+  "exportQueue": "Export queue",
+  "exportQueueHint": "Copy the pending queue as JSON",
+  "importQueue": "Import queue",
+  "importQueueHint": "Paste queue JSON to replace the pending queue",
+  "queuePasteHint": "Paste queue JSON here",
+  "queueExported": "Copied {count} queued download(s)",
+  "@queueExported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "queueImported": "Imported {count} queued download(s)",
+  "@queueImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "exportHistory": "Export history as CSV",
   "exportHistoryHint": "Copy or share a spreadsheet-friendly list of finished downloads",
   "historyCsvCopied": "History CSV copied to clipboard",
@@ -298,6 +315,9 @@
   "rateLimitHint": "For example 5M or 512K, empty for none",
   "folderRules": "Folder rules",
   "folderRulesHint": "One `domain=folder` rule per line, for example youtube.com=/storage/emulated/0/Videos/YouTube",
+  "startAt": "Start at a chosen time",
+  "startAtHint": "Optional. Queue this download until a specific date and time.",
+  "waitingScheduled": "Waiting for the scheduled start time.",
   "advancedOptions": "Advanced options",
   "advancedOptionsHint": "Override rate, proxy and headers for this download only",
   "playlistOrder": "Playlist order",
