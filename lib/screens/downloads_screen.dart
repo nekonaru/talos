@@ -12,12 +12,16 @@ import '../core/download_manager.dart';
 import '../core/engine/models.dart';
 import '../core/format.dart';
 import '../core/history_store.dart';
+import '../core/motion.dart';
 import '../core/storage_bridge.dart';
 import '../gen/app_localizations.dart';
 import 'configure_screen.dart';
 import 'error_message.dart';
 import 'player_screen.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/status_pill.dart';
 import '../widgets/wait_reason_banner.dart';
+import '../core/design_tokens.dart';
 
 /// Resolves stable error codes from the download engine to localized text.
 /// Unknown values are returned unchanged (raw engine messages).
@@ -553,7 +557,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
               controller: _tabController,
               children: [
                 if (tasks.isEmpty)
-                  _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
+                  EmptyState(
+                    icon: Icons.download_outlined,
+                    title: l.nothingHere,
+                    message: l.nothingHereHint,
+                    actionLabel: widget.onGoHome != null ? l.home : null,
+                    onAction: widget.onGoHome,
+                  )
                 else
                   ReorderableListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -563,8 +573,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                     },
                     itemBuilder: (context, index) {
                       final task = tasks[index];
-                      return _TaskCard(
-                        key: ValueKey(task.id),
+                      final delay = staggerDelay(context, index);
+                      final card = _TaskCard(
                         dragIndex: index,
                         task: task,
                         onCancel: () => manager.cancel(task),
@@ -579,14 +589,38 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
                           );
                         },
                       );
+                      if (!motionEnabled(context)) {
+                        return KeyedSubtree(key: ValueKey(task.id), child: card);
+                      }
+                      return TweenAnimationBuilder<double>(
+                        key: ValueKey(task.id),
+                        tween: Tween(begin: 0, end: 1),
+                        duration: delay + TalosMotion.standard,
+                        curve: TalosMotion.standardCurve,
+                        builder: (context, value, child) => Opacity(
+                          opacity: value,
+                          child: Transform.translate(
+                            offset: Offset(0, 12 * (1 - value)),
+                            child: child,
+                          ),
+                        ),
+                        child: card,
+                      );
                     },
                   ),
                 if (history.isEmpty)
-                  _EmptyState(hint: l.nothingHereHint, onGoHome: widget.onGoHome)
+                  EmptyState(
+                    icon: Icons.download_done_outlined,
+                    title: l.nothingHere,
+                    message: l.nothingHereHint,
+                    actionLabel: widget.onGoHome != null ? l.home : null,
+                    onAction: widget.onGoHome,
+                  )
                 else if (finished.isEmpty)
-                  _EmptyState(
-                    hint: _showFavorites ? l.noFavoritesYet : l.searchFinishedHint,
-                    onGoHome: null,
+                  EmptyState(
+                    icon: Icons.search_off_outlined,
+                    title: l.noResultsTitle,
+                    message: _showFavorites ? l.noFavoritesYet : l.searchFinishedHint,
                   )
                 else
                   ListView.separated(
@@ -669,45 +703,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> with SingleTickerProv
   }
 }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.hint, this.onGoHome});
-
-  final String hint;
-  final VoidCallback? onGoHome;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.inbox_outlined, size: 64, color: theme.colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(l.nothingHere, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text(hint, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
-            if (onGoHome != null) ...[
-              const SizedBox(height: 24),
-              FilledButton.tonalIcon(
-                onPressed: onGoHome,
-                icon: const Icon(Icons.travel_explore_outlined),
-                label: Text(l.goHome),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _TaskCard extends StatelessWidget {
   const _TaskCard({
-    super.key,
     required this.task,
     required this.dragIndex,
     required this.onCancel,
@@ -735,6 +732,34 @@ class _TaskCard extends StatelessWidget {
     final failed = task.status == TaskStatus.failed;
     final cancelled = task.status == TaskStatus.cancelled;
 
+    final statusLabel = running
+        ? l.running
+        : queued
+            ? l.queued
+            : failed
+                ? l.failed
+                : cancelled
+                    ? l.cancelled
+                    : l.completed;
+    final statusColor = running
+        ? theme.colorScheme.primary
+        : queued
+            ? TalosStatusColors.waiting
+            : failed
+                ? TalosStatusColors.error
+                : cancelled
+                    ? TalosStatusColors.waiting
+                    : TalosStatusColors.success;
+    final statusIcon = running
+        ? Icons.downloading_rounded
+        : queued
+            ? Icons.schedule_outlined
+            : failed
+                ? Icons.error_outline
+                : cancelled
+                    ? Icons.block_outlined
+                    : Icons.check_circle_outline;
+
     final pct = (task.progress * 100).clamp(0, 100);
     final details = <String>[
       if (task.playlistCount != null && task.playlistIndex != null) '${task.playlistIndex}/${task.playlistCount}',
@@ -759,6 +784,7 @@ class _TaskCard extends StatelessWidget {
                 Expanded(
                   child: Text(task.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.titleMedium),
                 ),
+                StatusPill(label: statusLabel, color: statusColor, icon: statusIcon),
                 IconButton(tooltip: l.taskLog, icon: const Icon(Icons.description_outlined), onPressed: onShowLog),
                 IconButton(tooltip: l.copyUrl, icon: const Icon(Icons.link_outlined), onPressed: onCopyUrl),
                 if (running || queued)
