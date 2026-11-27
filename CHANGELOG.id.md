@@ -5,6 +5,24 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.44.0
+
+Update besar yang merancang ulang pengalaman Unduhan dengan komponen dan gerak bersama.
+
+### Fitur baru
+
+- **Status pill.** Kartu tugas kini menampilkan label status jelas dengan ikon dan warna untuk mengantre, mengunduh, selesai, gagal, dan dibatalkan.
+- **Empty state bersama.** Tab Aktif dan Selesai memakai komponen empty state yang sama dan dapat diakses, dengan satu aksi lanjutan.
+- **Masuk bertahap.** Kartu tugas muncul dengan fade dan naik singkat secara bertahap, otomatis dimatikan saat reduced motion aktif.
+
+### Peningkatan
+
+- **104 test lulus**, analyzer bersih, dan nol em/en dash.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.44.0-windows-x64.zip`. Linux: `Talos-v0.44.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.43.0
 
 Update besar yang meletakkan fondasi desain untuk gelombang antarmuka berikutnya.

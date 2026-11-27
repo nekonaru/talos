@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.44.0
+
+A large update redesigning the Downloads experience with shared components and motion.
+
+### New features
+
+- **Status pills.** Task cards now show a clear status label with icon and color for queued, running, completed, failed and cancelled.
+- **Shared empty states.** Active and Finished tabs use the same accessible empty state component with a single next action.
+- **Staggered task entry.** Task cards fade and rise into place with a short stagger, disabled automatically under reduced motion.
+
+### Improvements
+
+- **104 tests passing**, analyzer clean and zero em/en dashes.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.44.0-windows-x64.zip`. Linux: `Talos-v0.44.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.43.0
 
 A large update laying the design foundation for the next interface wave.
