@@ -399,6 +399,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
                 Container(height: 2, width: 56, color: theme.colorScheme.primary),
                 const SizedBox(height: 32),
+                if (!manager.settings.value.setupChecklistDone)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.checklist_outlined, color: theme.colorScheme.primary),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(l.setupTitle, style: theme.textTheme.titleMedium)),
+                              IconButton(
+                                tooltip: l.setupDismiss,
+                                icon: const Icon(Icons.close),
+                                onPressed: () => unawaited(manager.settings.mutate(
+                                  (s) => s.copyWith(setupChecklistDone: true),
+                                )),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          _SetupRow(done: _permissionsOk, label: l.setupPermissions),
+                          _SetupRow(done: _engineReady, label: l.setupEngine),
+                          _SetupRow(done: recent.isNotEmpty, label: l.setupFirstDownload),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (!manager.settings.value.setupChecklistDone) const SizedBox(height: 16),
                 if (!_engineReady) _EngineBanner(
                   settingUp: _settingUp,
                   fraction: _setupFraction,
@@ -658,6 +688,32 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SetupRow extends StatelessWidget {
+  const _SetupRow({required this.done, required this.label});
+
+  final bool done;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            done ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 18,
+            color: done ? theme.colorScheme.primary : theme.colorScheme.outline,
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(label, style: theme.textTheme.bodySmall)),
+        ],
       ),
     );
   }

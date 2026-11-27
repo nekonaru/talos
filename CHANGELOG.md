@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.45.0
+
+A large update completing the design roadmap with onboarding and storage insight.
+
+### New features
+
+- **Quick setup.** Home shows a dismissible checklist for permissions, engine readiness and the first download.
+- **Storage folders.** Insights groups finished downloads by parent folder with a count and total size.
+
+### Improvements
+
+- **105 tests passing**, including folder breakdown coverage.
+- **Cross-platform paths.** Folder grouping handles both forward and backslash separators.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.45.0-windows-x64.zip`. Linux: `Talos-v0.45.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.44.0
 
 A large update redesigning the Downloads experience with shared components and motion.
