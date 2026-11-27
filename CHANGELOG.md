@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.43.0
+
+A large update laying the design foundation for the next interface wave.
+
+### New features
+
+- **Design tokens.** Shared spacing, radius and semantic status colors replace ad hoc values.
+- **Motion constants.** One easing family, three durations and a reduced-motion helper keep movement consistent.
+- **Reusable components.** Status pill, wait reason banner, progress ring and empty state are now shared widgets.
+- **Clearer wait states.** The Active tab now explains charging-only waits too, using the same banner component as other gates.
+
+### Improvements
+
+- **104 tests passing**, analyzer clean and zero em/en dashes.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.43.0-windows-x64.zip`. Linux: `Talos-v0.43.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.42.0
 
 A large update finishing the automation roadmap with charging control, multi-link sharing and offline help.
