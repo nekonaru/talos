@@ -5,6 +5,26 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.50.0
+
+Update besar yang memberi pustaka selesai kontrol langsung atas file dan entri.
+
+### Fitur baru
+
+- **Aksi file.** Ubah nama atau pindahkan file selesai dari menunya. Baris riwayat mengikuti path baru.
+- **Penampil subtitle.** Daftar dan hapus file subtitle pendamping di dekat unduhan selesai.
+- **Geser hapus.** Geser entri selesai ke kiri untuk menghapus baris riwayatnya.
+- **Detail playlist.** Lihat semua entri playlist dalam bottom sheet berisi nomor, judul, dan durasi.
+- **Sheet format.** Pemilih format kini membuka bottom sheet di semua platform.
+
+### Peningkatan
+
+- **109 test lulus**, termasuk ubah nama, pindah file, dan penemuan subtitle.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.50.0-windows-x64.zip`. Linux: `Talos-v0.50.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.49.0
 
 Rilis optimasi terfokus. Tidak ada fitur baru, hanya kelancaran native dan pembersihan.
