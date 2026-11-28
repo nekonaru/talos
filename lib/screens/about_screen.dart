@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/app_info.dart';
 import '../gen/app_localizations.dart';
 import '../widgets/section_label.dart';
+import 'diagnostics_screen.dart';
 import 'faq_screen.dart';
 import 'runtime_licenses_screen.dart';
 
@@ -95,6 +96,14 @@ class AboutScreen extends StatelessWidget {
             ),
             icon: const Icon(Icons.help_outline),
             label: Text(l.faq),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.tonalIcon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const DiagnosticsScreen()),
+            ),
+            icon: const Icon(Icons.monitor_heart_outlined),
+            label: Text(l.diagnostics),
           ),
           SectionLabel(l.author),
           Card(

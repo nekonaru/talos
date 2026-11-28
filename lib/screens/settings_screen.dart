@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../app_scope.dart';
 import '../core/app_info.dart';
+import '../core/history_store.dart';
 import '../core/backup.dart';
 import '../core/command_template_store.dart';
 import '../core/queue_store.dart';
@@ -201,6 +202,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l.cleanTempDone(fromSupport + fromOutput))),
     );
+  }
+
+  Future<void> _importHistoryCsv() async {
+    final l = AppLocalizations.of(context)!;
+    final manager = TalosScope.read(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.importHistory),
+        content: TextField(
+          controller: controller,
+          maxLines: 8,
+          decoration: InputDecoration(hintText: l.historyCsvPasteHint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l.importHistory),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final entries = historyFromCsv(controller.text.trim());
+    if (entries.isEmpty) {
+      if (mounted) messenger.showSnackBar(SnackBar(content: Text(l.backupInvalid)));
+      return;
+    }
+    await manager.history.addMany(entries);
+    if (mounted) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l.historyImported(entries.length))),
+      );
+    }
   }
 
   Future<void> _exportQueue() async {
@@ -636,6 +677,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       await manager.settings.mutate((s) => s.copyWith(folderRules: value));
                     }
                   },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.text_fields_outlined),
+                  title: Text(l.textScale),
+                  trailing: DropdownButton<int>(
+                    value: settings.textScalePercent,
+                    underline: const SizedBox(),
+                    items: [
+                      for (final percent in const [100, 110, 125, 150])
+                        DropdownMenuItem(
+                          value: percent,
+                          child: Text(l.percent(percent)),
+                        ),
+                    ],
+                    onChanged: (value) => manager.settings.mutate(
+                      (s) => s.copyWith(textScalePercent: value ?? 100),
+                    ),
+                  ),
                 ),
                 SwitchListTile(
                   secondary: const Icon(Icons.density_medium_outlined),
@@ -1381,6 +1440,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(l.exportHistoryHint),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _exportHistoryCsv,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.file_download_outlined),
+                  title: Text(l.importHistory),
+                  subtitle: Text(l.importHistoryHint),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _importHistoryCsv,
                 ),
                 const Divider(height: 1),
                 ListTile(

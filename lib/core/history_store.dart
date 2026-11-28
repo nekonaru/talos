@@ -78,6 +78,58 @@ class HistoryEntry {
   }
 }
 
+/// Parses a CSV produced by [HistoryStore.exportCsv]. Malformed rows are
+/// skipped so one bad line cannot discard the whole import.
+List<HistoryEntry> historyFromCsv(String csv) {
+  List<String> splitLine(String line) {
+    final result = <String>[];
+    final buffer = StringBuffer();
+    var quoted = false;
+    for (var i = 0; i < line.length; i++) {
+      final char = line[i];
+      if (char == '"') {
+        if (quoted && i + 1 < line.length && line[i + 1] == '"') {
+          buffer.write('"');
+          i++;
+        } else {
+          quoted = !quoted;
+        }
+      } else if (char == ',' && !quoted) {
+        result.add(buffer.toString());
+        buffer.clear();
+      } else {
+        buffer.write(char);
+      }
+    }
+    result.add(buffer.toString());
+    return result;
+  }
+
+  final lines = csv.split(RegExp(r'\r?\n')).where((line) => line.trim().isNotEmpty).toList();
+  if (lines.isEmpty) return const [];
+  lines.removeAt(0); // header
+  final result = <HistoryEntry>[];
+  for (final line in lines) {
+    final cells = splitLine(line);
+    if (cells.length < 7) continue;
+    try {
+      result.add(HistoryEntry(
+        id: cells[0].isEmpty ? DateTime.now().microsecondsSinceEpoch.toRadixString(16) : cells[0],
+        title: cells[0],
+        url: cells[1],
+        kind: cells[2] == 'audio' ? HistoryKind.audio : HistoryKind.video,
+        filePath: cells[3],
+        sizeBytes: int.tryParse(cells[4]),
+        dateMs: int.tryParse(cells[5]) ?? 0,
+        favorite: cells.length > 6 && cells[6] == '1',
+      ));
+    } catch (_) {
+      // Skip one malformed row.
+    }
+  }
+  return result;
+}
+
 /// Groups finished downloads by their parent folder and sums size and count.
 /// Sorted by total size descending.
 List<({String folder, int count, int bytes})> folderBreakdown(
@@ -196,6 +248,19 @@ class HistoryStore extends ChangeNotifier {
         entry.favorite = !entry.favorite;
         break;
       }
+    }
+    revision++;
+    notifyListeners();
+    await _persist();
+  }
+
+  Future<void> addMany(Iterable<HistoryEntry> entries) async {
+    final incoming = entries.toList();
+    if (incoming.isEmpty) return;
+    _entries.insertAll(0, incoming);
+    _entries.sort((a, b) => b.dateMs.compareTo(a.dateMs));
+    if (_entries.length > _maxEntries) {
+      _entries = _entries.sublist(0, _maxEntries);
     }
     revision++;
     notifyListeners();

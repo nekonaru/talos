@@ -20,6 +20,7 @@ import 'configure_screen.dart';
 import 'error_message.dart';
 import 'player_screen.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/speed_sparkline.dart';
 import '../widgets/status_pill.dart';
 import '../widgets/wait_reason_banner.dart';
 import '../core/design_tokens.dart';
@@ -1011,6 +1012,8 @@ class _TaskCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                const Spacer(),
+                if (running) SpeedSparkline(samples: task.speedSamples),
                 if (details.isNotEmpty) ...[
                   const SizedBox(width: 10),
                   Expanded(child: Text(details, style: theme.textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
