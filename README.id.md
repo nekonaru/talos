@@ -151,6 +151,11 @@
 | **Geser hapus** | Geser entri selesai untuk menghapus baris riwayatnya |
 | **Detail playlist** | Lihat entri playlist dalam bottom sheet berisi nomor, judul, dan durasi |
 | **Pintasan aplikasi** | Tahan ikon Android untuk Cari tautan, Unduhan, dan Jeda antrean |
+| **Pencarian terpadu** | Cari tautan tersimpan dan unduhan terbaru dari Beranda |
+| **Grafik kecepatan** | Sparkline kecepatan langsung pada kartu tugas yang berjalan |
+| **Diagnostik** | Layar status engine dan antrean hanya-baca |
+| **Impor riwayat CSV** | Pulihkan baris riwayat dari CSV yang pernah diekspor |
+| **Ukuran teks** | Pilih skala teks minimum terpisah dari pengaturan sistem |
 | **Bagikan banyak** | Bagikan beberapa file selesai sekaligus dari mode pilih |
 | **Cari duplikat** | Hapus baris riwayat duplikat yang lebih lama tanpa menghapus file |
 | **Ubah tautan tersimpan** | Salin, ubah, atau buka tautan tersimpan langsung dari daftar |
@@ -197,8 +202,8 @@
 1. Buka halaman [Releases](https://github.com/nekonaru/talos/releases)
 2. Unduh file untuk platformmu:
    - Android: `app-release.apk` (universal, untuk perangkat Android 64-bit)
-   - Windows: `Talos-v0.51.0-windows-x64.zip`
-   - Linux: `Talos-v0.51.0-linux-x64.tar.gz`
+   - Windows: `Talos-v0.52.0-windows-x64.zip`
+   - Linux: `Talos-v0.52.0-linux-x64.tar.gz`
 3. Khusus Android: buka APK, izinkan instalasi dari sumber tidak dikenal bila ditanya, berikan izin notifikasi
 
 > [!NOTE]

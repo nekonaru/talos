@@ -216,7 +216,7 @@ void main() {
     await tester.pumpWidget(TalosApp(manager: manager, showIntro: false));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
+    await tester.enterText(find.byType(TextField).first, 'https://example.invalid/watch?v=abc');
     await tester.pump();
     await tester.tap(find.text('Fetch'));
     await tester.pumpAndSettle();
@@ -251,7 +251,7 @@ void main() {
     await tester.pumpWidget(TalosApp(manager: manager, showIntro: false));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'https://example.invalid/watch?v=abc');
+    await tester.enterText(find.byType(TextField).first, 'https://example.invalid/watch?v=abc');
     await tester.pump();
     await tester.tap(find.text('Fetch'));
     await tester.pumpAndSettle();
@@ -1295,6 +1295,16 @@ void main() {
     final duplicates = duplicateHistoryEntries(entries);
     expect(duplicates, hasLength(1));
     expect(duplicates.first.id, 'old');
+  });
+
+  test('history CSV import parses exported rows', () {
+    final csv = 'title,url,kind,filePath,sizeBytes,dateMs,favorite\n'
+        '"A, quoted",https://example.invalid/a,video,/tmp/a.mp4,100,123,1\n';
+    final rows = historyFromCsv(csv);
+    expect(rows, hasLength(1));
+    expect(rows.first.title, 'A, quoted');
+    expect(rows.first.sizeBytes, 100);
+    expect(rows.first.favorite, isTrue);
   });
 
   test('history CSV export escapes special characters', () async {

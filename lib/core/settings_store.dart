@@ -76,6 +76,7 @@ class TalosSettings {
     this.compactCards = false,
     this.hapticsEnabled = true,
     this.minFreeSpaceMb = 0,
+    this.textScalePercent = 100,
   });
 
   factory TalosSettings.fromJson(Map<String, dynamic> json) {
@@ -150,6 +151,7 @@ class TalosSettings {
       compactCards: json['compactCards'] as bool? ?? false,
       hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
       minFreeSpaceMb: intChoice((json['minFreeSpaceMb'] as num?)?.toInt(), const [0, 500, 1000, 5000], 0),
+      textScalePercent: intChoice((json['textScalePercent'] as num?)?.toInt(), const [100, 110, 125, 150], 100),
     );
   }
 
@@ -216,6 +218,7 @@ class TalosSettings {
   bool compactCards;
   bool hapticsEnabled;
   int minFreeSpaceMb;
+  int textScalePercent;
 
   Map<String, dynamic> toJson() => {
         'themeMode': themeMode,
@@ -281,6 +284,7 @@ class TalosSettings {
         'compactCards': compactCards,
         'hapticsEnabled': hapticsEnabled,
         'minFreeSpaceMb': minFreeSpaceMb,
+        'textScalePercent': textScalePercent,
       };
 
   ThemeMode get theme => switch (themeMode) {
@@ -363,6 +367,7 @@ class TalosSettings {
     bool? compactCards,
     bool? hapticsEnabled,
     int? minFreeSpaceMb,
+    int? textScalePercent,
   }) {
     return TalosSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -428,6 +433,7 @@ class TalosSettings {
       compactCards: compactCards ?? this.compactCards,
       hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
       minFreeSpaceMb: minFreeSpaceMb ?? this.minFreeSpaceMb,
+      textScalePercent: textScalePercent ?? this.textScalePercent,
     );
   }
 }

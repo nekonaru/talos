@@ -41,6 +41,7 @@ class DownloadTask {
   int? downloadedBytes;
   int? totalBytes;
   double? speedBytesPerSecond;
+  final List<double> speedSamples = [];
   double? etaSeconds;
   int? playlistIndex;
   int? playlistCount;
@@ -679,7 +680,13 @@ class DownloadManager extends ChangeNotifier {
       if (event.stage != null) task.stage = event.stage!;
       if (event.downloadedBytes != null) task.downloadedBytes = event.downloadedBytes;
       if (event.totalBytes != null) task.totalBytes = event.totalBytes;
-      if (event.speedBytesPerSecond != null) task.speedBytesPerSecond = event.speedBytesPerSecond;
+      if (event.speedBytesPerSecond != null) {
+        task.speedBytesPerSecond = event.speedBytesPerSecond;
+        task.speedSamples.add(event.speedBytesPerSecond!);
+        if (task.speedSamples.length > 40) {
+          task.speedSamples.removeAt(0);
+        }
+      }
       if (event.etaSeconds != null) task.etaSeconds = event.etaSeconds;
       if (event.playlistIndex != null) task.playlistIndex = event.playlistIndex;
       if (event.playlistCount != null) task.playlistCount = event.playlistCount;

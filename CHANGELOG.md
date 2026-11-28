@@ -5,6 +5,26 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Newest version on top.
 
+## v0.52.0
+
+A large polish update adding search, diagnostics, CSV import and a live speed graph.
+
+### New features
+
+- **Unified search.** Home can search saved links by text or tag and recent history by title.
+- **Speed graph.** Running task cards show a tiny live sparkline of recent download speeds.
+- **Diagnostics.** A read-only screen shows engine status, version, FFmpeg path and queue gate state.
+- **History CSV import.** Paste a previously exported CSV to add rows back to history.
+- **Text size.** Choose a minimum text scale of 100, 110, 125 or 150 percent.
+
+### Improvements
+
+- **110 tests passing**, including CSV import parsing.
+
+### Download / Install
+
+Download the file for your platform from Assets below. Android: `app-release.apk`. Windows: `Talos-v0.52.0-windows-x64.zip`. Linux: `Talos-v0.52.0-linux-x64.tar.gz`. A macOS build is not published yet; build from source instead. Requires Android 7.0 (API 24), Windows 10, or a recent GTK3 Linux build.
+
 ## v0.51.0
 
 A small native integration update adding Android app shortcuts.

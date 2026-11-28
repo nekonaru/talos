@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   AppLifecycleListener? _lifecycleListener;
   bool _sharedUrlApplied = false;
   String _savedTagFilter = '';
+  String _homeQuery = '';
 
   @override
   void initState() {
@@ -571,8 +572,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   );
                 }),
-                const SizedBox(height: 32),
-                if (recent.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                TextField(
+                  onChanged: (value) => setState(() => _homeQuery = value.trim().toLowerCase()),
+                  decoration: InputDecoration(
+                    hintText: l.searchSavedAndRecent,
+                    prefixIcon: const Icon(Icons.search),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (recent.isNotEmpty && _homeQuery.isEmpty) ...[
                   SectionLabel(l.finished),
                   for (final entry in recent)
                     Card(
@@ -594,7 +604,32 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                 ],
-                if (manager.savedLinks.entries.isNotEmpty) ...[
+                if (_homeQuery.isNotEmpty) ...[
+                  SectionLabel(l.searchResults),
+                  for (final entry in manager.history.entries.where(
+                    (e) => e.title.toLowerCase().contains(_homeQuery),
+                  ).take(8))
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.history_toggle_off_outlined),
+                      title: Text(entry.title, maxLines: 1),
+                      onTap: () => _openFile(entry),
+                    ),
+                  for (final link in manager.savedLinks.entries.where(
+                    (l) => l.text.toLowerCase().contains(_homeQuery) ||
+                        l.tag.toLowerCase().contains(_homeQuery),
+                  ).take(8))
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.bookmark_outline),
+                      title: Text(link.text, maxLines: 1),
+                      onTap: () {
+                        _urlController.text = link.text;
+                        _handleFetch();
+                      },
+                    ),
+                ],
+                if (_homeQuery.isEmpty && manager.savedLinks.entries.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   Row(
                     children: [

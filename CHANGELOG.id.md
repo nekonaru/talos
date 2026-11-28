@@ -5,6 +5,26 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versi terbaru ada di atas.
 
+## v0.52.0
+
+Update polish besar yang menambahkan pencarian, diagnostik, impor CSV, dan grafik kecepatan langsung.
+
+### Fitur baru
+
+- **Pencarian terpadu.** Beranda bisa mencari tautan tersimpan berdasarkan teks atau tag dan riwayat terbaru berdasarkan judul.
+- **Grafik kecepatan.** Kartu tugas yang berjalan menampilkan sparkline kecil dari kecepatan terbaru.
+- **Diagnostik.** Layar hanya-baca menampilkan status engine, versi, path FFmpeg, dan status gate antrean.
+- **Impor riwayat CSV.** Tempel CSV yang pernah diekspor untuk menambah baris riwayat kembali.
+- **Ukuran teks.** Pilih skala teks minimum 100, 110, 125, atau 150 persen.
+
+### Peningkatan
+
+- **110 test lulus**, termasuk parsing impor CSV.
+
+### Download / Instalasi
+
+Download file sesuai platformmu dari Assets di bawah ini. Android: `app-release.apk`. Windows: `Talos-v0.52.0-windows-x64.zip`. Linux: `Talos-v0.52.0-linux-x64.tar.gz`. Build macOS belum diterbitkan; build dari source. Membutuhkan Android 7.0 (API 24), Windows 10, atau Linux dengan GTK3 terbaru.
+
 ## v0.51.0
 
 Update integrasi native kecil yang menambahkan pintasan aplikasi Android.

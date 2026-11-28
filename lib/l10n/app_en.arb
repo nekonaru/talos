@@ -368,6 +368,28 @@
     }
   },
   "waitingLowStorage": "Waiting for more free storage space.",
+  "textScale": "Text size",
+  "percent": "{count}%",
+  "@percent": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importHistory": "Import history CSV",
+  "importHistoryHint": "Paste a CSV exported from Talos to add rows to the history",
+  "historyCsvPasteHint": "Paste history CSV here",
+  "historyImported": "Imported {count} row(s)",
+  "@historyImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagnostics": "Diagnostics",
+  "ffmpeg": "FFmpeg",
+  "activeTasks": "Queue state",
+  "pendingTasks": "Tasks in list",
+  "searchSavedAndRecent": "Search saved links and recent downloads",
+  "searchResults": "Search results",
   "setupTitle": "Quick setup",
   "setupDismiss": "Hide checklist",
   "setupPermissions": "Allow notifications and storage access",

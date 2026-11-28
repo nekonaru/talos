@@ -374,6 +374,28 @@
     }
   },
   "waitingLowStorage": "Menunggu ruang penyimpanan lebih besar.",
+  "textScale": "Ukuran teks",
+  "percent": "{count}%",
+  "@percent": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "importHistory": "Impor riwayat CSV",
+  "importHistoryHint": "Tempel CSV yang diekspor Talos untuk menambah baris riwayat",
+  "historyCsvPasteHint": "Tempel CSV riwayat di sini",
+  "historyImported": "Mengimpor {count} baris",
+  "@historyImported": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "diagnostics": "Diagnostik",
+  "ffmpeg": "FFmpeg",
+  "activeTasks": "Status antrean",
+  "pendingTasks": "Jumlah tugas",
+  "searchSavedAndRecent": "Cari tautan tersimpan dan unduhan terbaru",
+  "searchResults": "Hasil pencarian",
   "setupTitle": "Penyiapan cepat",
   "setupDismiss": "Sembunyikan daftar",
   "setupPermissions": "Izinkan notifikasi dan akses penyimpanan",
